@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { writeFile, mkdir } from 'fs/promises';
-import { join } from 'path';
-import { existsSync } from 'fs';
 import { ADMIN_COOKIE_NAME, validateAdminSessionToken } from '@/lib/auth';
+import { uploadMediaFile } from '@/lib/storage';
 
 export async function POST(request: NextRequest) {
   try {
@@ -44,24 +42,14 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
-    // Create upload directory if it doesn't exist
-    const uploadDir = join(process.cwd(), 'public', 'uploads', type);
-    if (!existsSync(uploadDir)) {
-      await mkdir(uploadDir, { recursive: true });
-    }
+    const uploaded = await uploadMediaFile({
+      buffer,
+      contentType: file.type,
+      filename: file.name,
+      directory: type as 'portfolio' | 'gallery',
+    });
 
-    // Generate unique filename
-    const timestamp = Date.now();
-    const safeName = file.name.replace(/[^a-zA-Z0-9.\-_]/g, '-');
-    const filename = `${timestamp}-${safeName}`;
-    const filepath = join(uploadDir, filename);
-
-    // Save file
-    await writeFile(filepath, buffer);
-
-    // Return URL path
-    const url = `/uploads/${type}/${filename}`;
-    return NextResponse.json({ url, filename }, { status: 200 });
+    return NextResponse.json(uploaded, { status: 200 });
   } catch (error) {
     console.error('Upload error:', error);
     return NextResponse.json(

@@ -8,7 +8,7 @@ import { ADMIN_COOKIE_NAME, validateAdminSessionToken } from '@/lib/auth';
 
 export async function GET() {
   try {
-    const items = getGalleryItems();
+    const items = await getGalleryItems();
     return NextResponse.json(items);
   } catch (error) {
     return NextResponse.json(
@@ -29,7 +29,7 @@ export async function POST(request: NextRequest) {
     }
 
     const data = await request.json();
-    const item = addGalleryItem(data);
+    const item = await addGalleryItem(data);
     return NextResponse.json(item, { status: 201 });
   } catch (error) {
     return NextResponse.json(
@@ -57,7 +57,7 @@ export async function DELETE(request: NextRequest) {
         { status: 400 }
       );
     }
-    deleteGalleryItem(id);
+    await deleteGalleryItem(id);
     return NextResponse.json({ success: true });
   } catch (error) {
     return NextResponse.json(
