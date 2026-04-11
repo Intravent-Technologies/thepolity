@@ -3,11 +3,10 @@
 import { motion, type Variants } from 'framer-motion';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
-import { ArrowRight, Star, ChevronDown } from 'lucide-react';
+import { ArrowRight, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
 import { useState } from 'react';
 
-// Animation variants
 const fadeInUp: Variants = {
   hidden: { opacity: 0, y: 30 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: 'easeOut' } }
@@ -21,7 +20,6 @@ const staggerContainer: Variants = {
   }
 };
 
-// Services data
 const services = [
   {
     title: 'IT Consultancy',
@@ -40,7 +38,6 @@ const services = [
   }
 ];
 
-// Stats data
 const stats = [
   { number: '1K+', label: 'Consultations Completed' },
   { number: '3M+', label: 'Revenue Achieved' },
@@ -48,14 +45,12 @@ const stats = [
   { number: '100+', label: 'Global Partnerships' }
 ];
 
-// Skills data
 const skills = [
   { name: 'Creativity', percentage: 80 },
   { name: 'Strategy', percentage: 70 },
   { name: 'Engagement', percentage: 60 }
 ];
 
-// FAQ data
 const faqs = [
   { question: 'What services do you provide?', answer: 'We provide IT consultancy, media solutions, and project management services tailored to your business needs.' },
   { question: 'What is the usual duration of a project?', answer: 'Project duration varies based on scope and complexity, typically ranging from 2 weeks to 3 months.' },
@@ -64,7 +59,6 @@ const faqs = [
   { question: 'What payment methods do you accept?', answer: 'We accept bank transfers, credit cards, and PayPal for your convenience.' }
 ];
 
-// Blog posts data
 const blogPosts = [
   { title: 'The Future of Digital Strategy', category: 'Strategy', date: 'Jan 15, 2025' },
   { title: 'Maximizing ROI with IT Solutions', category: 'Technology', date: 'Jan 10, 2025' },
@@ -80,77 +74,111 @@ export default function Home() {
       <main className="bg-[#0a0a0a] text-white overflow-x-hidden">
         
         {/* Hero Section */}
-        <section className="relative min-h-screen flex items-center pt-20">
-          {/* Background gradient */}
+        <section className="relative min-h-screen flex items-center pt-20 overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-[#001F3F]/30 via-[#0a0a0a] to-[#0a0a0a]" />
+          <div className="absolute top-1/4 right-0 w-[600px] h-[600px] bg-[#FF6B35]/5 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 left-1/4 w-[400px] h-[400px] bg-[#001F3F]/20 rounded-full blur-3xl" />
+          <div className="absolute inset-0 bg-[linear-gradient(rgba(255,255,255,0.02)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.02)_1px,transparent_1px)] bg-[size:60px_60px]" />
           
           <div className="relative z-10 max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-20">
             <motion.div
               variants={staggerContainer}
               initial="hidden"
               animate="visible"
-              className="grid lg:grid-cols-2 gap-12 items-center"
+              className="grid lg:grid-cols-2 gap-16 items-center"
             >
-              {/* Left content */}
-              <div className="space-y-8">
-                {/* Rating badge */}
-                <motion.div variants={fadeInUp} className="flex items-center gap-2">
-                  <div className="flex">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="w-4 h-4 fill-[#FF6B35] text-[#FF6B35]" />
+              <div className="space-y-10">
+                <motion.div 
+                  variants={fadeInUp} 
+                  className="inline-flex items-center gap-3 px-5 py-2.5 bg-white/5 rounded-full border border-white/10"
+                >
+                  <div className="flex -space-x-1">
+                    {[...Array(3)].map((_, i) => (
+                      <div key={i} className="w-6 h-6 rounded-full bg-gradient-to-br from-[#FF6B35] to-[#FF9F66] border-2 border-[#0a0a0a]" />
                     ))}
                   </div>
-                  <span className="text-sm text-white/70">4.97/5 from over 600 reviews.</span>
+                  <span className="text-sm text-white/70">4.97/5 from <span className="text-white font-medium">600+ reviews</span></span>
                 </motion.div>
 
-                {/* Main heading */}
                 <motion.h1 
                   variants={fadeInUp}
-                  className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-tight"
+                  className="text-5xl sm:text-6xl lg:text-7xl font-bold leading-[1.1]"
                 >
                   Transform Your
                   <br />
-                  <span className="text-[#FF6B35]">Business</span> Strategies
+                  <span className="text-[#FF6B35]">Business</span> Strategy
                 </motion.h1>
 
-                {/* Subheading */}
                 <motion.p 
                   variants={fadeInUp}
-                  className="text-lg text-white/70 max-w-xl"
+                  className="text-lg text-white/70 max-w-xl leading-relaxed"
                 >
-                  Harness expert insights and innovative solutions to drive sustainable success in your industry.
+                  We blend technology, media, and strategy to deliver results that matter. 
+                  Partner with experts who understand your vision.
                 </motion.p>
 
-                {/* CTA Button */}
-                <motion.div variants={fadeInUp}>
+                <motion.div variants={fadeInUp} className="flex flex-wrap gap-4">
                   <Link
                     href="/contact"
-                    className="inline-flex items-center gap-2 px-8 py-4 bg-[#FF6B35] text-white rounded-full font-medium hover:bg-[#FF9F66] transition-colors"
+                    className="inline-flex items-center gap-2 px-8 py-4 bg-[#FF6B35] text-white rounded-full font-medium hover:bg-[#FF9F66] transition-all hover:scale-105"
                   >
                     Free consultation
                     <ArrowRight className="w-5 h-5" />
                   </Link>
+                  <Link
+                    href="/work"
+                    className="inline-flex items-center gap-2 px-8 py-4 bg-white/5 text-white rounded-full font-medium border border-white/20 hover:bg-white/10 transition-all"
+                  >
+                    View Our Work
+                  </Link>
+                </motion.div>
+
+                <motion.div variants={fadeInUp} className="flex gap-8 pt-4">
+                  {stats.slice(0, 3).map((stat, i) => (
+                    <div key={i}>
+                      <div className="text-2xl font-bold text-white">{stat.number}</div>
+                      <div className="text-xs text-white/50">{stat.label}</div>
+                    </div>
+                  ))}
                 </motion.div>
               </div>
 
-              {/* Right content - Logos/Images grid */}
               <motion.div 
                 variants={fadeInUp}
-                className="relative"
+                className="relative hidden lg:block"
               >
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-4">
-                    <div className="h-32 bg-gradient-to-br from-[#FF6B35]/20 to-[#FF6B35]/5 rounded-2xl border border-white/10" />
-                    <div className="h-48 bg-gradient-to-br from-[#001F3F]/30 to-[#001F3F]/10 rounded-2xl border border-white/10" />
+                <div className="relative">
+                  <div className="relative z-10 grid grid-cols-2 gap-6">
+                    <div className="space-y-6">
+                      <div className="h-40 bg-gradient-to-br from-[#FF6B35]/30 to-[#FF6B35]/10 rounded-3xl border border-white/10 backdrop-blur-sm" />
+                      <div className="h-56 bg-gradient-to-br from-[#001F3F]/40 to-[#001F3F]/20 rounded-3xl border border-white/10 backdrop-blur-sm" />
+                    </div>
+                    <div className="space-y-6 pt-12">
+                      <div className="h-56 bg-gradient-to-br from-[#001F3F]/40 to-[#001F3F]/20 rounded-3xl border border-white/10 backdrop-blur-sm" />
+                      <div className="h-40 bg-gradient-to-br from-[#FF6B35]/30 to-[#FF6B35]/10 rounded-3xl border border-white/10 backdrop-blur-sm" />
+                    </div>
                   </div>
-                  <div className="space-y-4 pt-8">
-                    <div className="h-48 bg-gradient-to-br from-[#001F3F]/30 to-[#001F3F]/10 rounded-2xl border border-white/10" />
-                    <div className="h-32 bg-gradient-to-br from-[#FF6B35]/20 to-[#FF6B35]/5 rounded-2xl border border-white/10" />
-                  </div>
+                  <div className="absolute -top-4 -right-4 w-20 h-20 bg-[#FF6B35]/20 rounded-2xl border border-[#FF6B35]/30 backdrop-blur-sm" />
+                  <div className="absolute -bottom-6 -left-6 w-16 h-16 bg-[#001F3F]/40 rounded-2xl border border-white/10 backdrop-blur-sm" />
                 </div>
               </motion.div>
             </motion.div>
           </div>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1 }}
+            className="absolute bottom-8 left-1/2 -translate-x-1/2"
+          >
+            <motion.div
+              animate={{ y: [0, 10, 0] }}
+              transition={{ repeat: Infinity, duration: 1.5 }}
+              className="w-6 h-10 rounded-full border-2 border-white/20 flex justify-center pt-2"
+            >
+              <motion.div className="w-1 h-2 bg-[#FF6B35] rounded-full" />
+            </motion.div>
+          </motion.div>
         </section>
 
         {/* Services Section */}
@@ -200,7 +228,6 @@ export default function Home() {
         <section className="py-24 px-6 sm:px-8 lg:px-12 bg-gradient-to-b from-[#0a0a0a] to-[#0f0f0f]">
           <div className="max-w-7xl mx-auto">
             <div className="grid lg:grid-cols-2 gap-16 items-center">
-              {/* Left - Skills */}
               <motion.div
                 initial={{ opacity: 0, x: -30 }}
                 whileInView={{ opacity: 1, x: 0 }}
@@ -211,7 +238,6 @@ export default function Home() {
                   We blend creativity and strategy to craft compelling brand stories that connect, engage, and leave a lasting impact.
                 </p>
 
-                {/* Progress bars */}
                 <div className="space-y-6">
                   {skills.map((skill) => (
                     <div key={skill.name}>
@@ -240,7 +266,6 @@ export default function Home() {
                 </Link>
               </motion.div>
 
-              {/* Right - Stats */}
               <motion.div
                 initial={{ opacity: 0, x: 30 }}
                 whileInView={{ opacity: 1, x: 0 }}
@@ -310,7 +335,6 @@ export default function Home() {
                 Schedule a Call <ArrowRight className="w-5 h-5" />
               </Link>
 
-              {/* Animated words */}
               <div className="flex justify-center gap-8 mt-12 text-2xl font-bold text-white/20">
                 {['Win.', 'Grow.', 'Thrive.', 'Lead.'].map((word, i) => (
                   <motion.span

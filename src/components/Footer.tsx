@@ -14,7 +14,6 @@ const quickLinks = [
 const discoverLinks = [
   { name: 'Work', href: '/work' },
   { name: 'Blog', href: '/blog' },
-  { name: 'Pricing Plans', href: '/pricing' },
   { name: 'Team', href: '/team' },
   { name: 'FAQ', href: '/faqs' },
 ];
@@ -39,7 +38,6 @@ export default function Footer() {
   return (
     <footer className="bg-[#0a0a0a] border-t border-white/10">
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-16">
-        {/* Email CTA */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -54,7 +52,6 @@ export default function Footer() {
           </Link>
         </motion.div>
 
-        {/* Main footer content */}
         <motion.div
           variants={containerVariants}
           initial="hidden"
@@ -62,7 +59,6 @@ export default function Footer() {
           viewport={{ once: true }}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12"
         >
-          {/* Brand column */}
           <motion.div variants={itemVariants} className="lg:col-span-1">
             <Link href="/" className="inline-block mb-6">
               <span className="text-2xl font-bold">
@@ -81,7 +77,6 @@ export default function Footer() {
             </Link>
           </motion.div>
 
-          {/* Quick Links */}
           <motion.div variants={itemVariants}>
             <h3 className="text-white font-semibold mb-6">Quick Links</h3>
             <ul className="space-y-4">
@@ -98,7 +93,6 @@ export default function Footer() {
             </ul>
           </motion.div>
 
-          {/* Discover More */}
           <motion.div variants={itemVariants}>
             <h3 className="text-white font-semibold mb-6">Discover More</h3>
             <ul className="space-y-4">
@@ -115,25 +109,38 @@ export default function Footer() {
             </ul>
           </motion.div>
 
-          {/* Follow Us */}
           <motion.div variants={itemVariants}>
             <h3 className="text-white font-semibold mb-6">Follow us</h3>
             <div className="flex gap-4">
-              {['LinkedIn', 'Twitter', 'Instagram'].map((social) => (
-                <Link
-                  key={social}
-                  href="#"
-                  className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 border border-white/10 text-white/60 hover:bg-[#FF6B35] hover:border-[#FF6B35] hover:text-white transition-all text-xs font-medium"
-                >
-                  {social[0]}
-                </Link>
-              ))}
+              <Link
+                href="https://linkedin.com/company/thepolityservices"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 border border-white/10 text-white/60 hover:bg-[#FF6B35] hover:border-[#FF6B35] hover:text-white transition-all text-xs font-medium"
+              >
+                Li
+              </Link>
+              <Link
+                href="https://twitter.com/thepolityservices"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 border border-white/10 text-white/60 hover:bg-[#FF6B35] hover:border-[#FF6B35] hover:text-white transition-all text-xs font-medium"
+              >
+                X
+              </Link>
+              <Link
+                href="https://instagram.com/thepolityservices"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 border border-white/10 text-white/60 hover:bg-[#FF6B35] hover:border-[#FF6B35] hover:text-white transition-all text-xs font-medium"
+              >
+                Ig
+              </Link>
             </div>
           </motion.div>
         </motion.div>
       </div>
 
-      {/* Bottom bar */}
       <div className="border-t border-white/10">
         <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-6">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
@@ -143,12 +150,14 @@ export default function Footer() {
                 KIPS Media.
               </Link>
             </p>
-            <p className="text-white/40 text-sm">
-              Crafted by{' '}
-              <Link href="/" className="text-[#FF6B35] hover:underline">
-                INTRAVENT
+            <div className="flex gap-6">
+              <Link href="/privacy-policy" className="text-white/40 text-sm hover:text-white transition-colors">
+                Privacy Policy
               </Link>
-            </p>
+              <Link href="/terms" className="text-white/40 text-sm hover:text-white transition-colors">
+                Terms
+              </Link>
+            </div>
           </div>
         </div>
       </div>

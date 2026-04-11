@@ -32,6 +32,40 @@ export interface GalleryItem {
   createdAt: string;
 }
 
+export interface BlogPost {
+  id: string;
+  title: string;
+  category: string;
+  date: string;
+  excerpt: string;
+  image: string;
+}
+
+export interface WorkProject {
+  id: string;
+  title: string;
+  category: string;
+  client: string;
+  description: string;
+  image: string;
+}
+
+export interface TeamMember {
+  id: string;
+  name: string;
+  role: string;
+  bio: string;
+  image: string;
+}
+
+export interface Review {
+  id: string;
+  name: string;
+  role: string;
+  content: string;
+  rating: number;
+}
+
 let supabaseClient: SupabaseClient | null = null;
 
 export function isSupabaseConfigured(): boolean {
@@ -64,6 +98,22 @@ function portfolioFilePath() {
 
 function galleryFilePath() {
   return path.join(DATA_DIR, 'gallery.json');
+}
+
+function blogFilePath() {
+  return path.join(DATA_DIR, 'blog.json');
+}
+
+function workFilePath() {
+  return path.join(DATA_DIR, 'work.json');
+}
+
+function teamFilePath() {
+  return path.join(DATA_DIR, 'team.json');
+}
+
+function reviewsFilePath() {
+  return path.join(DATA_DIR, 'reviews.json');
 }
 
 function readLocalJson<T>(filePath: string): T[] {
@@ -357,4 +407,286 @@ function getSupabaseStoragePath(assetUrl: string): string | null {
   } catch {
     return null;
   }
+}
+
+export async function getBlogPosts(): Promise<BlogPost[]> {
+  if (isSupabaseConfigured()) {
+    const supabase = getSupabaseAdminClient();
+    const { data, error } = await supabase
+      .from('blog_posts')
+      .select('id, title, category, date, excerpt, image')
+      .order('date', { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+
+    return data || [];
+  }
+
+  return readLocalJson<BlogPost>(blogFilePath()).sort((a, b) =>
+    a.date < b.date ? 1 : -1
+  );
+}
+
+export async function addBlogPost(
+  post: Omit<BlogPost, 'id'>
+): Promise<BlogPost> {
+  if (isSupabaseConfigured()) {
+    const supabase = getSupabaseAdminClient();
+    const { data, error } = await supabase
+      .from('blog_posts')
+      .insert({
+        title: post.title,
+        category: post.category,
+        date: post.date,
+        excerpt: post.excerpt,
+        image: post.image,
+      })
+      .select('id, title, category, date, excerpt, image')
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+  }
+
+  const posts = readLocalJson<BlogPost>(blogFilePath());
+  const newPost: BlogPost = {
+    ...post,
+    id: Date.now().toString(),
+  };
+  posts.unshift(newPost);
+  writeLocalJson(blogFilePath(), posts);
+  return newPost;
+}
+
+export async function deleteBlogPost(id: string): Promise<void> {
+  if (isSupabaseConfigured()) {
+    const supabase = getSupabaseAdminClient();
+    const { error } = await supabase.from('blog_posts').delete().eq('id', id);
+    if (error) {
+      throw error;
+    }
+    return;
+  }
+
+  const posts = readLocalJson<BlogPost>(blogFilePath());
+  writeLocalJson(
+    blogFilePath(),
+    posts.filter((post) => post.id !== id)
+  );
+}
+
+export async function getWorkProjects(): Promise<WorkProject[]> {
+  if (isSupabaseConfigured()) {
+    const supabase = getSupabaseAdminClient();
+    const { data, error } = await supabase
+      .from('work_projects')
+      .select('id, title, category, client, description, image')
+      .order('id', { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+
+    return data || [];
+  }
+
+  return readLocalJson<WorkProject>(workFilePath()).sort((a, b) =>
+    a.id < b.id ? 1 : -1
+  );
+}
+
+export async function addWorkProject(
+  project: Omit<WorkProject, 'id'>
+): Promise<WorkProject> {
+  if (isSupabaseConfigured()) {
+    const supabase = getSupabaseAdminClient();
+    const { data, error } = await supabase
+      .from('work_projects')
+      .insert({
+        title: project.title,
+        category: project.category,
+        client: project.client,
+        description: project.description,
+        image: project.image,
+      })
+      .select('id, title, category, client, description, image')
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+  }
+
+  const projects = readLocalJson<WorkProject>(workFilePath());
+  const newProject: WorkProject = {
+    ...project,
+    id: Date.now().toString(),
+  };
+  projects.unshift(newProject);
+  writeLocalJson(workFilePath(), projects);
+  return newProject;
+}
+
+export async function deleteWorkProject(id: string): Promise<void> {
+  if (isSupabaseConfigured()) {
+    const supabase = getSupabaseAdminClient();
+    const { error } = await supabase.from('work_projects').delete().eq('id', id);
+    if (error) {
+      throw error;
+    }
+    return;
+  }
+
+  const projects = readLocalJson<WorkProject>(workFilePath());
+  writeLocalJson(
+    workFilePath(),
+    projects.filter((project) => project.id !== id)
+  );
+}
+
+export async function getTeamMembers(): Promise<TeamMember[]> {
+  if (isSupabaseConfigured()) {
+    const supabase = getSupabaseAdminClient();
+    const { data, error } = await supabase
+      .from('team_members')
+      .select('id, name, role, bio, image')
+      .order('id', { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+
+    return data || [];
+  }
+
+  return readLocalJson<TeamMember>(teamFilePath()).sort((a, b) =>
+    a.id < b.id ? 1 : -1
+  );
+}
+
+export async function addTeamMember(
+  member: Omit<TeamMember, 'id'>
+): Promise<TeamMember> {
+  if (isSupabaseConfigured()) {
+    const supabase = getSupabaseAdminClient();
+    const { data, error } = await supabase
+      .from('team_members')
+      .insert({
+        name: member.name,
+        role: member.role,
+        bio: member.bio,
+        image: member.image,
+      })
+      .select('id, name, role, bio, image')
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+  }
+
+  const members = readLocalJson<TeamMember>(teamFilePath());
+  const newMember: TeamMember = {
+    ...member,
+    id: Date.now().toString(),
+  };
+  members.unshift(newMember);
+  writeLocalJson(teamFilePath(), members);
+  return newMember;
+}
+
+export async function deleteTeamMember(id: string): Promise<void> {
+  if (isSupabaseConfigured()) {
+    const supabase = getSupabaseAdminClient();
+    const { error } = await supabase.from('team_members').delete().eq('id', id);
+    if (error) {
+      throw error;
+    }
+    return;
+  }
+
+  const members = readLocalJson<TeamMember>(teamFilePath());
+  writeLocalJson(
+    teamFilePath(),
+    members.filter((member) => member.id !== id)
+  );
+}
+
+export async function getReviews(): Promise<Review[]> {
+  if (isSupabaseConfigured()) {
+    const supabase = getSupabaseAdminClient();
+    const { data, error } = await supabase
+      .from('reviews')
+      .select('id, name, role, content, rating')
+      .order('id', { ascending: false });
+
+    if (error) {
+      throw error;
+    }
+
+    return data || [];
+  }
+
+  return readLocalJson<Review>(reviewsFilePath()).sort((a, b) =>
+    a.id < b.id ? 1 : -1
+  );
+}
+
+export async function addReview(
+  review: Omit<Review, 'id'>
+): Promise<Review> {
+  if (isSupabaseConfigured()) {
+    const supabase = getSupabaseAdminClient();
+    const { data, error } = await supabase
+      .from('reviews')
+      .insert({
+        name: review.name,
+        role: review.role,
+        content: review.content,
+        rating: review.rating,
+      })
+      .select('id, name, role, content, rating')
+      .single();
+
+    if (error) {
+      throw error;
+    }
+
+    return data;
+  }
+
+  const reviews = readLocalJson<Review>(reviewsFilePath());
+  const newReview: Review = {
+    ...review,
+    id: Date.now().toString(),
+  };
+  reviews.unshift(newReview);
+  writeLocalJson(reviewsFilePath(), reviews);
+  return newReview;
+}
+
+export async function deleteReview(id: string): Promise<void> {
+  if (isSupabaseConfigured()) {
+    const supabase = getSupabaseAdminClient();
+    const { error } = await supabase.from('reviews').delete().eq('id', id);
+    if (error) {
+      throw error;
+    }
+    return;
+  }
+
+  const reviews = readLocalJson<Review>(reviewsFilePath());
+  writeLocalJson(
+    reviewsFilePath(),
+    reviews.filter((review) => review.id !== id)
+  );
 }

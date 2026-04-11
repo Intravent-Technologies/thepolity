@@ -58,7 +58,7 @@ export default function Contact() {
                 <span className="text-[#FF6B35]"> next move requires.</span>
               </h1>
               <p className="mt-6 max-w-3xl text-lg text-white/70 sm:text-xl">
-                The contact page now carries the same homepage tone too: dark, focused, and confident.
+                Ready to transform your business? Let&apos;s discuss how we can help you achieve your goals.
               </p>
             </motion.div>
           </div>
