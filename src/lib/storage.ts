@@ -6,13 +6,25 @@ const DATA_DIR = path.join(process.cwd(), 'public', 'data');
 const UPLOADS_DIR = path.join(process.cwd(), 'public', 'uploads');
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+
+console.log('[Storage] Environment check:', {
+  NEXT_PUBLIC_SUPABASE_URL: process.env.NEXT_PUBLIC_SUPABASE_URL ? 'SET' : 'NOT SET',
+  SUPABASE_SERVICE_ROLE_KEY: process.env.SUPABASE_SERVICE_ROLE_KEY ? 'SET' : 'NOT SET',
+  SUPABASE_URL: process.env.SUPABASE_URL ? 'SET' : 'NOT SET'
+});
 const SUPABASE_STORAGE_BUCKET = process.env.SUPABASE_STORAGE_BUCKET || 'thepolity-media';
 
-if (!fs.existsSync(DATA_DIR)) {
-  fs.mkdirSync(DATA_DIR, { recursive: true });
-}
-if (!fs.existsSync(UPLOADS_DIR)) {
-  fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+if (process.env.NEXT_PUBLIC_SUPABASE_URL) {
+  try {
+    if (!fs.existsSync(DATA_DIR)) {
+      fs.mkdirSync(DATA_DIR, { recursive: true });
+    }
+    if (!fs.existsSync(UPLOADS_DIR)) {
+      fs.mkdirSync(UPLOADS_DIR, { recursive: true });
+    }
+  } catch (e) {
+    console.log('[Storage] Local directories not available (expected in serverless)');
+  }
 }
 
 export interface PortfolioItem {
@@ -69,8 +81,10 @@ export interface Review {
 let supabaseClient: SupabaseClient | null = null;
 
 export function isSupabaseConfigured(): boolean {
-  const configured = Boolean(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY);
-  console.log('[Storage] Supabase configured:', configured, 'URL:', SUPABASE_URL ? 'set' : 'missing', 'KEY:', SUPABASE_SERVICE_ROLE_KEY ? 'set' : 'missing');
+  const hasUrl = Boolean(SUPABASE_URL);
+  const hasKey = Boolean(SUPABASE_SERVICE_ROLE_KEY);
+  const configured = hasUrl && hasKey;
+  console.log('[Storage] isSupabaseConfigured:', configured, 'URL:', hasUrl ? 'present' : 'missing', 'KEY:', hasKey ? 'present' : 'missing');
   return configured;
 }
 
