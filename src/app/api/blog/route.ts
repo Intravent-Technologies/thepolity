@@ -32,8 +32,9 @@ export async function POST(request: NextRequest) {
     const post = await addBlogPost(data);
     return NextResponse.json(post, { status: 201 });
   } catch (error) {
+    console.error('Blog API error:', error);
     return NextResponse.json(
-      { error: 'Failed to create blog post' },
+      { error: 'Failed to create blog post', details: error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }

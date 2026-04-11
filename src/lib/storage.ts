@@ -69,15 +69,19 @@ export interface Review {
 let supabaseClient: SupabaseClient | null = null;
 
 export function isSupabaseConfigured(): boolean {
-  return Boolean(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY);
+  const configured = Boolean(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY);
+  console.log('[Storage] Supabase configured:', configured, 'URL:', SUPABASE_URL ? 'set' : 'missing', 'KEY:', SUPABASE_SERVICE_ROLE_KEY ? 'set' : 'missing');
+  return configured;
 }
 
 function getSupabaseAdminClient(): SupabaseClient {
   if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
+    console.log('[Storage] Missing config - URL:', SUPABASE_URL, 'KEY:', SUPABASE_SERVICE_ROLE_KEY ? 'present' : 'missing');
     throw new Error('Supabase is not configured');
   }
 
   if (!supabaseClient) {
+    console.log('[Storage] Creating Supabase client for:', SUPABASE_URL);
     supabaseClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
       auth: { persistSession: false, autoRefreshToken: false },
     });
@@ -412,14 +416,17 @@ function getSupabaseStoragePath(assetUrl: string): string | null {
 export async function getBlogPosts(): Promise<BlogPost[]> {
   if (isSupabaseConfigured()) {
     const supabase = getSupabaseAdminClient();
+    console.log('[Storage] Fetching blog posts from Supabase...');
     const { data, error } = await supabase
       .from('blog_posts')
       .select('id, title, category, date, excerpt, image')
       .order('date', { ascending: false });
 
     if (error) {
+      console.error('[Storage] Blog fetch error:', error);
       throw error;
     }
+    console.log('[Storage] Blog fetch success, count:', data?.length);
 
     return data || [];
   }
@@ -434,6 +441,7 @@ export async function addBlogPost(
 ): Promise<BlogPost> {
   if (isSupabaseConfigured()) {
     const supabase = getSupabaseAdminClient();
+    console.log('[Storage] Adding blog post:', post.title);
     const { data, error } = await supabase
       .from('blog_posts')
       .insert({
@@ -447,8 +455,10 @@ export async function addBlogPost(
       .single();
 
     if (error) {
+      console.error('[Storage] Blog insert error:', error);
       throw error;
     }
+    console.log('[Storage] Blog insert success:', data);
 
     return data;
   }

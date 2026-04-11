@@ -53,7 +53,7 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Upload error:', error);
     return NextResponse.json(
-      { error: 'Upload failed' },
+      { error: 'Upload failed', details:error instanceof Error ? error.message : String(error) },
       { status: 500 }
     );
   }
