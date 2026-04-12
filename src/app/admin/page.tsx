@@ -55,7 +55,7 @@ interface Review {
   rating: number;
 }
 
-type Tab = 'portfolio' | 'gallery' | 'blog' | 'work' | 'team' | 'reviews';
+type Tab = 'portfolio' | 'gallery' | 'blog' | 'work' | 'team' | 'reviews' | 'homepage';
 
 export default function AdminDashboard() {
   const [tab, setTab] = useState<Tab>('portfolio');
@@ -122,6 +122,7 @@ export default function AdminDashboard() {
             { key: 'work', label: 'Work' },
             { key: 'team', label: 'Team' },
             { key: 'reviews', label: 'Reviews' },
+            { key: 'homepage', label: 'Homepage' },
           ].map((item) => (
             <button
               key={item.key}
@@ -143,6 +144,7 @@ export default function AdminDashboard() {
         {tab === 'work' && <WorkManager />}
         {tab === 'team' && <TeamManager />}
         {tab === 'reviews' && <ReviewsManager />}
+        {tab === 'homepage' && <HomepageManager />}
       </main>
     </div>
   );
@@ -689,6 +691,85 @@ function ReviewsManager() {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+interface HomepageImage {
+  id: string;
+  section: string;
+  imageUrl: string;
+}
+
+const HOMEPAGE_SECTIONS = [
+  { key: 'hero-1', label: 'Hero Image 1 (Top Left)' },
+  { key: 'hero-2', label: 'Hero Image 2 (Bottom Left)' },
+  { key: 'hero-3', label: 'Hero Image 3 (Top Right)' },
+  { key: 'hero-4', label: 'Hero Image 4 (Bottom Right)' },
+  { key: 'avatar-1', label: 'Review Avatar 1' },
+  { key: 'avatar-2', label: 'Review Avatar 2' },
+  { key: 'avatar-3', label: 'Review Avatar 3' },
+  { key: 'service-it', label: 'Service: IT Consultancy' },
+  { key: 'service-media', label: 'Service: Media' },
+  { key: 'service-project', label: 'Service: Project Mgmt' },
+  { key: 'brightvision-logo', label: 'BrightVision Logo' },
+  { key: 'blog-creative', label: 'Creative Edge Blog' },
+];
+
+function HomepageManager() {
+  const [images, setImages] = useState<HomepageImage[]>([]);
+  const [selectedSection, setSelectedSection] = useState(HOMEPAGE_SECTIONS[0].key);
+  const [file, setFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
+  const [message, setMessage] = useState('');
+
+  useEffect(() => { loadImages(); }, []);
+
+  const loadImages = async () => {
+    try {
+      const res = await fetch('/api/homepage-images');
+      if (res.ok) { const data = await res.json(); setImages(data); }
+    } catch (e) { console.error('Failed to load images:', e); }
+  };
+
+  const handleUpload = async () => {
+    if (!file) { setMessage('Please select an image first'); return; }
+    setUploading(true); setMessage('');
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      formData.append('type', 'homepage');
+      formData.append('section', selectedSection);
+      const res = await fetch('/api/upload', { method: 'POST', body: formData });
+      const data = await res.json();
+      if (res.ok && data.url) { setMessage('Image uploaded successfully!'); setFile(null); loadImages(); } 
+      else { setMessage(data.error || 'Upload failed'); }
+    } catch (e) { setMessage('Upload failed: ' + (e instanceof Error ? e.message : 'Unknown error')); } 
+    finally { setUploading(false); }
+  };
+
+  const getImageForSection = (section: string) => images.find(img => img.section === section)?.imageUrl || '';
+
+  return (
+    <div className="bg-[#111] rounded-2xl p-6 border border-white/10">
+      <h2 className="text-xl font-bold text-white mb-6">Homepage Images</h2>
+      <p className="text-white/60 text-sm mb-6">Upload images for the homepage sections.</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        {HOMEPAGE_SECTIONS.map((section) => (
+          <div key={section.key} className="bg-[#0a0a0a] rounded-xl p-4 border border-white/10">
+            <h3 className="text-sm font-medium text-white mb-3">{section.label}</h3>
+            {getImageForSection(section.key) ? (
+              <div className="relative mb-3">
+                <img src={getImageForSection(section.key)} alt={section.label} className="w-full h-24 object-cover rounded-lg" />
+                <button onClick={async () => { const img = images.find(i => i.section === section.key); if (img?.id) { await fetch(`/api/homepage-images?id=${img.id}`, { method: 'DELETE' }); loadImages(); }}} className="absolute top-1 right-1 bg-red-500 text-white text-xs px-2 py-1 rounded">Delete</button>
+              </div>
+            ) : ( <div className="w-full h-24 bg-white/5 rounded-lg mb-3 flex items-center justify-center text-white/30 text-sm">No image</div> )}
+            {selectedSection === section.key && ( <div className="mt-2"><input type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] || null)} className="text-xs text-white/60 mb-2" />{file && (<button onClick={handleUpload} disabled={uploading} className="w-full bg-[#FF6B35] text-white text-sm py-2 rounded-lg font-medium disabled:opacity-50">{uploading ? 'Uploading...' : 'Upload'}</button>)}</div> )}
+            <button onClick={() => setSelectedSection(section.key)} className="text-xs text-[#FF6B35] hover:underline">{selectedSection === section.key ? 'Selected' : 'Select to upload'}</button>
+          </div>
+        ))}
+      </div>
+      {message && (<div className={`mt-4 p-3 rounded-lg text-sm ${message.includes('success') ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>{message}</div>)}
     </div>
   );
 }

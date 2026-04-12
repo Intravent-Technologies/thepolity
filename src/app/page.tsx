@@ -5,7 +5,11 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { ArrowRight, ChevronDown } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+
+interface HomepageImages {
+  [key: string]: string;
+}
 
 const fadeInUp: Variants = {
   hidden: { opacity: 0, y: 30 },
@@ -20,21 +24,37 @@ const staggerContainer: Variants = {
   }
 };
 
+// Default fallback images
+const defaultImages = {
+  'hero-1': '/hero-tech1.svg',
+  'hero-2': '/hero-team.svg',
+  'hero-3': '/hero-office.svg',
+  'hero-4': '/hero-meeting.svg',
+  'avatar-1': '/avatar1.svg',
+  'avatar-2': '/avatar2.svg',
+  'avatar-3': '/avatar3.svg',
+  'service-it': '/service-it.svg',
+  'service-media': '/service-media.svg',
+  'service-project': '/service-project.svg',
+  'brightvision-logo': '/brightvision-logo.svg',
+  'blog-creative': '/blog-creative.svg',
+};
+
 const services = [
   {
     title: 'IT Consultancy',
     description: 'Smart technology solutions tailored to drive efficiency, innovation, and growth.',
-    image: '/service-it.svg'
+    image: '' // Will be loaded dynamically
   },
   {
     title: 'Media',
     description: 'Strategic media and content solutions designed to enhance visibility and communicate your message effectively.',
-    image: '/service-media.svg'
+    image: ''
   },
   {
     title: 'Project Management',
     description: 'Efficient, structured project delivery from planning to completion.',
-    image: '/service-project.svg'
+    image: ''
   }
 ];
 
@@ -67,6 +87,24 @@ const blogPosts = [
 
 export default function Home() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
+  const [homepageImages, setHomepageImages] = useState<HomepageImages>(defaultImages);
+
+  useEffect(() => {
+    fetch('/api/homepage-images')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data) && data.length > 0) {
+          const images: HomepageImages = {};
+          data.forEach((item: { section: string; imageUrl: string }) => {
+            images[item.section] = item.imageUrl;
+          });
+          setHomepageImages(prev => ({ ...prev, ...images }));
+        }
+      })
+      .catch(console.error);
+  }, []);
+
+  const getImage = (key: keyof typeof defaultImages): string => homepageImages[key] || defaultImages[key];
 
   return (
     <>
@@ -93,9 +131,9 @@ export default function Home() {
                   className="inline-flex items-center gap-3 px-5 py-2.5 bg-white/5 rounded-full border border-white/10"
                 >
                   <div className="flex -space-x-2">
-                    <img src="/avatar1.svg" alt="Reviewer" className="w-6 h-6 rounded-full border-2 border-[#0a0a0a] object-cover" />
-                    <img src="/avatar2.svg" alt="Reviewer" className="w-6 h-6 rounded-full border-2 border-[#0a0a0a] object-cover" />
-                    <img src="/avatar3.svg" alt="Reviewer" className="w-6 h-6 rounded-full border-2 border-[#0a0a0a] object-cover" />
+                    <img src={getImage('avatar-1')} alt="Reviewer" className="w-6 h-6 rounded-full border-2 border-[#0a0a0a] object-cover" />
+                    <img src={getImage('avatar-2')} alt="Reviewer" className="w-6 h-6 rounded-full border-2 border-[#0a0a0a] object-cover" />
+                    <img src={getImage('avatar-3')} alt="Reviewer" className="w-6 h-6 rounded-full border-2 border-[#0a0a0a] object-cover" />
                   </div>
                   <span className="text-sm text-white/70">4.97/5 from <span className="text-white font-medium">600+ reviews</span></span>
                 </motion.div>
@@ -150,12 +188,12 @@ export default function Home() {
                   <div className="relative">
                     <div className="relative z-10 grid grid-cols-2 gap-6">
                       <div className="space-y-6">
-                        <img src="/hero-tech1.svg" alt="IT Consulting" className="h-40 w-full object-cover rounded-3xl border border-white/10 backdrop-blur-sm" />
-                        <img src="/hero-team.svg" alt="Team collaboration" className="h-56 w-full object-cover rounded-3xl border border-white/10 backdrop-blur-sm" />
+                        <img src={getImage('hero-1')} alt="IT Consulting" className="h-40 w-full object-cover rounded-3xl border border-white/10 backdrop-blur-sm" />
+                        <img src={getImage('hero-2')} alt="Team collaboration" className="h-56 w-full object-cover rounded-3xl border border-white/10 backdrop-blur-sm" />
                       </div>
                       <div className="space-y-6 pt-12">
-                        <img src="/hero-office.svg" alt="Modern office" className="h-56 w-full object-cover rounded-3xl border border-white/10 backdrop-blur-sm" />
-                        <img src="/hero-meeting.svg" alt="Business meeting" className="h-40 w-full object-cover rounded-3xl border border-white/10 backdrop-blur-sm" />
+                        <img src={getImage('hero-3')} alt="Modern office" className="h-56 w-full object-cover rounded-3xl border border-white/10 backdrop-blur-sm" />
+                        <img src={getImage('hero-4')} alt="Business meeting" className="h-40 w-full object-cover rounded-3xl border border-white/10 backdrop-blur-sm" />
                       </div>
                     </div>
                     <div className="absolute -top-4 -right-4 w-20 h-20 bg-[#FF6B35]/20 rounded-2xl border border-[#FF6B35]/30 backdrop-blur-sm" />
@@ -200,7 +238,9 @@ export default function Home() {
             </motion.div>
 
             <div className="grid md:grid-cols-3 gap-8">
-              {services.map((service, index) => (
+              {services.map((service, index) => {
+                const imageKey = index === 0 ? 'service-it' : index === 1 ? 'service-media' : 'service-project';
+                return (
                 <motion.div
                   key={service.title}
                   initial={{ opacity: 0, y: 30 }}
@@ -209,11 +249,7 @@ export default function Home() {
                   transition={{ delay: index * 0.1 }}
                   className="group relative bg-gradient-to-br from-white/5 to-white/[0.02] rounded-2xl p-8 border border-white/10 hover:border-[#FF6B35]/50 transition-all duration-300"
                 >
-                  {service.image ? (
-                    <img src={service.image} alt={service.title} className="h-48 w-full object-cover rounded-xl mb-6" />
-                  ) : (
-                    <div className="h-48 bg-gradient-to-br from-[#001F3F]/20 to-[#FF6B35]/10 rounded-xl mb-6" />
-                  )}
+                  <img src={getImage(imageKey)} alt={service.title} className="h-48 w-full object-cover rounded-xl mb-6" />
                   <h3 className="text-xl font-bold mb-3">{service.title}</h3>
                   <p className="text-white/60 text-sm mb-4">{service.description}</p>
                   <Link 
@@ -223,7 +259,7 @@ export default function Home() {
                     Explore {service.title.split(' ')[0]} <ArrowRight className="w-4 h-4" />
                   </Link>
                 </motion.div>
-              ))}
+              );})}
             </div>
           </div>
         </section>
@@ -309,7 +345,7 @@ export default function Home() {
                 Unparalleled creativity and strategic content elevated our brand&apos;s presence, driving engagement and boosting conversions. Highly recommend their expertise to any business looking to grow!
               </p>
               <div className="flex items-center justify-center gap-4">
-                <img src="/brightvision-logo.svg" alt="BrightVision" className="w-12 h-12 object-contain rounded-full" />
+                <img src={getImage('brightvision-logo')} alt="BrightVision" className="w-12 h-12 object-contain rounded-full" />
                 <div className="text-left">
                   <div className="font-semibold">Alex R.</div>
                   <div className="text-white/60 text-sm">Founder & CEO of BrightVision</div>
@@ -439,7 +475,7 @@ export default function Home() {
                   className="group cursor-pointer"
                 >
                   <div className="h-48 bg-gradient-to-br from-[#001F3F]/30 to-[#FF6B35]/10 rounded-2xl mb-4 border border-white/10 group-hover:border-[#FF6B35]/50 transition-colors overflow-hidden">
-                    <img src="/blog-creative.svg" alt={post.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                    <img src={getImage('blog-creative')} alt={post.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
                   </div>
                   <div className="text-[#FF6B35] text-sm mb-2">{post.category}</div>
                   <h3 className="text-xl font-bold mb-2 group-hover:text-[#FF6B35] transition-colors">{post.title}</h3>

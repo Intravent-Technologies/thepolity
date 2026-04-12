@@ -11,7 +11,8 @@ export async function POST(request: NextRequest) {
 
     const formData = await request.formData();
     const file = formData.get('file') as File;
-    const type = formData.get('type') as string; // 'portfolio' or 'gallery'
+    const type = formData.get('type') as string; // 'portfolio', 'gallery', or 'homepage'
+    const section = formData.get('section') as string; // For homepage images
 
     if (!file) {
       return NextResponse.json(
@@ -20,7 +21,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    if (!['portfolio', 'gallery'].includes(type)) {
+    if (!['portfolio', 'gallery', 'homepage'].includes(type)) {
       return NextResponse.json(
         { error: 'Invalid upload type' },
         { status: 400 }
@@ -31,8 +32,9 @@ export async function POST(request: NextRequest) {
     const isVideo = file.type.startsWith('video/');
     const isValidPortfolioFile = type === 'portfolio' && isImage;
     const isValidGalleryFile = type === 'gallery' && (isImage || isVideo);
+    const isValidHomepageFile = type === 'homepage' && isImage;
 
-    if (!isValidPortfolioFile && !isValidGalleryFile) {
+    if (!isValidPortfolioFile && !isValidGalleryFile && !isValidHomepageFile) {
       return NextResponse.json(
         { error: 'Unsupported file type for this upload' },
         { status: 400 }
@@ -42,12 +44,27 @@ export async function POST(request: NextRequest) {
     const bytes = await file.arrayBuffer();
     const buffer = Buffer.from(bytes);
 
+    let directory: 'portfolio' | 'gallery' = type === 'homepage' ? 'gallery' : (type as 'portfolio' | 'gallery');
+    
     const uploaded = await uploadMediaFile({
       buffer,
       contentType: file.type,
       filename: file.name,
-      directory: type as 'portfolio' | 'gallery',
+      directory,
     });
+
+    // If homepage type, save the mapping
+    if (type === 'homepage' && section) {
+      try {
+        await fetch(new URL('/api/homepage-images', request.url).href, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ section, imageUrl: uploaded.url }),
+        });
+      } catch (e) {
+        console.error('Failed to save homepage image mapping:', e);
+      }
+    }
 
     return NextResponse.json(uploaded, { status: 200 });
   } catch (error) {
