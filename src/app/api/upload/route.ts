@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ADMIN_COOKIE_NAME, validateAdminSessionToken } from '@/lib/auth';
-import { uploadMediaFile } from '@/lib/storage';
+import { uploadMediaFile, saveHomepageImage } from '@/lib/storage';
 
 export async function POST(request: NextRequest) {
   try {
@@ -56,15 +56,7 @@ export async function POST(request: NextRequest) {
     // If homepage type, save the mapping
     if (type === 'homepage' && section) {
       try {
-        const cookieHeader = request.headers.get('cookie') || '';
-        await fetch(new URL('/api/homepage-images', request.url).href, {
-          method: 'POST',
-          headers: { 
-            'Content-Type': 'application/json',
-            'cookie': cookieHeader,
-          },
-          body: JSON.stringify({ section, imageUrl: uploaded.url }),
-        });
+        await saveHomepageImage(section, uploaded.url);
       } catch (e) {
         console.error('Failed to save homepage image mapping:', e);
       }
