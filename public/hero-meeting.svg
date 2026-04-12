@@ -1,4 +1,14 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="400" height="200" viewBox="0 0 400 200">
-  <rect width="400" height="200" fill="#001F3F"/>
-  <text x="200" y="100" text-anchor="middle" fill="#FF6B35" font-family="Arial" font-size="20">Meeting</text>
+  <rect width="400" height="200" fill="#0f3460"/>
+  <circle cx="350" cy="100" r="80" fill="#1a1a2e"/>
+  <circle cx="350" cy="100" r="60" fill="#16213e"/>
+  <circle cx="350" cy="100" r="40" fill="#e94560" opacity="0.3"/>
+  <rect x="30" y="50" width="180" height="100" rx="5" fill="#1a1a2e" opacity="0.5"/>
+  <circle cx="70" cy="80" r="15" fill="#e94560"/>
+  <circle cx="110" cy="80" r="15" fill="#e94560"/>
+  <circle cx="150" cy="80" r="15" fill="#e94560"/>
+  <circle cx="70" cy="120" r="15" fill="#16213e"/>
+  <circle cx="110" cy="120" r="15" fill="#16213e"/>
+  <circle cx="150" cy="120" r="15" fill="#16213e"/>
+  <text x="200" y="190" text-anchor="middle" fill="#fff" font-family="Arial" font-size="10">Business Meeting</text>
 </svg>

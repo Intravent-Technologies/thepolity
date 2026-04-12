@@ -1,4 +1,5 @@
 <svg xmlns="http://www.w3.org/2000/svg" width="50" height="50" viewBox="0 0 50 50">
-  <circle cx="25" cy="25" r="25" fill="#FF6B35"/>
-  <text x="25" y="30" text-anchor="middle" fill="white" font-family="Arial" font-size="16" font-weight="bold">A3</text>
+  <circle cx="25" cy="25" r="25" fill="#16213e"/>
+  <circle cx="25" cy="20" r="12" fill="#e8c4b8"/>
+  <path d="M10 45 Q25 35 40 45" fill="#0f3460"/>
 </svg>
