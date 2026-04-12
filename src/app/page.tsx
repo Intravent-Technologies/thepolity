@@ -24,17 +24,17 @@ const services = [
   {
     title: 'IT Consultancy',
     description: 'Smart technology solutions tailored to drive efficiency, innovation, and growth.',
-    image: '/service-it.jpg'
+    image: '/service-it.svg'
   },
   {
     title: 'Media',
     description: 'Strategic media and content solutions designed to enhance visibility and communicate your message effectively.',
-    image: '/service-media.jpg'
+    image: '/service-media.svg'
   },
   {
     title: 'Project Management',
     description: 'Efficient, structured project delivery from planning to completion.',
-    image: '/service-project.jpg'
+    image: '/service-project.svg'
   }
 ];
 
@@ -93,9 +93,9 @@ export default function Home() {
                   className="inline-flex items-center gap-3 px-5 py-2.5 bg-white/5 rounded-full border border-white/10"
                 >
                   <div className="flex -space-x-2">
-                    <img src="/avatar1.jpg" alt="Reviewer" className="w-6 h-6 rounded-full border-2 border-[#0a0a0a] object-cover" />
-                    <img src="/avatar2.jpg" alt="Reviewer" className="w-6 h-6 rounded-full border-2 border-[#0a0a0a] object-cover" />
-                    <img src="/avatar3.jpg" alt="Reviewer" className="w-6 h-6 rounded-full border-2 border-[#0a0a0a] object-cover" />
+                    <img src="/avatar1.svg" alt="Reviewer" className="w-6 h-6 rounded-full border-2 border-[#0a0a0a] object-cover" />
+                    <img src="/avatar2.svg" alt="Reviewer" className="w-6 h-6 rounded-full border-2 border-[#0a0a0a] object-cover" />
+                    <img src="/avatar3.svg" alt="Reviewer" className="w-6 h-6 rounded-full border-2 border-[#0a0a0a] object-cover" />
                   </div>
                   <span className="text-sm text-white/70">4.97/5 from <span className="text-white font-medium">600+ reviews</span></span>
                 </motion.div>
@@ -150,12 +150,12 @@ export default function Home() {
                   <div className="relative">
                     <div className="relative z-10 grid grid-cols-2 gap-6">
                       <div className="space-y-6">
-                        <img src="/hero-tech1.jpg" alt="IT Consulting" className="h-40 w-full object-cover rounded-3xl border border-white/10 backdrop-blur-sm" />
-                        <img src="/hero-team.jpg" alt="Team collaboration" className="h-56 w-full object-cover rounded-3xl border border-white/10 backdrop-blur-sm" />
+                        <img src="/hero-tech1.svg" alt="IT Consulting" className="h-40 w-full object-cover rounded-3xl border border-white/10 backdrop-blur-sm" />
+                        <img src="/hero-team.svg" alt="Team collaboration" className="h-56 w-full object-cover rounded-3xl border border-white/10 backdrop-blur-sm" />
                       </div>
                       <div className="space-y-6 pt-12">
-                        <img src="/hero-office.jpg" alt="Modern office" className="h-56 w-full object-cover rounded-3xl border border-white/10 backdrop-blur-sm" />
-                        <img src="/hero-meeting.jpg" alt="Business meeting" className="h-40 w-full object-cover rounded-3xl border border-white/10 backdrop-blur-sm" />
+                        <img src="/hero-office.svg" alt="Modern office" className="h-56 w-full object-cover rounded-3xl border border-white/10 backdrop-blur-sm" />
+                        <img src="/hero-meeting.svg" alt="Business meeting" className="h-40 w-full object-cover rounded-3xl border border-white/10 backdrop-blur-sm" />
                       </div>
                     </div>
                     <div className="absolute -top-4 -right-4 w-20 h-20 bg-[#FF6B35]/20 rounded-2xl border border-[#FF6B35]/30 backdrop-blur-sm" />
@@ -309,7 +309,7 @@ export default function Home() {
                 Unparalleled creativity and strategic content elevated our brand&apos;s presence, driving engagement and boosting conversions. Highly recommend their expertise to any business looking to grow!
               </p>
               <div className="flex items-center justify-center gap-4">
-                <img src="/brightvision-logo.png" alt="BrightVision" className="w-12 h-12 object-contain rounded-full" />
+                <img src="/brightvision-logo.svg" alt="BrightVision" className="w-12 h-12 object-contain rounded-full" />
                 <div className="text-left">
                   <div className="font-semibold">Alex R.</div>
                   <div className="text-white/60 text-sm">Founder & CEO of BrightVision</div>
@@ -439,7 +439,7 @@ export default function Home() {
                   className="group cursor-pointer"
                 >
                   <div className="h-48 bg-gradient-to-br from-[#001F3F]/30 to-[#FF6B35]/10 rounded-2xl mb-4 border border-white/10 group-hover:border-[#FF6B35]/50 transition-colors overflow-hidden">
-                    <img src="/blog-creative.jpg" alt={post.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                    <img src="/blog-creative.svg" alt={post.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
                   </div>
                   <div className="text-[#FF6B35] text-sm mb-2">{post.category}</div>
                   <h3 className="text-xl font-bold mb-2 group-hover:text-[#FF6B35] transition-colors">{post.title}</h3>
