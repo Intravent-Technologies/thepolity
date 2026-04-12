@@ -61,7 +61,11 @@ export default function Work() {
               <div className="grid gap-8 md:grid-cols-2">
                 {projects.map((project, index) => (
                   <motion.article key={project.id} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: index * 0.08 }} className="group cursor-pointer">
-                    <div className="h-64 bg-gradient-to-br from-[#001F3F]/30 to-[#FF6B35]/10 rounded-2xl mb-6 border border-white/10 group-hover:border-[#FF6B35]/50 transition-colors" />
+                    {project.image ? (
+                      <img src={project.image} alt={project.title} className="h-64 w-full object-cover rounded-2xl mb-6 border border-white/10 group-hover:border-[#FF6B35]/50 transition-colors" />
+                    ) : (
+                      <div className="h-64 bg-gradient-to-br from-[#001F3F]/30 to-[#FF6B35]/10 rounded-2xl mb-6 border border-white/10 group-hover:border-[#FF6B35]/50 transition-colors" />
+                    )}
                     <div className="flex items-center gap-4 mb-3">
                       <span className="text-[#FF6B35] text-sm font-medium">{project.category}</span>
                       <span className="text-white/40 text-sm">| {project.client}</span>

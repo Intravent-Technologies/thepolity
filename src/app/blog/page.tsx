@@ -67,7 +67,11 @@ export default function Blog() {
               <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
                 {posts.map((post, index) => (
                   <motion.article key={post.id} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: index * 0.08 }} className="group cursor-pointer">
-                    <div className="h-48 bg-gradient-to-br from-[#001F3F]/30 to-[#FF6B35]/10 rounded-2xl mb-6 border border-white/10 group-hover:border-[#FF6B35]/50 transition-colors" />
+                    {post.image ? (
+                      <img src={post.image} alt={post.title} className="h-48 w-full object-cover rounded-2xl mb-6 border border-white/10 group-hover:border-[#FF6B35]/50 transition-colors" />
+                    ) : (
+                      <div className="h-48 bg-gradient-to-br from-[#001F3F]/30 to-[#FF6B35]/10 rounded-2xl mb-6 border border-white/10 group-hover:border-[#FF6B35]/50 transition-colors" />
+                    )}
                     <div className="flex items-center gap-4 mb-3">
                       <span className="text-[#FF6B35] text-sm font-medium">{post.category}</span>
                       <span className="text-white/40 text-sm">{post.date}</span>
