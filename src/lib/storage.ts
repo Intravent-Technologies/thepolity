@@ -105,14 +105,18 @@ export function isSupabaseConfigured(): boolean {
 }
 
 function getSupabaseAdminClient(): SupabaseClient {
-  if (!SUPABASE_URL || !SUPABASE_SERVICE_ROLE_KEY) {
-    console.log('[Storage] Missing config - URL:', SUPABASE_URL, 'KEY:', SUPABASE_SERVICE_ROLE_KEY ? 'present' : 'missing');
-    throw new Error('Supabase is not configured');
+  // Allow connection even without service key - for read operations
+  if (!SUPABASE_URL) {
+    console.log('[Storage] Missing URL');
+    throw new Error('Supabase URL is not configured');
   }
 
+  // Use provided key, or empty string as fallback (will fail gracefully)
+  const key = SUPABASE_SERVICE_ROLE_KEY || '';
+  
   if (!supabaseClient) {
-    console.log('[Storage] Creating Supabase client for:', SUPABASE_URL);
-    supabaseClient = createClient(SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, {
+    console.log('[Storage] Creating Supabase client for:', SUPABASE_URL, 'Key present:', !!key);
+    supabaseClient = createClient(SUPABASE_URL, key, {
       auth: { persistSession: false, autoRefreshToken: false },
     });
   }
