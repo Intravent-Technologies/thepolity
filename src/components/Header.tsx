@@ -17,7 +17,7 @@ const navLinks = [
 
 const services = [
   { name: 'IT Consultancy', href: '/services/it-consultancy' },
-  { name: 'Media', href: '/services/media', hasSubMenu: true },
+  { name: 'Media', href: '/services/media' },
   { name: 'Project Management', href: '/services/project-management' },
 ];
 
@@ -33,7 +33,6 @@ export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [servicesOpen, setServicesOpen] = useState(false);
-  const [mediaSubMenuOpen, setMediaSubMenuOpen] = useState(false);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -93,42 +92,30 @@ export default function Header() {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 10 }}
-                        className="absolute top-full left-0 mt-2 w-56 bg-[#111] border border-white/10 rounded-xl shadow-2xl overflow-hidden"
+                        className="absolute top-full left-0 mt-2 w-64 bg-[#111] border border-white/10 rounded-xl shadow-2xl overflow-hidden"
                       >
                         {services.map((service) => (
-                          <div
+                          <Link
                             key={service.name}
-                            className="relative"
-                            onMouseEnter={() => service.hasSubMenu && setMediaSubMenuOpen(true)}
-                            onMouseLeave={() => service.hasSubMenu && setMediaSubMenuOpen(false)}
+                            href={service.href}
+                            className="block px-4 py-3 text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors"
                           >
-                            <Link
-                              href={service.href}
-                              className="flex items-center justify-between px-4 py-3 text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors"
-                            >
-                              {service.name}
-                              {service.hasSubMenu && <ChevronDown className="w-3 h-3 -rotate-90" />}
-                            </Link>
-                            
-                            {service.hasSubMenu && mediaSubMenuOpen && (
-                              <motion.div
-                                initial={{ opacity: 0, x: 10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                className="absolute top-0 left-full ml-1 w-48 bg-[#111] border border-white/10 rounded-xl shadow-2xl overflow-hidden"
-                              >
-                                {mediaServices.map((media) => (
-                                  <Link
-                                    key={media.name}
-                                    href={media.href}
-                                    className="block px-4 py-3 text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors"
-                                  >
-                                    {media.name}
-                                  </Link>
-                                ))}
-                              </motion.div>
-                            )}
-                          </div>
+                            {service.name}
+                          </Link>
                         ))}
+                        {/* Media sub-items shown inline */}
+                        <div className="border-t border-white/10 mt-1 pt-1">
+                          <p className="px-4 py-2 text-xs text-white/40 uppercase">Media Services</p>
+                          {mediaServices.map((media) => (
+                            <Link
+                              key={media.name}
+                              href={media.href}
+                              className="flex items-center gap-2 px-4 py-2 text-sm text-white/50 hover:text-white hover:bg-white/5 transition-colors pl-8"
+                            >
+                              {media.name}
+                            </Link>
+                          ))}
+                        </div>
                       </motion.div>
                     )}
                   </AnimatePresence>
