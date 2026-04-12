@@ -56,9 +56,11 @@ export async function POST(request: NextRequest) {
     // If homepage type, save the mapping
     if (type === 'homepage' && section) {
       try {
+        console.log('[Upload] Saving homepage image:', section, uploaded.url);
         await saveHomepageImage(section, uploaded.url);
+        console.log('[Upload] Homepage image saved successfully');
       } catch (e) {
-        console.error('Failed to save homepage image mapping:', e);
+        console.error('[Upload] Failed to save homepage image mapping:', e);
       }
     }
 
