@@ -7,8 +7,9 @@ export async function GET(request: NextRequest) {
     const images = await getHomepageImages();
     return NextResponse.json(images);
   } catch (error) {
-    console.error('Failed to fetch homepage images:', error);
-    return NextResponse.json({ error: 'Failed to fetch images' }, { status: 500 });
+    console.error('[HomepageImages] Failed to fetch:', error);
+    // Return empty array instead of error to allow site to work
+    return NextResponse.json([]);
   }
 }
 
