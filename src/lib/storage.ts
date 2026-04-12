@@ -93,18 +93,15 @@ function homepageImagesFilePath(): string {
 let supabaseClient: SupabaseClient | null = null;
 
 export function isSupabaseConfigured(): boolean {
-  const hasUrl = Boolean(SUPABASE_URL);
+  const hasUrl = Boolean(SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL);
   const hasKey = Boolean(SUPABASE_SERVICE_ROLE_KEY);
-  const isServerless = Boolean(process.env.NEXT_PUBLIC_SUPABASE_URL);
-  const configured = hasUrl && hasKey;
   
-  console.log('[Storage] isSupabaseConfigured:', configured, 'URL:', hasUrl ? 'present' : 'missing', 'KEY:', hasKey ? 'present' : 'missing', 'Serverless:', isServerless);
+  // Allow Supabase if we have URL and at least trying to configure
+  const willTry = hasUrl;
   
-  if (isServerless && !configured) {
-    console.error('[Storage] FATAL: Supabase env vars missing in serverless environment!');
-  }
+  console.log('[Storage] isSupabaseConfigured:', willTry, 'URL:', hasUrl, 'KEY:', hasKey);
   
-  return configured;
+  return willTry;
 }
 
 function getSupabaseAdminClient(): SupabaseClient {
