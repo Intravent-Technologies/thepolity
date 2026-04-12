@@ -80,6 +80,16 @@ export interface Review {
   rating: number;
 }
 
+export interface HomepageImage {
+  id: string;
+  section: string;
+  imageUrl: string;
+}
+
+function homepageImagesFilePath(): string {
+  return path.join(DATA_DIR, 'homepage-images.json');
+}
+
 let supabaseClient: SupabaseClient | null = null;
 
 export function isSupabaseConfigured(): boolean {
@@ -161,6 +171,71 @@ function writeLocalJson<T>(filePath: string, items: T[]): void {
     throw new Error('Local storage not available in serverless. Use Supabase.');
   }
   fs.writeFileSync(filePath, JSON.stringify(items, null, 2));
+}
+
+export async function getHomepageImages(): Promise<HomepageImage[]> {
+  if (isSupabaseConfigured()) {
+    const supabase = getSupabaseAdminClient();
+    const { data, error } = await supabase
+      .from('homepage_images')
+      .select('id, section, image_url')
+      .order('section', { ascending: true });
+
+    if (error) {
+      throw error;
+    }
+
+    return (data || []).map((item) => ({
+      id: item.id,
+      section: item.section,
+      imageUrl: item.image_url,
+    }));
+  }
+  return readLocalJson<HomepageImage>(homepageImagesFilePath());
+}
+
+export async function saveHomepageImage(section: string, imageUrl: string): Promise<void> {
+  if (isSupabaseConfigured()) {
+    const supabase = getSupabaseAdminClient();
+    const { data: existing } = await supabase
+      .from('homepage_images')
+      .select('id')
+      .eq('section', section)
+      .single();
+
+    if (existing) {
+      await supabase
+        .from('homepage_images')
+        .update({ image_url: imageUrl, updated_at: new Date().toISOString() })
+        .eq('section', section);
+    } else {
+      await supabase
+        .from('homepage_images')
+        .insert({ section, image_url: imageUrl });
+    }
+    return;
+  }
+  const items = readLocalJson<HomepageImage>(homepageImagesFilePath());
+  const existingIndex = items.findIndex((item) => item.section === section);
+  if (existingIndex >= 0) {
+    items[existingIndex] = { id: section, section, imageUrl };
+  } else {
+    items.push({ id: section, section, imageUrl });
+  }
+  writeLocalJson(homepageImagesFilePath(), items);
+}
+
+export async function deleteHomepageImage(id: string): Promise<void> {
+  if (isSupabaseConfigured()) {
+    const supabase = getSupabaseAdminClient();
+    await supabase.from('homepage_images').delete().eq('id', id);
+    return;
+  }
+  const items = readLocalJson<HomepageImage>(homepageImagesFilePath());
+  writeLocalJson(
+    homepageImagesFilePath(),
+    items.filter((item) => item.id !== id)
+  );
 }
 
 export async function getPortfolioItems(): Promise<PortfolioItem[]> {

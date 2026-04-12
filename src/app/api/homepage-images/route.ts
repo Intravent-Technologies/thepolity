@@ -1,12 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ADMIN_COOKIE_NAME, validateAdminSessionToken } from '@/lib/auth';
-
-let homepageImages: { id: string; section: string; imageUrl: string }[] = [];
+import { getHomepageImages, saveHomepageImage, deleteHomepageImage } from '@/lib/storage';
 
 export async function GET(request: NextRequest) {
   try {
-    return NextResponse.json(homepageImages);
+    const images = await getHomepageImages();
+    return NextResponse.json(images);
   } catch (error) {
+    console.error('Failed to fetch homepage images:', error);
     return NextResponse.json({ error: 'Failed to fetch images' }, { status: 500 });
   }
 }
@@ -20,15 +21,15 @@ export async function POST(request: NextRequest) {
 
     const { section, imageUrl } = await request.json();
     
-    const existingIndex = homepageImages.findIndex(img => img.section === section);
-    if (existingIndex >= 0) {
-      homepageImages[existingIndex] = { id: section, section, imageUrl };
-    } else {
-      homepageImages.push({ id: section, section, imageUrl });
+    if (!section || !imageUrl) {
+      return NextResponse.json({ error: 'Missing section or imageUrl' }, { status: 400 });
     }
+
+    await saveHomepageImage(section, imageUrl);
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    console.error('Failed to save homepage image:', error);
     return NextResponse.json({ error: 'Failed to save image' }, { status: 500 });
   }
 }
@@ -44,11 +45,12 @@ export async function DELETE(request: NextRequest) {
     const id = searchParams.get('id');
     
     if (id) {
-      homepageImages = homepageImages.filter(img => img.id !== id);
+      await deleteHomepageImage(id);
     }
 
     return NextResponse.json({ success: true });
   } catch (error) {
+    console.error('Failed to delete homepage image:', error);
     return NextResponse.json({ error: 'Failed to delete image' }, { status: 500 });
   }
 }
