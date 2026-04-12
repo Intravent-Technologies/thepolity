@@ -6,35 +6,15 @@ import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { ArrowRight } from 'lucide-react';
 
-const services = [
-  {
-    slug: 'it-consultancy',
-    title: 'IT Consultancy',
-    description: 'Technology direction, systems planning, and practical solutions that remove friction.',
-    details: 'We help teams choose the right tools, modernize workflows, and make smarter technical decisions with confidence.',
-  },
-  {
-    slug: 'media',
-    title: 'Media',
-    description: 'Photography, Events, Photo Tourism, Portraits & Visuals.',
-    details: 'Professional media services covering all your visual needs.',
-    subServices: [
-      { slug: 'photography', title: 'Photography' },
-      { slug: 'events', title: 'Events' },
-      { slug: 'photo-tourism', title: 'Photo Tourism' },
-      { slug: 'portraits', title: 'Portraits' },
-      { slug: 'visuals', title: 'Visuals' },
-    ],
-  },
-  {
-    slug: 'project-management',
-    title: 'Project Management',
-    description: 'Clear project structure that keeps stakeholders aligned and delivery on track.',
-    details: 'We bring planning discipline, execution visibility, and reporting clarity to complex initiatives.',
-  },
+const mediaServices = [
+  { slug: 'photography', title: 'Photography', description: 'Professional photography for all occasions.' },
+  { slug: 'events', title: 'Events', description: 'Capture your special moments.' },
+  { slug: 'photo-tourism', title: 'Photo Tourism', description: 'Travel photography adventures.' },
+  { slug: 'portraits', title: 'Portraits', description: 'Professional portrait sessions.' },
+  { slug: 'visuals', title: 'Visuals', description: 'High-quality visual content.' },
 ];
 
-export default function Services() {
+export default function Media() {
   return (
     <>
       <Header />
@@ -52,11 +32,8 @@ export default function Services() {
                 Services
               </p>
               <h1 className="text-5xl font-bold leading-tight sm:text-6xl lg:text-7xl">
-                What we<span className="text-[#FF6B35]"> offer</span>
+                <span className="text-[#FF6B35]">Media</span> Services
               </h1>
-              <p className="mt-6 max-w-3xl text-lg text-white/70 sm:text-xl">
-                Professional services tailored to your business needs.
-              </p>
             </motion.div>
           </div>
         </section>
@@ -64,7 +41,7 @@ export default function Services() {
         <section className="px-6 py-16 sm:px-8 lg:px-12">
           <div className="mx-auto max-w-6xl">
             <div className="grid md:grid-cols-3 gap-8">
-              {services.map((service, index) => (
+              {mediaServices.map((service, index) => (
                 <motion.div
                   key={service.slug}
                   initial={{ opacity: 0, y: 20 }}
@@ -72,22 +49,12 @@ export default function Services() {
                   viewport={{ once: true }}
                   transition={{ duration: 0.5, delay: index * 0.1 }}
                 >
-                  <Link href={`/services/${service.slug}`}>
+                  <Link href={`/services/media/${service.slug}`}>
                     <div className="group h-full p-8 bg-white/5 rounded-3xl border border-white/10 hover:border-[#FF6B35]/50 transition-all duration-300">
                       <h3 className="text-2xl font-bold mb-4 group-hover:text-[#FF6B35] transition-colors">
                         {service.title}
                       </h3>
                       <p className="text-white/70 mb-4">{service.description}</p>
-                      <p className="text-white/50 text-sm">{service.details}</p>
-                      {service.subServices && (
-                        <ul className="mt-4 space-y-2">
-                          {service.subServices.map((sub) => (
-                            <li key={sub.slug} className="text-white/60 text-sm">
-                              • {sub.title}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
                       <div className="mt-6 flex items-center gap-2 text-[#FF6B35]">
                         <span>Learn more</span>
                         <ArrowRight className="w-4 h-4 group-hover:translate-x-2 transition-transform" />

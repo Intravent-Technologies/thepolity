@@ -1,33 +1,35 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Menu, X, ChevronDown } from 'lucide-react';
 
 const navLinks = [
   { name: 'Home', href: '/' },
   { name: 'About Us', href: '/about' },
-  { 
-    name: 'Services', 
-    href: '/services',
-    hasDropdown: true,
-    dropdownItems: [
-      { name: 'IT Consultancy', href: '/services/it-consultancy' },
-      { name: 'Media', href: '/services/media' },
-      { name: 'Project Management', href: '/services/project-management' },
-    ]
-  },
+  { name: 'Services', href: '/services' },
   { name: 'Portfolio', href: '/portfolio' },
   { name: 'Gallery', href: '/gallery' },
   { name: 'Contact Us', href: '/contact' },
   { name: 'Reviews', href: '/reviews' },
 ];
 
+const mediaSubLinks = [
+  { name: 'Photography', href: '/services/media/photography' },
+  { name: 'Events', href: '/services/media/events' },
+  { name: 'Photo Tourism', href: '/services/media/photo-tourism' },
+  { name: 'Portraits', href: '/services/media/portraits' },
+  { name: 'Visuals', href: '/services/media/visuals' },
+];
+
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
+  const [mediaOpen, setMediaOpen] = useState(false);
+  const mediaRef = useRef<HTMLDivElement>(null);
+  const pathname = usePathname();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -36,6 +38,20 @@ export default function Header() {
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (mediaRef.current && !mediaRef.current.contains(event.target as Node)) {
+        setMediaOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    setMediaOpen(false);
+  }, [pathname]);
 
   return (
     <header
@@ -67,39 +83,47 @@ export default function Header() {
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.1 }}
+                ref={link.name === 'Services' ? mediaRef : undefined}
                 className="relative"
-                onMouseEnter={() => link.hasDropdown && setOpenDropdown(link.name)}
-                onMouseLeave={() => setOpenDropdown(null)}
               >
-                <Link
-                  href={link.href}
-                  className="text-sm font-medium text-white/80 hover:text-white transition-colors duration-200 relative group flex items-center gap-1"
-                >
-                  {link.name}
-                  {link.hasDropdown && <ChevronDown className="w-4 h-4" />}
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#FF6B35] transition-all duration-300 group-hover:w-full" />
-                </Link>
-                
-                <AnimatePresence>
-                  {link.hasDropdown && openDropdown === link.name && (
-                    <motion.div
-                      initial={{ opacity: 0, y: 10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, y: 10 }}
-                      className="absolute top-full left-0 mt-2 w-48 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-xl overflow-hidden"
-                    >
-                      {link.dropdownItems?.map((item) => (
-                        <Link
-                          key={item.name}
-                          href={item.href}
-                          className="block px-4 py-3 text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+                {link.name === 'Services' ? (
+                  <button
+                    onClick={() => setMediaOpen(!mediaOpen)}
+                    className="text-sm font-medium text-white/80 hover:text-white transition-colors duration-200 relative group flex items-center gap-1"
+                  >
+                    {link.name}
+                    <ChevronDown className={`w-4 h-4 transition-transform ${mediaOpen ? 'rotate-180' : ''}`} />
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#FF6B35] transition-all duration-300 group-hover:w-full" />
+                    <AnimatePresence>
+                      {mediaOpen && (
+                        <motion.div
+                          initial={{ opacity: 0, y: 10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, y: 10 }}
+                          className="absolute top-full left-0 mt-2 w-48 bg-[#0a0a0a] border border-white/10 rounded-xl overflow-hidden"
                         >
-                          {item.name}
-                        </Link>
-                      ))}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
+                          {mediaSubLinks.map((sub) => (
+                            <Link
+                              key={sub.href}
+                              href={sub.href}
+                              className="block px-4 py-3 text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+                            >
+                              {sub.name}
+                            </Link>
+                          ))}
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </button>
+                ) : (
+                  <Link
+                    href={link.href}
+                    className="text-sm font-medium text-white/80 hover:text-white transition-colors duration-200 relative group"
+                  >
+                    {link.name}
+                    <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#FF6B35] transition-all duration-300 group-hover:w-full" />
+                  </Link>
+                )}
               </motion.div>
             ))}
           </nav>
@@ -141,29 +165,24 @@ export default function Header() {
                   key={link.name}
                   href={link.href}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="text-white/80 hover:text-white py-2 transition-colors flex items-center justify-between"
+                  className="text-sm font-medium text-white/80 hover:text-white transition-colors"
                 >
                   {link.name}
-                  {link.hasDropdown && <ChevronDown className="w-4 h-4" />}
                 </Link>
               ))}
-              {navLinks.find(l => l.hasDropdown)?.dropdownItems?.map((item) => (
-                <Link
-                  key={item.name}
-                  href={item.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="pl-8 text-white/60 hover:text-white py-2 transition-colors"
-                >
-                  {item.name}
-                </Link>
-              ))}
-              <Link
-                href="/contact"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-[#FF6B35] text-white text-sm font-medium mt-2"
-              >
-                Free consultation
-              </Link>
+              <div className="border-t border-white/10 pt-4 mt-2">
+                <p className="text-xs text-white/50 uppercase mb-2">Media Services</p>
+                {mediaSubLinks.map((sub) => (
+                  <Link
+                    key={sub.href}
+                    href={sub.href}
+                    onClick={() => setIsMobileMenuOpen(false)}
+                    className="block py-2 text-sm text-white/70 hover:text-white transition-colors pl-4"
+                  >
+                    {sub.name}
+                  </Link>
+                ))}
+              </div>
             </nav>
           </motion.div>
         )}
