@@ -4,7 +4,9 @@ import { getHomepageImages, saveHomepageImage, deleteHomepageImage } from '@/lib
 
 export async function GET(request: NextRequest) {
   try {
+    console.log('[HomepageImages] GET called');
     const images = await getHomepageImages();
+    console.log('[HomepageImages] Got images:', images.length);
     return NextResponse.json(images);
   } catch (error) {
     console.error('[HomepageImages] Failed to fetch:', error);
