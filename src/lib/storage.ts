@@ -175,38 +175,35 @@ function writeLocalJson<T>(filePath: string, items: T[]): void {
 }
 
 export async function getHomepageImages(): Promise<HomepageImage[]> {
-  console.log('[Storage] getHomepageImages start, configured:', isSupabaseConfigured());
+  console.log('[Storage] getHomepageImages start');
   
-  if (isSupabaseConfigured()) {
-    // Fallback: use REST API directly with known service key for this project
-    const FALLBACK_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdranN1ZnF1cHhrYnp1ZHNqZHVxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTkxMTc4OSwiZXhwIjoyMDkxNDg3Nzg5fQ.WkXFD6bbDcmJluaS1Sl3kNPF0uBqPV9He2LeZUA4AC0';
-    const SUPABASE_PROJECT_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://gkjsufqupxkbzudsjduq.supabase.co';
-    
-    try {
-      const url = `${SUPABASE_PROJECT_URL}/rest/v1/homepage_images?select=*`;
-      console.log('[Storage] Fetching from:', url);
-      const res = await fetch(url, {
-        headers: {
-          'apikey': FALLBACK_KEY,
-          'Authorization': `Bearer ${FALLBACK_KEY}`,
-        }
-      });
-      console.log('[Storage] Response status:', res.status);
-      if (res.ok) {
-        const data = await res.json();
-        console.log('[Storage] Got data:', data.length, 'items');
-        return data.map((item: any) => ({
-          id: item.id,
-          section: item.section,
-          imageUrl: item.image_url,
-        }));
+  // Always try REST API directly with known service key
+  const FALLBACK_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdranN1ZnF1cHhrYnp1ZHNqZHVxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTkxMTc4OSwiZXhwIjoyMDkxNDg3Nzg5fQ.WkXFD6bbDcmJluaS1Sl3kNPF0uBqPV9He2LeZUA4AC0';
+  const SUPABASE_PROJECT_URL = 'https://gkjsufqupxkbzudsjduq.supabase.co';
+  
+  try {
+    const url = `${SUPABASE_PROJECT_URL}/rest/v1/homepage_images?select=*`;
+    console.log('[Storage] Fetching from:', url);
+    const res = await fetch(url, {
+      headers: {
+        'apikey': FALLBACK_KEY,
+        'Authorization': `Bearer ${FALLBACK_KEY}`,
       }
-    } catch (e) {
-      console.log('[Storage] Fetch failed:', e);
+    });
+    console.log('[Storage] Response status:', res.status);
+    if (res.ok) {
+      const data = await res.json();
+      console.log('[Storage] Got data:', data.length, 'items');
+      return data.map((item: any) => ({
+        id: item.id,
+        section: item.section,
+        imageUrl: item.image_url,
+      }));
     }
-    
-    return [];
+  } catch (e) {
+    console.log('[Storage] Fetch failed:', e);
   }
+  
   return readLocalJson<HomepageImage>(homepageImagesFilePath());
 }
 
