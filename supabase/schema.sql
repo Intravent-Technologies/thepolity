@@ -57,6 +57,14 @@ create table if not exists public.reviews (
   rating integer not null
 );
 
+-- Homepage Images
+create table if not exists public.homepage_images (
+  id text primary key,
+  section text not null,
+  image_url text not null,
+  updated_at timestamptz
+);
+
 -- Indexes
 create index if not exists portfolio_items_created_at_idx
   on public.portfolio_items (created_at desc);
@@ -76,6 +84,7 @@ alter table public.blog_posts enable row level security;
 alter table public.work_projects enable row level security;
 alter table public.team_members enable row level security;
 alter table public.reviews enable row level security;
+alter table public.homepage_images enable row level security;
 
 -- Allow public read access
 create policy "Public read access - portfolio" on public.portfolio_items for select using (true);
@@ -92,3 +101,4 @@ create policy "Service role access - blog" on public.blog_posts for all using (t
 create policy "Service role access - work" on public.work_projects for all using (true) with check (true);
 create policy "Service role access - team" on public.team_members for all using (true) with check (true);
 create policy "Service role access - reviews" on public.reviews for all using (true) with check (true);
+create policy "Service role access - homepage" on public.homepage_images for all using (true) with check (true);
