@@ -176,21 +176,27 @@ function writeLocalJson<T>(filePath: string, items: T[]): void {
 
 export async function getHomepageImages(): Promise<HomepageImage[]> {
   if (isSupabaseConfigured()) {
-    const supabase = getSupabaseAdminClient();
-    const { data, error } = await supabase
-      .from('homepage_images')
-      .select('id, section, image_url')
-      .order('section', { ascending: true });
+    try {
+      const supabase = getSupabaseAdminClient();
+      const { data, error } = await supabase
+        .from('homepage_images')
+        .select('id, section, image_url')
+        .order('section', { ascending: true });
 
-    if (error) {
-      throw error;
+      if (error) {
+        console.log('[Storage] Supabase error, falling back:', error.message);
+        return [];
+      }
+
+      return (data || []).map((item) => ({
+        id: item.id,
+        section: item.section,
+        imageUrl: item.image_url,
+      }));
+    } catch (e) {
+      console.log('[Storage] Supabase exception:', e);
+      return [];
     }
-
-    return (data || []).map((item) => ({
-      id: item.id,
-      section: item.section,
-      imageUrl: item.image_url,
-    }));
   }
   return readLocalJson<HomepageImage>(homepageImagesFilePath());
 }
