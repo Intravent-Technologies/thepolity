@@ -3,12 +3,21 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import Link from 'next/link';
-import { Menu, X } from 'lucide-react';
+import { Menu, X, ChevronDown } from 'lucide-react';
 
 const navLinks = [
   { name: 'Home', href: '/' },
   { name: 'About Us', href: '/about' },
-  { name: 'Services', href: '/services' },
+  { 
+    name: 'Services', 
+    href: '/services',
+    hasDropdown: true,
+    dropdownItems: [
+      { name: 'IT Consultancy', href: '/services/it-consultancy' },
+      { name: 'Media', href: '/services/media' },
+      { name: 'Project Management', href: '/services/project-management' },
+    ]
+  },
   { name: 'Portfolio', href: '/portfolio' },
   { name: 'Gallery', href: '/gallery' },
   { name: 'Contact Us', href: '/contact' },
@@ -18,6 +27,7 @@ const navLinks = [
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [openDropdown, setOpenDropdown] = useState<string | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -57,14 +67,39 @@ export default function Header() {
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.3, delay: index * 0.1 }}
+                className="relative"
+                onMouseEnter={() => link.hasDropdown && setOpenDropdown(link.name)}
+                onMouseLeave={() => setOpenDropdown(null)}
               >
                 <Link
                   href={link.href}
-                  className="text-sm font-medium text-white/80 hover:text-white transition-colors duration-200 relative group"
+                  className="text-sm font-medium text-white/80 hover:text-white transition-colors duration-200 relative group flex items-center gap-1"
                 >
                   {link.name}
+                  {link.hasDropdown && <ChevronDown className="w-4 h-4" />}
                   <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#FF6B35] transition-all duration-300 group-hover:w-full" />
                 </Link>
+                
+                <AnimatePresence>
+                  {link.hasDropdown && openDropdown === link.name && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: 10 }}
+                      className="absolute top-full left-0 mt-2 w-48 bg-[#1a1a1a] border border-white/10 rounded-xl shadow-xl overflow-hidden"
+                    >
+                      {link.dropdownItems?.map((item) => (
+                        <Link
+                          key={item.name}
+                          href={item.href}
+                          className="block px-4 py-3 text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+                        >
+                          {item.name}
+                        </Link>
+                      ))}
+                    </motion.div>
+                  )}
+                </AnimatePresence>
               </motion.div>
             ))}
           </nav>
@@ -106,9 +141,20 @@ export default function Header() {
                   key={link.name}
                   href={link.href}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="text-white/80 hover:text-white py-2 transition-colors"
+                  className="text-white/80 hover:text-white py-2 transition-colors flex items-center justify-between"
                 >
                   {link.name}
+                  {link.hasDropdown && <ChevronDown className="w-4 h-4" />}
+                </Link>
+              ))}
+              {navLinks.find(l => l.hasDropdown)?.dropdownItems?.map((item) => (
+                <Link
+                  key={item.name}
+                  href={item.href}
+                  onClick={() => setIsMobileMenuOpen(false)}
+                  className="pl-8 text-white/60 hover:text-white py-2 transition-colors"
+                >
+                  {item.name}
                 </Link>
               ))}
               <Link

@@ -20,6 +20,13 @@ const services = [
     description: 'Strategic messaging and content systems that strengthen visibility and trust.',
     details:
       'From positioning to campaign support, we shape communication that feels consistent, credible, and memorable.',
+    subServices: [
+      { title: 'Photography', description: 'Professional photography for events, portraits, and brand visuals.' },
+      { title: 'Events', description: 'Comprehensive event coverage and documentation.' },
+      { title: 'Photo Tourism', description: 'Location-based photography experiences.' },
+      { title: 'Portraits', description: 'Professional portrait sessions for individuals and teams.' },
+      { title: 'Visuals', description: 'Creative visual content for marketing and branding.' },
+    ],
   },
   {
     slug: 'project-management',
@@ -27,27 +34,6 @@ const services = [
     description: 'Clear project structure that keeps stakeholders aligned and delivery on track.',
     details:
       'We bring planning discipline, execution visibility, and reporting clarity to complex initiatives.',
-  },
-  {
-    slug: 'business-strategy',
-    title: 'Business Strategy',
-    description: 'Growth planning rooted in market reality, opportunity mapping, and operational fit.',
-    details:
-      'Our strategy work helps businesses set direction, prioritize decisions, and execute with fewer blind spots.',
-  },
-  {
-    slug: 'data-analytics',
-    title: 'Data Analytics',
-    description: 'Insight frameworks that turn information into action and action into measurable wins.',
-    details:
-      'We organize data into decision-ready narratives so leaders can move quickly with stronger evidence.',
-  },
-  {
-    slug: 'digital-transformation',
-    title: 'Digital Transformation',
-    description: 'Modern operating models that improve efficiency, experience, and long-term resilience.',
-    details:
-      'We support digital change across process, tooling, and team adoption so transformation actually sticks.',
   },
 ];
 
@@ -98,8 +84,23 @@ export default function Services() {
                   <h2 className="mb-4 text-3xl font-bold">{service.title}</h2>
                   <p className="mb-4 text-white/70">{service.description}</p>
                   <p className="text-sm leading-relaxed text-white/55">{service.details}</p>
+                  
+                  {service.subServices && (
+                    <div className="mt-6 pt-6 border-t border-white/10">
+                      <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-white/50">Includes:</p>
+                      <ul className="space-y-2">
+                        {service.subServices.map((sub) => (
+                          <li key={sub.title} className="text-sm text-white/70 flex items-center gap-2">
+                            <span className="w-1.5 h-1.5 rounded-full bg-[#FF6B35]" />
+                            {sub.title}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  )}
+                  
                   <Link
-                    href={`/services/${services[index].slug}`}
+                    href={`/services/${service.slug}`}
                     className="mt-8 inline-flex items-center gap-2 text-sm font-medium text-[#FF6B35] hover:underline"
                   >
                     Explore service <ArrowRight className="h-4 w-4" />
