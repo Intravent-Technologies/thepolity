@@ -90,14 +90,16 @@ export default function Home() {
   const [homepageImages, setHomepageImages] = useState<HomepageImages>(defaultImages);
 
   useEffect(() => {
-    fetch('/api/homepage-images')
+    fetch('/api/homepage-images?t=' + Date.now())
       .then(res => res.json())
       .then(data => {
+        console.log('Loaded images:', data);
         if (Array.isArray(data) && data.length > 0) {
           const images: HomepageImages = {};
           data.forEach((item: { section: string; imageUrl: string }) => {
             images[item.section] = item.imageUrl;
           });
+          console.log('Setting images:', images);
           setHomepageImages(prev => ({ ...prev, ...images }));
         }
       })
