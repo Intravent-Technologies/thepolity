@@ -16,19 +16,10 @@ interface PortfolioItem {
   createdAt: string;
 }
 
-const categories = [
-  { id: 'all', label: 'View All' },
-  { id: 'IT Consultancy', label: 'IT Consultancy' },
-  { id: 'Media', label: 'Media' },
-  { id: 'Photography', label: 'Photography' },
-  { id: 'Events', label: 'Events' },
-  { id: 'Project Management', label: 'Project Management' },
-];
-
 export default function Portfolio() {
   const [items, setItems] = useState<PortfolioItem[]>([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all');
+  const [filter, setFilter] = useState('All');
 
   useEffect(() => {
     async function loadPortfolio() {
@@ -46,9 +37,8 @@ export default function Portfolio() {
     void loadPortfolio();
   }, []);
 
-  const filteredItems = filter === 'all' 
-    ? items 
-    : items.filter(item => item.category === filter);
+  const categories = ['All', ...new Set(items.map(item => item.category).filter(Boolean))];
+  const filteredItems = filter === 'All' ? items : items.filter(item => item.category === filter);
 
   return (
     <>
@@ -56,7 +46,7 @@ export default function Portfolio() {
       <main className="overflow-x-hidden bg-[#0a0a0a] pt-20 text-white">
         <section className="relative overflow-hidden">
           <div className="absolute inset-0 bg-gradient-to-br from-[#001F3F]/30 via-[#0a0a0a] to-[#0a0a0a]" />
-          <div className="relative mx-auto flex min-h-[40vh] max-w-7xl items-center px-6 py-16 sm:px-8 lg:px-12">
+          <div className="relative mx-auto flex min-h-[60vh] max-w-7xl items-center px-6 py-24 sm:px-8 lg:px-12">
             <motion.div
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
@@ -67,47 +57,43 @@ export default function Portfolio() {
                 Portfolio
               </p>
               <h1 className="text-5xl font-bold leading-tight sm:text-6xl lg:text-7xl">
-                Our<span className="text-[#FF6B35]"> Work</span>
+                Real work, uploaded from the
+                <span className="text-[#FF6B35]"> admin panel.</span>
               </h1>
               <p className="mt-6 max-w-3xl text-lg text-white/70 sm:text-xl">
-                Real results from real projects.
+                This portfolio page now pulls from your live uploaded content instead of hard-coded
+                placeholder cards.
               </p>
             </motion.div>
           </div>
         </section>
 
-        <section className="px-6 pb-8 sm:px-8 lg:px-12">
+        <section className="px-6 py-24 sm:px-8 lg:px-12">
           <div className="mx-auto max-w-7xl">
-            <div className="flex flex-wrap gap-3">
+            {/* Filter */}
+            <div className="flex flex-wrap gap-3 mb-10">
               {categories.map((cat) => (
                 <button
-                  key={cat.id}
-                  onClick={() => setFilter(cat.id)}
-                  className={`px-5 py-2.5 rounded-full text-sm font-medium transition-all duration-200 ${
-                    filter === cat.id
+                  key={cat}
+                  onClick={() => setFilter(cat)}
+                  className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
+                    filter === cat
                       ? 'bg-[#FF6B35] text-white'
-                      : 'bg-white/5 text-white/70 hover:bg-white/10 border border-white/10'
+                      : 'border border-white/20 text-white/70 hover:text-white hover:border-white/40'
                   }`}
                 >
-                  {cat.label}
+                  {cat}
                 </button>
               ))}
             </div>
-          </div>
-        </section>
 
-        <section className="px-6 py-16 sm:px-8 lg:px-12">
-          <div className="mx-auto max-w-7xl">
             {loading ? (
               <p className="text-white/60">Loading portfolio...</p>
             ) : filteredItems.length === 0 ? (
               <div className="rounded-3xl border border-white/10 bg-white/5 p-10 text-center">
-                <h2 className="text-3xl font-bold">No portfolio items found</h2>
+                <h2 className="text-3xl font-bold">No portfolio items in this category</h2>
                 <p className="mt-4 text-white/65">
-                  {filter === 'all' 
-                    ? 'Upload portfolio items from the admin dashboard.'
-                    : `No items in ${filter} category yet.`
-                  }
+                  Try a different filter or upload items from the admin dashboard.
                 </p>
               </div>
             ) : (
