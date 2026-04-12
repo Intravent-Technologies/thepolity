@@ -176,6 +176,7 @@ function writeLocalJson<T>(filePath: string, items: T[]): void {
 
 export async function getHomepageImages(): Promise<HomepageImage[]> {
   if (isSupabaseConfigured()) {
+    // Try to use client first
     try {
       const supabase = getSupabaseAdminClient();
       const { data, error } = await supabase
@@ -183,20 +184,42 @@ export async function getHomepageImages(): Promise<HomepageImage[]> {
         .select('id, section, image_url')
         .order('section', { ascending: true });
 
-      if (error) {
-        console.log('[Storage] Supabase error, falling back:', error.message);
-        return [];
+      if (!error && data) {
+        return data.map((item) => ({
+          id: item.id,
+          section: item.section,
+          imageUrl: item.image_url,
+        }));
       }
-
-      return (data || []).map((item) => ({
-        id: item.id,
-        section: item.section,
-        imageUrl: item.image_url,
-      }));
+      console.log('[Storage] Client failed, trying direct:', error?.message);
     } catch (e) {
-      console.log('[Storage] Supabase exception:', e);
-      return [];
+      console.log('[Storage] Client exception:', e);
     }
+    
+    // Fallback: use REST API directly with service key (if available in env)
+    if (SUPABASE_SERVICE_ROLE_KEY && SUPABASE_URL) {
+      try {
+        const url = `${SUPABASE_URL}/rest/v1/homepage_images?select=*`;
+        const res = await fetch(url, {
+          headers: {
+            'apikey': SUPABASE_SERVICE_ROLE_KEY,
+            'Authorization': `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+          }
+        });
+        if (res.ok) {
+          const data = await res.json();
+          return data.map((item: any) => ({
+            id: item.id,
+            section: item.section,
+            imageUrl: item.image_url,
+          }));
+        }
+      } catch (e) {
+        console.log('[Storage] Direct API failed:', e);
+      }
+    }
+    
+    return [];
   }
   return readLocalJson<HomepageImage>(homepageImagesFilePath());
 }
