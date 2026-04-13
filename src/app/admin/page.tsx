@@ -701,62 +701,124 @@ interface HomepageImage {
   imageUrl: string;
 }
 
-const HOMEPAGE_SECTIONS = [
-  { key: 'hero-visual-1', label: 'Hero Visual: Media/Card 1' },
-  { key: 'hero-visual-2', label: 'Hero Visual: IT Solutions/Card 2' },
-  { key: 'hero-visual-3', label: 'Hero Visual: Projects/Card 3' },
-  { key: 'hero-visual-4', label: 'Hero Visual: Creative/Card 4' },
-  { key: 'service-it', label: 'Service: IT Consultancy' },
-  { key: 'service-media', label: 'Service: Media' },
-  { key: 'service-project', label: 'Service: Project Mgmt' },
-  { key: 'blog-1', label: 'Creative Edge: Post 1' },
-  { key: 'blog-2', label: 'Creative Edge: Post 2' },
-  { key: 'blog-3', label: 'Creative Edge: Post 3' },
-  { key: 'events-1', label: 'Events: Weddings' },
-  { key: 'events-2', label: 'Events: Birthdays' },
-  { key: 'events-3', label: 'Events: Graduations' },
-  { key: 'events-4', label: 'Events: Corporate' },
-  { key: 'photography-1', label: 'Photography: Products' },
-  { key: 'photography-2', label: 'Photography: Real Estate' },
-  { key: 'photography-3', label: 'Photography: Food' },
-  { key: 'photography-4', label: 'Photography: Fashion' },
-  { key: 'portraits-1', label: 'Portraits: Corporate' },
-  { key: 'portraits-2', label: 'Portraits: Family' },
-  { key: 'portraits-3', label: 'Portraits: Headshots' },
-  { key: 'portraits-4', label: 'Portraits: Creative' },
-  { key: 'photo-tourism-1', label: 'Photo Tourism: Mountains' },
-  { key: 'photo-tourism-2', label: 'Photo Tourism: Beach' },
-  { key: 'photo-tourism-3', label: 'Photo Tourism: City' },
-  { key: 'photo-tourism-4', label: 'Photo Tourism: Nature' },
-  { key: 'visuals-1', label: 'Visuals: Brand Design' },
-  { key: 'visuals-2', label: 'Visuals: Social Media' },
-  { key: 'visuals-3', label: 'Visuals: Product' },
-  { key: 'visuals-4', label: 'Visuals: Video' },
-  { key: 'newsletter-bg', label: 'Newsletter Background' },
-  { key: 'about-ceo', label: 'About: CEO Photo' },
-  { key: 'portfolio-1', label: 'Portfolio: Work 1' },
-  { key: 'portfolio-2', label: 'Portfolio: Work 2' },
-  { key: 'portfolio-3', label: 'Portfolio: Work 3' },
-  { key: 'portfolio-4', label: 'Portfolio: Work 4' },
-  { key: 'portfolio-5', label: 'Portfolio: Work 5' },
-  { key: 'portfolio-6', label: 'Portfolio: Work 6' },
-  { key: 'gallery-1', label: 'Gallery: Image 1' },
-  { key: 'gallery-2', label: 'Gallery: Image 2' },
-  { key: 'gallery-3', label: 'Gallery: Image 3' },
-  { key: 'gallery-4', label: 'Gallery: Image 4' },
-  { key: 'gallery-5', label: 'Gallery: Image 5' },
-  { key: 'gallery-6', label: 'Gallery: Image 6' },
-  { key: 'gallery-7', label: 'Gallery: Image 7' },
-  { key: 'gallery-8', label: 'Gallery: Image 8' },
-  { key: 'gallery-9', label: 'Gallery: Image 9' },
-  { key: 'gallery-10', label: 'Gallery: Image 10' },
-  { key: 'gallery-11', label: 'Gallery: Image 11' },
-  { key: 'gallery-12', label: 'Gallery: Image 12' },
+const HOMEPAGE_SECTION_GROUPS = [
+  {
+    title: '🎯 Hero Section (Right Side Cards)',
+    sections: [
+      { key: 'hero-visual-1', label: 'Card 1: Media' },
+      { key: 'hero-visual-2', label: 'Card 2: IT Solutions' },
+      { key: 'hero-visual-3', label: 'Card 3: Projects' },
+      { key: 'hero-visual-4', label: 'Card 4: Creative' },
+    ]
+  },
+  {
+    title: '💻 Our Expert Services (Homepage)',
+    sections: [
+      { key: 'service-it', label: 'IT Consultancy' },
+      { key: 'service-media', label: 'Media' },
+      { key: 'service-project', label: 'Project Management' },
+    ]
+  },
+  {
+    title: '📝 Creative Edge (Blog Posts)',
+    sections: [
+      { key: 'blog-1', label: 'Blog Post 1' },
+      { key: 'blog-2', label: 'Blog Post 2' },
+      { key: 'blog-3', label: 'Blog Post 3' },
+    ]
+  },
+  {
+    title: '🎉 Events Service Page',
+    sections: [
+      { key: 'events-1', label: 'Weddings' },
+      { key: 'events-2', label: 'Birthdays' },
+      { key: 'events-3', label: 'Graduations' },
+      { key: 'events-4', label: 'Corporate' },
+    ]
+  },
+  {
+    title: '📷 Photography Service Page',
+    sections: [
+      { key: 'photography-1', label: 'Products' },
+      { key: 'photography-2', label: 'Real Estate' },
+      { key: 'photography-3', label: 'Food' },
+      { key: 'photography-4', label: 'Fashion' },
+    ]
+  },
+  {
+    title: '👤 Portraits Service Page',
+    sections: [
+      { key: 'portraits-1', label: 'Corporate' },
+      { key: 'portraits-2', label: 'Family' },
+      { key: 'portraits-3', label: 'Headshots' },
+      { key: 'portraits-4', label: 'Creative' },
+    ]
+  },
+  {
+    title: '🏔️ Photo Tourism Service Page',
+    sections: [
+      { key: 'photo-tourism-1', label: 'Mountains' },
+      { key: 'photo-tourism-2', label: 'Beach' },
+      { key: 'photo-tourism-3', label: 'City' },
+      { key: 'photo-tourism-4', label: 'Nature' },
+    ]
+  },
+  {
+    title: '🎨 Visuals Service Page',
+    sections: [
+      { key: 'visuals-1', label: 'Brand Design' },
+      { key: 'visuals-2', label: 'Social Media' },
+      { key: 'visuals-3', label: 'Product' },
+      { key: 'visuals-4', label: 'Video' },
+    ]
+  },
+  {
+    title: '📧 Newsletter Section',
+    sections: [
+      { key: 'newsletter-bg', label: 'Newsletter Background' },
+    ]
+  },
+  {
+    title: '👔 About Us Page',
+    sections: [
+      { key: 'about-ceo', label: 'CEO Photo' },
+    ]
+  },
+  {
+    title: '💼 Portfolio Page',
+    sections: [
+      { key: 'portfolio-1', label: 'Work 1' },
+      { key: 'portfolio-2', label: 'Work 2' },
+      { key: 'portfolio-3', label: 'Work 3' },
+      { key: 'portfolio-4', label: 'Work 4' },
+      { key: 'portfolio-5', label: 'Work 5' },
+      { key: 'portfolio-6', label: 'Work 6' },
+    ]
+  },
+  {
+    title: '🖼️ Gallery Page',
+    sections: [
+      { key: 'gallery-1', label: 'Image 1' },
+      { key: 'gallery-2', label: 'Image 2' },
+      { key: 'gallery-3', label: 'Image 3' },
+      { key: 'gallery-4', label: 'Image 4' },
+      { key: 'gallery-5', label: 'Image 5' },
+      { key: 'gallery-6', label: 'Image 6' },
+      { key: 'gallery-7', label: 'Image 7' },
+      { key: 'gallery-8', label: 'Image 8' },
+      { key: 'gallery-9', label: 'Image 9' },
+      { key: 'gallery-10', label: 'Image 10' },
+      { key: 'gallery-11', label: 'Image 11' },
+      { key: 'gallery-12', label: 'Image 12' },
+    ]
+  },
 ];
+
+const allSections = HOMEPAGE_SECTION_GROUPS.flatMap(g => g.sections);
 
 function HomepageManager() {
   const [images, setImages] = useState<HomepageImage[]>([]);
-  const [selectedSection, setSelectedSection] = useState(HOMEPAGE_SECTIONS[0].key);
+  const [selectedSection, setSelectedSection] = useState(allSections[0].key);
   const [file, setFile] = useState<File | null>(null);
   const [uploading, setUploading] = useState(false);
   const [message, setMessage] = useState('');
@@ -789,24 +851,29 @@ function HomepageManager() {
   const getImageForSection = (section: string) => images.find(img => img.section === section)?.imageUrl || '';
 
   return (
-    <div className="bg-[#111] rounded-2xl p-6 border border-white/10">
-      <h2 className="text-xl font-bold text-white mb-6">Homepage Images</h2>
-      <p className="text-white/60 text-sm mb-6">Upload images for the homepage sections.</p>
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {HOMEPAGE_SECTIONS.map((section) => (
-          <div key={section.key} className="bg-[#0a0a0a] rounded-xl p-4 border border-white/10">
-            <h3 className="text-sm font-medium text-white mb-3">{section.label}</h3>
-            {getImageForSection(section.key) ? (
-              <div className="relative mb-3">
-                <img src={getImageForSection(section.key)} alt={section.label} className="w-full h-24 object-cover rounded-lg" />
-                <button onClick={async () => { const img = images.find(i => i.section === section.key); if (img?.id) { await fetch(`/api/homepage-images?id=${img.id}`, { method: 'DELETE' }); loadImages(); }}} className="absolute top-1 right-1 bg-red-500 text-white text-xs px-2 py-1 rounded">Delete</button>
+    <div className="space-y-8">
+      {HOMEPAGE_SECTION_GROUPS.map((group) => (
+        <div key={group.title} className="bg-[#111] rounded-2xl p-6 border border-white/10">
+          <h2 className="text-xl font-bold text-white mb-2">{group.title}</h2>
+          <p className="text-white/60 text-sm mb-6">Click a section below to upload an image</p>
+          
+          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+            {group.sections.map((section) => (
+              <div key={section.key} className="bg-[#0a0a0a] rounded-xl p-4 border border-white/10">
+                <h3 className="text-sm font-medium text-white mb-3">{section.label}</h3>
+                {getImageForSection(section.key) ? (
+                  <div className="relative mb-3">
+                    <img src={getImageForSection(section.key)} alt={section.label} className="w-full h-24 object-cover rounded-lg" />
+                    <button onClick={async () => { const img = images.find(i => i.section === section.key); if (img?.id) { await fetch(`/api/homepage-images?id=${img.id}`, { method: 'DELETE' }); loadImages(); }}} className="absolute top-1 right-1 bg-red-500 text-white text-xs px-2 py-1 rounded">Delete</button>
+                  </div>
+                ) : ( <div className="w-full h-24 bg-white/5 rounded-lg mb-3 flex items-center justify-center text-white/30 text-sm">No image</div> )}
+                {selectedSection === section.key && ( <div className="mt-2"><input type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] || null)} className="text-xs text-white/60 mb-2" />{file && (<button onClick={handleUpload} disabled={uploading} className="w-full bg-[#FF6B35] text-white text-sm py-2 rounded-lg font-medium disabled:opacity-50">{uploading ? 'Uploading...' : 'Upload'}</button>)}</div> )}
+                <button onClick={() => setSelectedSection(section.key)} className="text-xs text-[#FF6B35] hover:underline">{selectedSection === section.key ? '✓ Selected' : 'Select to upload'}</button>
               </div>
-            ) : ( <div className="w-full h-24 bg-white/5 rounded-lg mb-3 flex items-center justify-center text-white/30 text-sm">No image</div> )}
-            {selectedSection === section.key && ( <div className="mt-2"><input type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] || null)} className="text-xs text-white/60 mb-2" />{file && (<button onClick={handleUpload} disabled={uploading} className="w-full bg-[#FF6B35] text-white text-sm py-2 rounded-lg font-medium disabled:opacity-50">{uploading ? 'Uploading...' : 'Upload'}</button>)}</div> )}
-            <button onClick={() => setSelectedSection(section.key)} className="text-xs text-[#FF6B35] hover:underline">{selectedSection === section.key ? 'Selected' : 'Select to upload'}</button>
+            ))}
           </div>
-        ))}
-      </div>
+        </div>
+      ))}
       {message && (<div className={`mt-4 p-3 rounded-lg text-sm ${message.includes('success') ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>{message}</div>)}
     </div>
   );
