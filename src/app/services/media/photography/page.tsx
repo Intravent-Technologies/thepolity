@@ -18,6 +18,13 @@ export default function Photography({ params }: { params: { slug: string } }) {
   const service = serviceData[params.slug as keyof typeof serviceData] || serviceData.photography;
   const Icon = service.icon;
 
+  const galleryImages = [
+    { emoji: '📷', title: 'Product Shots', desc: 'Showcase your products' },
+    { emoji: '🏠', title: 'Real Estate', desc: 'Property photography' },
+    { emoji: '🍽️', title: 'Food & Drink', desc: 'Restaurant visuals' },
+    { emoji: '👗', title: 'Fashion', desc: 'Style shoots' },
+  ];
+
   return (
     <>
       <Header />
@@ -91,6 +98,40 @@ export default function Photography({ params }: { params: { slug: string } }) {
                   <li>• Print-ready versions</li>
                 </ul>
               </motion.div>
+            </div>
+          </div>
+        </section>
+
+        <section className="px-6 py-24 sm:px-8 lg:px-12">
+          <div className="mx-auto max-w-7xl">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }} 
+              whileInView={{ opacity: 1, y: 0 }} 
+              viewport={{ once: true }}
+              className="mb-16 text-center"
+            >
+              <h2 className="text-4xl font-bold mb-4">Our Photography</h2>
+              <p className="text-white/70">Professional shots for every need</p>
+            </motion.div>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {galleryImages.map((img, index) => (
+                <motion.div
+                  key={img.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5"
+                >
+                  <div className="aspect-[4/3] flex items-center justify-center bg-gradient-to-br from-[#001F3F]/30 to-[#FF6B35]/10">
+                    <span className="text-6xl">{img.emoji}</span>
+                  </div>
+                  <div className="p-6">
+                    <h3 className="text-xl font-bold mb-2 group-hover:text-[#FF6B35] transition-colors">{img.title}</h3>
+                    <p className="text-white/60 text-sm">{img.desc}</p>
+                  </div>
+                </motion.div>
+              ))}
             </div>
           </div>
         </section>

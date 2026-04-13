@@ -110,7 +110,7 @@ export default function Header() {
                               {service.hasSubMenu && <ChevronDown className="w-3 h-3 -rotate-90" />}
                             </Link>
                             
-                            {service.hasSubMenu && service.subItems && service.subItems.length > 0 && (
+                            {service.hasSubMenu && service.subItems && service.subItems.length > 0 && hoveredService === service.name && (
                               <motion.div
                                 initial={{ opacity: 0, x: 10 }}
                                 animate={{ opacity: 1, x: 0 }}

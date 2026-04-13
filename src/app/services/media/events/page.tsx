@@ -7,6 +7,13 @@ import Footer from '@/components/Footer';
 import { ArrowRight, Calendar } from 'lucide-react';
 
 export default function Events() {
+  const eventImages = [
+    { emoji: '💒', title: 'Weddings', desc: 'Capture your special day' },
+    { emoji: '🎂', title: 'Birthdays', desc: 'Celebrate milestones' },
+    { emoji: '🎓', title: 'Graduations', desc: 'Achievement moments' },
+    { emoji: '🏢', title: 'Corporate', desc: 'Business events' },
+  ];
+
   return (
     <>
       <Header />
@@ -19,6 +26,39 @@ export default function Events() {
               <h1 className="text-5xl font-bold leading-tight sm:text-6xl lg:text-7xl"><span className="text-[#FF6B35]">Events</span></h1>
               <p className="mt-6 max-w-3xl text-lg text-white/70 sm:text-xl">Full event coverage with professional results.</p>
             </motion.div>
+          </div>
+        </section>
+        <section className="px-6 py-24 sm:px-8 lg:px-12">
+          <div className="mx-auto max-w-7xl">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }} 
+              whileInView={{ opacity: 1, y: 0 }} 
+              viewport={{ once: true }}
+              className="mb-16 text-center"
+            >
+              <h2 className="text-4xl font-bold mb-4">Our Events</h2>
+              <p className="text-white/70">We capture all types of events</p>
+            </motion.div>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {eventImages.map((event, index) => (
+                <motion.div
+                  key={event.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5"
+                >
+                  <div className="aspect-[4/3] flex items-center justify-center bg-gradient-to-br from-[#001F3F]/30 to-[#FF6B35]/10">
+                    <span className="text-6xl">{event.emoji}</span>
+                  </div>
+                  <div className="p-6">
+                    <h3 className="text-xl font-bold mb-2 group-hover:text-[#FF6B35] transition-colors">{event.title}</h3>
+                    <p className="text-white/60 text-sm">{event.desc}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
           </div>
         </section>
         <section className="px-6 py-24 sm:px-8 lg:px-12">

@@ -7,6 +7,13 @@ import Footer from '@/components/Footer';
 import { ArrowRight, Map } from 'lucide-react';
 
 export default function PhotoTourism() {
+  const tourImages = [
+    { emoji: '🏔️', title: 'Mountain Adventures', desc: 'Peak experiences' },
+    { emoji: '🏖️', title: 'Beach & Coast', desc: 'Seaside escapes' },
+    { emoji: '🏙️', title: 'City Exploration', desc: 'Urban journeys' },
+    { emoji: '🌿', title: 'Nature & Wildlife', desc: 'Wild encounters' },
+  ];
+
   return (
     <>
       <Header />
@@ -34,6 +41,40 @@ export default function PhotoTourism() {
                   <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#FF6B35]" />Adventure shoots</li>
                 </ul>
               </motion.div>
+            </div>
+          </div>
+        </section>
+
+        <section className="px-6 py-24 sm:px-8 lg:px-12">
+          <div className="mx-auto max-w-7xl">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }} 
+              whileInView={{ opacity: 1, y: 0 }} 
+              viewport={{ once: true }}
+              className="mb-16 text-center"
+            >
+              <h2 className="text-4xl font-bold mb-4">Our Photo Tours</h2>
+              <p className="text-white/70">Adventure photography worldwide</p>
+            </motion.div>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {tourImages.map((tour, index) => (
+                <motion.div
+                  key={tour.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5"
+                >
+                  <div className="aspect-[4/3] flex items-center justify-center bg-gradient-to-br from-[#001F3F]/30 to-[#FF6B35]/10">
+                    <span className="text-6xl">{tour.emoji}</span>
+                  </div>
+                  <div className="p-6">
+                    <h3 className="text-xl font-bold mb-2 group-hover:text-[#FF6B35] transition-colors">{tour.title}</h3>
+                    <p className="text-white/60 text-sm">{tour.desc}</p>
+                  </div>
+                </motion.div>
+              ))}
             </div>
           </div>
         </section>

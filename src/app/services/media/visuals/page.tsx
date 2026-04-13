@@ -7,6 +7,13 @@ import Footer from '@/components/Footer';
 import { ArrowRight, Image } from 'lucide-react';
 
 export default function Visuals() {
+  const visualImages = [
+    { emoji: '🎨', title: 'Brand Design', desc: 'Identity visuals' },
+    { emoji: '📱', title: 'Social Media', desc: 'Engaging content' },
+    { emoji: '📦', title: 'Product', desc: 'E-commerce visuals' },
+    { emoji: '🎬', title: 'Video', desc: 'Motion content' },
+  ];
+
   return (
     <>
       <Header />
@@ -34,6 +41,40 @@ export default function Visuals() {
                   <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#FF6B35]" />Social media content</li>
                 </ul>
               </motion.div>
+            </div>
+          </div>
+        </section>
+
+        <section className="px-6 py-24 sm:px-8 lg:px-12">
+          <div className="mx-auto max-w-7xl">
+            <motion.div 
+              initial={{ opacity: 0, y: 20 }} 
+              whileInView={{ opacity: 1, y: 0 }} 
+              viewport={{ once: true }}
+              className="mb-16 text-center"
+            >
+              <h2 className="text-4xl font-bold mb-4">Our Visuals</h2>
+              <p className="text-white/70">Creative visual solutions</p>
+            </motion.div>
+            <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+              {visualImages.map((visual, index) => (
+                <motion.div
+                  key={visual.title}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: index * 0.1 }}
+                  className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5"
+                >
+                  <div className="aspect-[4/3] flex items-center justify-center bg-gradient-to-br from-[#001F3F]/30 to-[#FF6B35]/10">
+                    <span className="text-6xl">{visual.emoji}</span>
+                  </div>
+                  <div className="p-6">
+                    <h3 className="text-xl font-bold mb-2 group-hover:text-[#FF6B35] transition-colors">{visual.title}</h3>
+                    <p className="text-white/60 text-sm">{visual.desc}</p>
+                  </div>
+                </motion.div>
+              ))}
             </div>
           </div>
         </section>

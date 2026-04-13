@@ -183,6 +183,58 @@ export default function Home() {
                 </motion.div>
               </div>
 
+              <motion.div 
+                variants={fadeInUp}
+                className="relative hidden lg:block"
+              >
+                <div className="relative w-full max-w-md ml-auto">
+                  <div className="absolute -top-6 -right-6 w-72 h-72 bg-gradient-to-br from-[#FF6B35]/20 to-[#FF9F66]/5 rounded-full blur-3xl" />
+                  <div className="absolute -bottom-8 -left-8 w-48 h-48 bg-gradient-to-tr from-[#001F3F]/40 to-transparent rounded-full blur-2xl" />
+                  
+                  <div className="relative z-10 grid grid-cols-2 gap-6">
+                    <div className="space-y-6">
+                      <div className="bg-gradient-to-br from-white/10 to-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-sm">
+                        <div className="text-4xl mb-2">📸</div>
+                        <div className="text-lg font-semibold">Media</div>
+                        <div className="text-white/60 text-sm">Photography & Events</div>
+                      </div>
+                      <div className="bg-gradient-to-br from-[#FF6B35]/20 to-[#FF6B35]/5 border border-[#FF6B35]/20 rounded-3xl p-6 backdrop-blur-sm">
+                        <div className="text-4xl mb-2">💻</div>
+                        <div className="text-lg font-semibold">IT Solutions</div>
+                        <div className="text-white/60 text-sm">Consulting & Strategy</div>
+                      </div>
+                    </div>
+                    <div className="space-y-6 pt-12">
+                      <div className="bg-gradient-to-br from-[#001F3F]/30 to-[#001F3F]/10 border border-white/10 rounded-3xl p-6 backdrop-blur-sm">
+                        <div className="text-4xl mb-2">🎯</div>
+                        <div className="text-lg font-semibold">Projects</div>
+                        <div className="text-white/60 text-sm">End-to-End Delivery</div>
+                      </div>
+                      <div className="bg-gradient-to-br from-white/5 to-transparent border border-white/10 rounded-3xl p-6 backdrop-blur-sm">
+                        <div className="text-4xl mb-2">🌟</div>
+                        <div className="text-lg font-semibold">Creative</div>
+                        <div className="text-white/60 text-sm">Brand Excellence</div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <motion.div 
+                    animate={{ y: [0, -10, 0] }}
+                    transition={{ repeat: Infinity, duration: 3, ease: "easeInOut" }}
+                    className="absolute -top-4 -right-4 w-20 h-20 bg-gradient-to-br from-[#FF6B35] to-[#FF9F66] rounded-2xl border-2 border-white/20 flex items-center justify-center shadow-lg"
+                  >
+                    <span className="text-2xl">✨</span>
+                  </motion.div>
+                  <motion.div 
+                    animate={{ y: [0, 10, 0] }}
+                    transition={{ repeat: Infinity, duration: 4, ease: "easeInOut", delay: 0.5 }}
+                    className="absolute -bottom-6 -left-6 w-16 h-16 bg-gradient-to-br from-[#001F3F] to-[#003366] rounded-2xl border-2 border-white/10 flex items-center justify-center shadow-lg"
+                  >
+                    <span className="text-xl">🚀</span>
+                  </motion.div>
+                </div>
+              </motion.div>
+
             </motion.div>
           </div>
 
