@@ -2,16 +2,45 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { ArrowRight, Map } from 'lucide-react';
 
+interface HomepageImages {
+  [key: string]: string;
+}
+
+const defaultImages = {
+  'photo-tourism-1': '',
+  'photo-tourism-2': '',
+  'photo-tourism-3': '',
+  'photo-tourism-4': '',
+};
+
 export default function PhotoTourism() {
+  const [images, setImages] = useState<HomepageImages>(defaultImages);
+
+  useEffect(() => {
+    fetch('/api/homepage-images')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          const imgs: HomepageImages = {};
+          data.forEach((item: { section: string; imageUrl: string }) => {
+            imgs[item.section] = item.imageUrl;
+          });
+          setImages(prev => ({ ...prev, ...imgs }));
+        }
+      })
+      .catch(console.error);
+  }, []);
+
   const tourImages = [
-    { emoji: '🏔️', title: 'Mountain Adventures', desc: 'Peak experiences' },
-    { emoji: '🏖️', title: 'Beach & Coast', desc: 'Seaside escapes' },
-    { emoji: '🏙️', title: 'City Exploration', desc: 'Urban journeys' },
-    { emoji: '🌿', title: 'Nature & Wildlife', desc: 'Wild encounters' },
+    { key: 'photo-tourism-1', title: 'Mountain Adventures', desc: 'Peak experiences', fallback: '🏔️' },
+    { key: 'photo-tourism-2', title: 'Beach & Coast', desc: 'Seaside escapes', fallback: '🏖️' },
+    { key: 'photo-tourism-3', title: 'City Exploration', desc: 'Urban journeys', fallback: '🏙️' },
+    { key: 'photo-tourism-4', title: 'Nature & Wildlife', desc: 'Wild encounters', fallback: '🌿' },
   ];
 
   return (
@@ -66,9 +95,13 @@ export default function PhotoTourism() {
                   transition={{ delay: index * 0.1 }}
                   className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5"
                 >
-                  <div className="aspect-[4/3] flex items-center justify-center bg-gradient-to-br from-[#001F3F]/30 to-[#FF6B35]/10">
-                    <span className="text-6xl">{tour.emoji}</span>
-                  </div>
+                  {images[tour.key] ? (
+                    <img src={images[tour.key]} alt={tour.title} className="w-full aspect-[4/3] object-cover" />
+                  ) : (
+                    <div className="aspect-[4/3] flex items-center justify-center bg-gradient-to-br from-[#001F3F]/30 to-[#FF6B35]/10">
+                      <span className="text-6xl">{tour.fallback}</span>
+                    </div>
+                  )}
                   <div className="p-6">
                     <h3 className="text-xl font-bold mb-2 group-hover:text-[#FF6B35] transition-colors">{tour.title}</h3>
                     <p className="text-white/60 text-sm">{tour.desc}</p>

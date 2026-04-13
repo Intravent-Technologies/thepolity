@@ -2,9 +2,14 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { ArrowRight, Camera, Calendar, Map, User, Image } from 'lucide-react';
+
+interface HomepageImages {
+  [key: string]: string;
+}
 
 const serviceData = {
   photography: { icon: Camera, title: 'Photography', description: 'Professional photography that captures your special moments.' },
@@ -14,15 +19,38 @@ const serviceData = {
   visuals: { icon: Image, title: 'Visuals', description: 'Visual content that tells your story.' },
 };
 
+const defaultImages = {
+  'photography-1': '',
+  'photography-2': '',
+  'photography-3': '',
+  'photography-4': '',
+};
+
 export default function Photography({ params }: { params: { slug: string } }) {
   const service = serviceData[params.slug as keyof typeof serviceData] || serviceData.photography;
   const Icon = service.icon;
+  const [images, setImages] = useState<HomepageImages>(defaultImages);
+
+  useEffect(() => {
+    fetch('/api/homepage-images')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          const imgs: HomepageImages = {};
+          data.forEach((item: { section: string; imageUrl: string }) => {
+            imgs[item.section] = item.imageUrl;
+          });
+          setImages(prev => ({ ...prev, ...imgs }));
+        }
+      })
+      .catch(console.error);
+  }, []);
 
   const galleryImages = [
-    { emoji: '📷', title: 'Product Shots', desc: 'Showcase your products' },
-    { emoji: '🏠', title: 'Real Estate', desc: 'Property photography' },
-    { emoji: '🍽️', title: 'Food & Drink', desc: 'Restaurant visuals' },
-    { emoji: '👗', title: 'Fashion', desc: 'Style shoots' },
+    { key: 'photography-1', title: 'Product Shots', desc: 'Showcase your products' },
+    { key: 'photography-2', title: 'Real Estate', desc: 'Property photography' },
+    { key: 'photography-3', title: 'Food & Drink', desc: 'Restaurant visuals' },
+    { key: 'photography-4', title: 'Fashion', desc: 'Style shoots' },
   ];
 
   return (
@@ -123,9 +151,13 @@ export default function Photography({ params }: { params: { slug: string } }) {
                   transition={{ delay: index * 0.1 }}
                   className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5"
                 >
-                  <div className="aspect-[4/3] flex items-center justify-center bg-gradient-to-br from-[#001F3F]/30 to-[#FF6B35]/10">
-                    <span className="text-6xl">{img.emoji}</span>
-                  </div>
+                  {images[img.key] ? (
+                    <img src={images[img.key]} alt={img.title} className="w-full aspect-[4/3] object-cover" />
+                  ) : (
+                    <div className="aspect-[4/3] flex items-center justify-center bg-gradient-to-br from-[#001F3F]/30 to-[#FF6B35]/10">
+                      <span className="text-6xl">📷</span>
+                    </div>
+                  )}
                   <div className="p-6">
                     <h3 className="text-xl font-bold mb-2 group-hover:text-[#FF6B35] transition-colors">{img.title}</h3>
                     <p className="text-white/60 text-sm">{img.desc}</p>

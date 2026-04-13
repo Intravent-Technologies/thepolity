@@ -2,16 +2,45 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { ArrowRight, Image } from 'lucide-react';
 
+interface HomepageImages {
+  [key: string]: string;
+}
+
+const defaultImages = {
+  'visuals-1': '',
+  'visuals-2': '',
+  'visuals-3': '',
+  'visuals-4': '',
+};
+
 export default function Visuals() {
+  const [images, setImages] = useState<HomepageImages>(defaultImages);
+
+  useEffect(() => {
+    fetch('/api/homepage-images')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          const imgs: HomepageImages = {};
+          data.forEach((item: { section: string; imageUrl: string }) => {
+            imgs[item.section] = item.imageUrl;
+          });
+          setImages(prev => ({ ...prev, ...imgs }));
+        }
+      })
+      .catch(console.error);
+  }, []);
+
   const visualImages = [
-    { emoji: '🎨', title: 'Brand Design', desc: 'Identity visuals' },
-    { emoji: '📱', title: 'Social Media', desc: 'Engaging content' },
-    { emoji: '📦', title: 'Product', desc: 'E-commerce visuals' },
-    { emoji: '🎬', title: 'Video', desc: 'Motion content' },
+    { key: 'visuals-1', title: 'Brand Design', desc: 'Identity visuals', fallback: '🎨' },
+    { key: 'visuals-2', title: 'Social Media', desc: 'Engaging content', fallback: '📱' },
+    { key: 'visuals-3', title: 'Product', desc: 'E-commerce visuals', fallback: '📦' },
+    { key: 'visuals-4', title: 'Video', desc: 'Motion content', fallback: '🎬' },
   ];
 
   return (
@@ -66,9 +95,13 @@ export default function Visuals() {
                   transition={{ delay: index * 0.1 }}
                   className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5"
                 >
-                  <div className="aspect-[4/3] flex items-center justify-center bg-gradient-to-br from-[#001F3F]/30 to-[#FF6B35]/10">
-                    <span className="text-6xl">{visual.emoji}</span>
-                  </div>
+                  {images[visual.key] ? (
+                    <img src={images[visual.key]} alt={visual.title} className="w-full aspect-[4/3] object-cover" />
+                  ) : (
+                    <div className="aspect-[4/3] flex items-center justify-center bg-gradient-to-br from-[#001F3F]/30 to-[#FF6B35]/10">
+                      <span className="text-6xl">{visual.fallback}</span>
+                    </div>
+                  )}
                   <div className="p-6">
                     <h3 className="text-xl font-bold mb-2 group-hover:text-[#FF6B35] transition-colors">{visual.title}</h3>
                     <p className="text-white/60 text-sm">{visual.desc}</p>

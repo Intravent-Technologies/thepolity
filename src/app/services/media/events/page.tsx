@@ -2,16 +2,45 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { ArrowRight, Calendar } from 'lucide-react';
 
+interface HomepageImages {
+  [key: string]: string;
+}
+
+const defaultImages = {
+  'events-1': '',
+  'events-2': '',
+  'events-3': '',
+  'events-4': '',
+};
+
 export default function Events() {
+  const [images, setImages] = useState<HomepageImages>(defaultImages);
+
+  useEffect(() => {
+    fetch('/api/homepage-images')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          const imgs: HomepageImages = {};
+          data.forEach((item: { section: string; imageUrl: string }) => {
+            imgs[item.section] = item.imageUrl;
+          });
+          setImages(prev => ({ ...prev, ...imgs }));
+        }
+      })
+      .catch(console.error);
+  }, []);
+
   const eventImages = [
-    { emoji: '💒', title: 'Weddings', desc: 'Capture your special day' },
-    { emoji: '🎂', title: 'Birthdays', desc: 'Celebrate milestones' },
-    { emoji: '🎓', title: 'Graduations', desc: 'Achievement moments' },
-    { emoji: '🏢', title: 'Corporate', desc: 'Business events' },
+    { key: 'events-1', title: 'Weddings', desc: 'Capture your special day' },
+    { key: 'events-2', title: 'Birthdays', desc: 'Celebrate milestones' },
+    { key: 'events-3', title: 'Graduations', desc: 'Achievement moments' },
+    { key: 'events-4', title: 'Corporate', desc: 'Business events' },
   ];
 
   return (
@@ -49,9 +78,13 @@ export default function Events() {
                   transition={{ delay: index * 0.1 }}
                   className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5"
                 >
-                  <div className="aspect-[4/3] flex items-center justify-center bg-gradient-to-br from-[#001F3F]/30 to-[#FF6B35]/10">
-                    <span className="text-6xl">{event.emoji}</span>
-                  </div>
+                  {images[event.key] ? (
+                    <img src={images[event.key]} alt={event.title} className="w-full aspect-[4/3] object-cover" />
+                  ) : (
+                    <div className="aspect-[4/3] flex items-center justify-center bg-gradient-to-br from-[#001F3F]/30 to-[#FF6B35]/10">
+                      <span className="text-6xl">💒</span>
+                    </div>
+                  )}
                   <div className="p-6">
                     <h3 className="text-xl font-bold mb-2 group-hover:text-[#FF6B35] transition-colors">{event.title}</h3>
                     <p className="text-white/60 text-sm">{event.desc}</p>

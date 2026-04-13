@@ -2,16 +2,45 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
+import { useState, useEffect } from 'react';
 import Header from '@/components/Header';
 import Footer from '@/components/Footer';
 import { ArrowRight, User } from 'lucide-react';
 
+interface HomepageImages {
+  [key: string]: string;
+}
+
+const defaultImages = {
+  'portraits-1': '',
+  'portraits-2': '',
+  'portraits-3': '',
+  'portraits-4': '',
+};
+
 export default function Portraits() {
+  const [images, setImages] = useState<HomepageImages>(defaultImages);
+
+  useEffect(() => {
+    fetch('/api/homepage-images')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) {
+          const imgs: HomepageImages = {};
+          data.forEach((item: { section: string; imageUrl: string }) => {
+            imgs[item.section] = item.imageUrl;
+          });
+          setImages(prev => ({ ...prev, ...imgs }));
+        }
+      })
+      .catch(console.error);
+  }, []);
+
   const portraitImages = [
-    { emoji: '👔', title: 'Corporate', desc: 'Business professional' },
-    { emoji: '👨‍👩‍👧', title: 'Family', desc: 'Cherished moments' },
-    { emoji: '🧑‍💼', title: 'Headshots', desc: 'Professional profiles' },
-    { emoji: '🎭', title: 'Creative', desc: 'Artistic portraits' },
+    { key: 'portraits-1', title: 'Corporate', desc: 'Business professional', fallback: '👔' },
+    { key: 'portraits-2', title: 'Family', desc: 'Cherished moments', fallback: '👨‍👩‍👧' },
+    { key: 'portraits-3', title: 'Headshots', desc: 'Professional profiles', fallback: '🧑‍💼' },
+    { key: 'portraits-4', title: 'Creative', desc: 'Artistic portraits', fallback: '🎭' },
   ];
 
   return (
@@ -66,9 +95,13 @@ export default function Portraits() {
                   transition={{ delay: index * 0.1 }}
                   className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5"
                 >
-                  <div className="aspect-[4/3] flex items-center justify-center bg-gradient-to-br from-[#001F3F]/30 to-[#FF6B35]/10">
-                    <span className="text-6xl">{portrait.emoji}</span>
-                  </div>
+                  {images[portrait.key] ? (
+                    <img src={images[portrait.key]} alt={portrait.title} className="w-full aspect-[4/3] object-cover" />
+                  ) : (
+                    <div className="aspect-[4/3] flex items-center justify-center bg-gradient-to-br from-[#001F3F]/30 to-[#FF6B35]/10">
+                      <span className="text-6xl">{portrait.fallback}</span>
+                    </div>
+                  )}
                   <div className="p-6">
                     <h3 className="text-xl font-bold mb-2 group-hover:text-[#FF6B35] transition-colors">{portrait.title}</h3>
                     <p className="text-white/60 text-sm">{portrait.desc}</p>
