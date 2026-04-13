@@ -1,11 +1,18 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200" viewBox="0 0 400 200">
-  <rect width="400" height="200" fill="#0f3460"/>
-  <rect x="50" y="30" width="300" height="140" rx="10" fill="#1a1a2e" stroke="#e94560" stroke-width="2"/>
-  <rect x="80" y="60" width="120" height="4" fill="#e94560"/>
-  <rect x="80" y="80" width="100" height="4" fill="#e94560" opacity="0.7"/>
-  <rect x="80" y="100" width="110" height="4" fill="#e94560" opacity="0.5"/>
-  <circle cx="260" cy="85" r="25" fill="#e94560"/>
-  <circle cx="260" cy="85" r="15" fill="#0f3460"/>
-  <text x="200" y="150" text-anchor="middle" fill="#fff" font-family="Arial" font-size="16" font-weight="bold">PROJECT MANAGEMENT</text>
-  <text x="200" y="165" text-anchor="middle" fill="#888" font-family="Arial" font-size="10">Efficient Delivery</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200">
+  <defs>
+    <linearGradient id="svcProjGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#001F3F"/>
+      <stop offset="100%" style="stop-color:#FF6B35"/>
+    </linearGradient>
+  </defs>
+  <rect width="300" height="200" rx="20" fill="#1a1a2e"/>
+  <rect x="50" y="50" width="200" height="100" rx="15" fill="url(#svcProjGrad)" opacity="0.3"/>
+  <rect x="70" y="70" width="60" height="60" rx="8" fill="#FF6B35" opacity="0.8"/>
+  <circle cx="100" cy="100" r="20" fill="#0a0a0a"/>
+  <circle cx="100" cy="100" r="10" fill="#FF6B35"/>
+  <rect x="140" y="70" width="80" height="8" rx="4" fill="white" opacity="0.6"/>
+  <rect x="140" y="85" width="60" height="8" rx="4" fill="white" opacity="0.4"/>
+  <rect x="140" y="100" width="70" height="8" rx="4" fill="white" opacity="0.4"/>
+  <rect x="140" y="115" width="50" height="8" rx="4" fill="white" opacity="0.4"/>
+  <circle cx="250" cy="150" r="35" fill="#FF6B35" opacity="0.2"/>
 </svg>

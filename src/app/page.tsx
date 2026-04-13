@@ -26,18 +26,20 @@ const staggerContainer: Variants = {
 
 // Default fallback images
 const defaultImages = {
-  'hero-1': '/hero-tech1.svg',
-  'hero-2': '/hero-team.svg',
-  'hero-3': '/hero-office.svg',
-  'hero-4': '/hero-meeting.svg',
-  'avatar-1': '/avatar1.svg',
-  'avatar-2': '/avatar2.svg',
-  'avatar-3': '/avatar3.svg',
+  'hero-visual-1': '/hero-visual-media.svg',
+  'hero-visual-2': '/hero-visual-it.svg',
+  'hero-visual-3': '/hero-visual-projects.svg',
+  'hero-visual-4': '/hero-visual-creative.svg',
   'service-it': '/service-it.svg',
   'service-media': '/service-media.svg',
   'service-project': '/service-project.svg',
+  'blog-1': '/blog-creative.svg',
+  'blog-2': '/blog-creative.svg',
+  'blog-3': '/blog-creative.svg',
+  'avatar-1': '/avatar1.svg',
+  'avatar-2': '/avatar2.svg',
+  'avatar-3': '/avatar3.svg',
   'brightvision-logo': '/brightvision-logo.svg',
-  'blog-creative': '/blog-creative.svg',
 };
 
 const services = [
@@ -88,6 +90,8 @@ const blogPosts = [
 export default function Home() {
   const [openFaq, setOpenFaq] = useState<number | null>(null);
   const [homepageImages, setHomepageImages] = useState<HomepageImages>(defaultImages);
+  const [newsletterEmail, setNewsletterEmail] = useState('');
+  const [newsletterStatus, setNewsletterStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
 
   useEffect(() => {
     fetch('/api/homepage-images?t=' + Date.now())
@@ -107,6 +111,29 @@ export default function Home() {
   }, []);
 
   const getImage = (key: keyof typeof defaultImages): string => homepageImages[key] || defaultImages[key];
+
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!newsletterEmail) return;
+    
+    setNewsletterStatus('loading');
+    try {
+      const res = await fetch('/api/newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: newsletterEmail }),
+      });
+      if (res.ok) {
+        setNewsletterStatus('success');
+        setNewsletterEmail('');
+      } else {
+        setNewsletterStatus('error');
+      }
+    } catch {
+      setNewsletterStatus('error');
+    }
+    setTimeout(() => setNewsletterStatus('idle'), 3000);
+  };
 
   return (
     <>
@@ -193,25 +220,25 @@ export default function Home() {
                   
                   <div className="relative z-10 grid grid-cols-2 gap-6">
                     <div className="space-y-6">
-                      <div className="bg-gradient-to-br from-white/10 to-white/5 border border-white/10 rounded-3xl p-6 backdrop-blur-sm">
-                        <div className="text-4xl mb-2">📸</div>
+                      <div className="bg-gradient-to-br from-white/10 to-white/5 border border-white/10 rounded-3xl p-4 backdrop-blur-sm overflow-hidden">
+                        <img src={getImage('hero-visual-1' as any)} alt="Media" className="w-full h-28 object-contain mb-2" />
                         <div className="text-lg font-semibold">Media</div>
                         <div className="text-white/60 text-sm">Photography & Events</div>
                       </div>
-                      <div className="bg-gradient-to-br from-[#FF6B35]/20 to-[#FF6B35]/5 border border-[#FF6B35]/20 rounded-3xl p-6 backdrop-blur-sm">
-                        <div className="text-4xl mb-2">💻</div>
+                      <div className="bg-gradient-to-br from-[#FF6B35]/20 to-[#FF6B35]/5 border border-[#FF6B35]/20 rounded-3xl p-4 backdrop-blur-sm overflow-hidden">
+                        <img src={getImage('hero-visual-2' as any)} alt="IT Solutions" className="w-full h-28 object-contain mb-2" />
                         <div className="text-lg font-semibold">IT Solutions</div>
                         <div className="text-white/60 text-sm">Consulting & Strategy</div>
                       </div>
                     </div>
                     <div className="space-y-6 pt-12">
-                      <div className="bg-gradient-to-br from-[#001F3F]/30 to-[#001F3F]/10 border border-white/10 rounded-3xl p-6 backdrop-blur-sm">
-                        <div className="text-4xl mb-2">🎯</div>
+                      <div className="bg-gradient-to-br from-[#001F3F]/30 to-[#001F3F]/10 border border-white/10 rounded-3xl p-4 backdrop-blur-sm overflow-hidden">
+                        <img src={getImage('hero-visual-3' as any)} alt="Projects" className="w-full h-28 object-contain mb-2" />
                         <div className="text-lg font-semibold">Projects</div>
                         <div className="text-white/60 text-sm">End-to-End Delivery</div>
                       </div>
-                      <div className="bg-gradient-to-br from-white/5 to-transparent border border-white/10 rounded-3xl p-6 backdrop-blur-sm">
-                        <div className="text-4xl mb-2">🌟</div>
+                      <div className="bg-gradient-to-br from-white/5 to-transparent border border-white/10 rounded-3xl p-4 backdrop-blur-sm overflow-hidden">
+                        <img src={getImage('hero-visual-4' as any)} alt="Creative" className="w-full h-28 object-contain mb-2" />
                         <div className="text-lg font-semibold">Creative</div>
                         <div className="text-white/60 text-sm">Brand Excellence</div>
                       </div>
@@ -510,7 +537,7 @@ export default function Home() {
                   className="group cursor-pointer"
                 >
                   <div className="h-48 bg-gradient-to-br from-[#001F3F]/30 to-[#FF6B35]/10 rounded-2xl mb-4 border border-white/10 group-hover:border-[#FF6B35]/50 transition-colors overflow-hidden">
-                    <img src={getImage('blog-creative')} alt={post.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+                    <img src={getImage(`blog-${index + 1}` as any)} alt={post.title} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
                   </div>
                   <div className="text-[#FF6B35] text-sm mb-2">{post.category}</div>
                   <h3 className="text-xl font-bold mb-2 group-hover:text-[#FF6B35] transition-colors">{post.title}</h3>
@@ -534,19 +561,29 @@ export default function Home() {
               <p className="text-white/70 mb-8">
                 Stay updated with expert insights, business tips, and the latest trends that drive success. Sign up today!
               </p>
-              <form className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
+              <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row gap-4 max-w-md mx-auto">
                 <input
                   type="email"
+                  value={newsletterEmail}
+                  onChange={(e) => setNewsletterEmail(e.target.value)}
                   placeholder="Enter your email for business updates"
+                  required
                   className="flex-1 px-6 py-4 bg-white/5 border border-white/20 rounded-full text-white placeholder:text-white/40 focus:outline-none focus:border-[#FF6B35]"
                 />
                 <button
                   type="submit"
-                  className="px-8 py-4 bg-[#FF6B35] text-white rounded-full font-medium hover:bg-[#FF9F66] transition-colors whitespace-nowrap"
+                  disabled={newsletterStatus === 'loading'}
+                  className="px-8 py-4 bg-[#FF6B35] text-white rounded-full font-medium hover:bg-[#FF9F66] transition-colors whitespace-nowrap disabled:opacity-50"
                 >
-                  Subscribe
+                  {newsletterStatus === 'loading' ? 'Subscribing...' : newsletterStatus === 'success' ? 'Subscribed!' : 'Subscribe'}
                 </button>
               </form>
+              {newsletterStatus === 'success' && (
+                <p className="text-green-400 mt-4">Thanks for subscribing!</p>
+              )}
+              {newsletterStatus === 'error' && (
+                <p className="text-red-400 mt-4">Something went wrong. Please try again.</p>
+              )}
             </motion.div>
           </div>
         </section>

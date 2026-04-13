@@ -1,9 +1,15 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="400" height="200" viewBox="0 0 400 200">
-  <rect width="400" height="200" fill="#16213e"/>
-  <rect x="40" y="30" width="320" height="140" rx="10" fill="#0f3460" stroke="#e94560" stroke-width="2"/>
-  <polygon points="120,100 160,60 200,100 160,140" fill="#e94560"/>
-  <circle cx="280" cy="100" r="40" fill="none" stroke="#e94560" stroke-width="3"/>
-  <polygon points="280,70 295,90 285,95" fill="#e94560"/>
-  <text x="200" y="115" text-anchor="middle" fill="#fff" font-family="Arial" font-size="16" font-weight="bold">MEDIA SOLUTIONS</text>
-  <text x="200" y="155" text-anchor="middle" fill="#888" font-family="Arial" font-size="10">Strategic Content Marketing</text>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 300 200">
+  <defs>
+    <linearGradient id="svcMediaGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#FF6B35"/>
+      <stop offset="100%" style="stop-color:#FF9F66"/>
+    </linearGradient>
+  </defs>
+  <rect width="300" height="200" rx="20" fill="#1a1a2e"/>
+  <circle cx="150" cy="90" r="55" fill="url(#svcMediaGrad)" opacity="0.9"/>
+  <circle cx="130" cy="80" r="10" fill="white"/>
+  <circle cx="170" cy="80" r="10" fill="white"/>
+  <ellipse cx="150" cy="115" rx="30" ry="18" fill="#0a0a0a"/>
+  <rect x="110" y="155" width="80" height="8" rx="4" fill="url(#svcMediaGrad)" opacity="0.6"/>
+  <circle cx="260" cy="40" r="25" fill="#FF6B35" opacity="0.2"/>
 </svg>

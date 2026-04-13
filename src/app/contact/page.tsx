@@ -8,9 +8,9 @@ import Footer from '@/components/Footer';
 
 const contactInfo = [
   { icon: Mail, label: 'Email', value: 'hello@thepolityservices.com' },
-  { icon: Phone, label: 'Phone', value: '+1 (555) 123-4567' },
-  { icon: MapPin, label: 'Location', value: '123 Business Street, Suite 100, New York, NY 10001' },
-  { icon: Clock, label: 'Hours', value: 'Mon - Fri: 9 AM - 6 PM EST' },
+  { icon: Phone, label: 'Phone', value: '+44 7881 168479' },
+  { icon: MapPin, label: 'Location', value: '86 Glebe Street, Walsall' },
+  { icon: Clock, label: 'Hours', value: 'Mon - Fri: 9 AM - 6 PM GMT' },
 ];
 
 export default function Contact() {

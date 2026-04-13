@@ -12,11 +12,17 @@ const quickLinks = [
 ];
 
 const discoverLinks = [
-  { name: 'Work', href: '/work' },
+  { name: 'Work', href: '/portfolio' },
   { name: 'Blog', href: '/blog' },
-  { name: 'Team', href: '/team' },
+  { name: 'Gallery', href: '/gallery' },
   { name: 'FAQ', href: '/faqs' },
 ];
+
+const contactInfo = {
+  address: '86 Glebe Street, Walsall',
+  phone: '+44 7881 168479',
+  email: 'hello@thepolityservices.com',
+};
 
 export default function Footer() {
   const containerVariants = {
@@ -38,19 +44,26 @@ export default function Footer() {
   return (
     <footer className="bg-[#0a0a0a] border-t border-white/10">
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-16">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          className="text-center mb-16"
-        >
-          <Link
-            href="mailto:hello@thepolityservices.com"
-            className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white hover:text-[#FF6B35] transition-colors"
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="text-center mb-16"
           >
-            hello@thepolityservices.com
-          </Link>
-        </motion.div>
+            <Link
+              href={`tel:${contactInfo.phone}`}
+              className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white hover:text-[#FF6B35] transition-colors"
+            >
+              {contactInfo.phone}
+            </Link>
+            <p className="text-white/60 mt-2">{contactInfo.address}</p>
+            <Link
+              href={`mailto:${contactInfo.email}`}
+              className="text-white/60 hover:text-[#FF6B35] transition-colors text-sm mt-2 block"
+            >
+              {contactInfo.email}
+            </Link>
+          </motion.div>
 
         <motion.div
           variants={containerVariants}

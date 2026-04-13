@@ -52,11 +52,11 @@ export default function Gallery() {
                 Gallery
               </p>
               <h1 className="text-5xl font-bold leading-tight sm:text-6xl lg:text-7xl">
-                Images and videos from the
-                <span className="text-[#FF6B35]"> admin uploads.</span>
+                Visual stories from our
+                <span className="text-[#FF6B35]"> recent projects.</span>
               </h1>
               <p className="mt-6 max-w-3xl text-lg text-white/70 sm:text-xl">
-                The gallery now shows actual uploaded pictures and videos instead of placeholder boxes.
+                Explore our gallery to see the quality of our work across photography, events, and creative media services.
               </p>
             </motion.div>
           </div>
@@ -68,9 +68,9 @@ export default function Gallery() {
               <p className="text-white/60">Loading gallery...</p>
             ) : items.length === 0 ? (
               <div className="rounded-3xl border border-white/10 bg-white/5 p-10 text-center">
-                <h2 className="text-3xl font-bold">No gallery media yet</h2>
+                <h2 className="text-3xl font-bold">No gallery items yet</h2>
                 <p className="mt-4 text-white/65">
-                  Upload images or videos from the admin dashboard and they will appear here automatically.
+                  We're adding new content regularly. Contact us to see examples of our work.
                 </p>
               </div>
             ) : (

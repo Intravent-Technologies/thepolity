@@ -16,6 +16,8 @@ interface PortfolioItem {
   createdAt: string;
 }
 
+const SERVICE_CATEGORIES = ['All', 'IT Consultancy', 'Media', 'Project Management'];
+
 export default function Portfolio() {
   const [items, setItems] = useState<PortfolioItem[]>([]);
   const [loading, setLoading] = useState(true);
@@ -37,8 +39,11 @@ export default function Portfolio() {
     void loadPortfolio();
   }, []);
 
-  const categories = ['All', ...new Set(items.map(item => item.category).filter(Boolean))];
-  const filteredItems = filter === 'All' ? items : items.filter(item => item.category === filter);
+  const filteredItems = filter === 'All' 
+    ? items 
+    : items.filter(item => item.category === filter);
+
+  const categories = SERVICE_CATEGORIES;
 
   return (
     <>
@@ -57,12 +62,11 @@ export default function Portfolio() {
                 Portfolio
               </p>
               <h1 className="text-5xl font-bold leading-tight sm:text-6xl lg:text-7xl">
-                Real work, uploaded from the
-                <span className="text-[#FF6B35]"> admin panel.</span>
+                Our work speaks for 
+                <span className="text-[#FF6B35]"> itself.</span>
               </h1>
               <p className="mt-6 max-w-3xl text-lg text-white/70 sm:text-xl">
-                This portfolio page now pulls from your live uploaded content instead of hard-coded
-                placeholder cards.
+                Browse our portfolio by service category to see how we've helped businesses transform their digital presence and achieve measurable results.
               </p>
             </motion.div>
           </div>
@@ -91,9 +95,9 @@ export default function Portfolio() {
               <p className="text-white/60">Loading portfolio...</p>
             ) : filteredItems.length === 0 ? (
               <div className="rounded-3xl border border-white/10 bg-white/5 p-10 text-center">
-                <h2 className="text-3xl font-bold">No portfolio items in this category</h2>
+                <h2 className="text-3xl font-bold">No projects in this category yet</h2>
                 <p className="mt-4 text-white/65">
-                  Try a different filter or upload items from the admin dashboard.
+                  We're constantly adding new work. Check back soon or contact us to discuss your project.
                 </p>
               </div>
             ) : (
@@ -113,7 +117,7 @@ export default function Portfolio() {
                     <div className="p-8">
                       <p className="mb-3 text-sm font-semibold text-[#FF6B35]">{item.category}</p>
                       <h2 className="mb-4 text-3xl font-bold">{item.title}</h2>
-                      <p className="leading-relaxed text-white/70">{item.description}</p>
+                      <p className="leading-relaxed text-white/70">{item.description || 'Delivering exceptional results through strategic planning and execution.'}</p>
                     </div>
                   </motion.article>
                 ))}

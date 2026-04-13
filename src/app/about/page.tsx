@@ -148,33 +148,32 @@ export default function About() {
               <p className="mb-4 text-sm font-semibold uppercase tracking-[0.35em] text-[#FF6B35]">
                 Leadership
               </p>
-              <h2 className="text-4xl font-bold sm:text-5xl">Steady leadership for bold decisions</h2>
+              <h2 className="text-4xl font-bold sm:text-5xl">Guided by visionary leadership</h2>
               <p className="mt-6 text-lg leading-relaxed text-white/70">
-                Our leadership team brings together business strategy, delivery discipline, and market
-                awareness so clients can move with confidence.
+                Our CEO brings over 15 years of experience in technology, digital media, and project management.
               </p>
               <p className="mt-4 text-lg leading-relaxed text-white/70">
-                We work best where high expectations meet practical execution and long-term thinking.
+                With a Master's degree in Project Management from the University of Wolverhampton, Temidayo leads THE POLITY with a focus on digital transformation and creative excellence.
               </p>
             </div>
 
             <div className="rounded-3xl border border-white/10 bg-white/5 p-8">
               <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#FF6B35]">
-                James Mitchell
+                Temidayo Ololade Awotula
               </p>
               <h3 className="mt-3 text-3xl font-bold">Chief Executive Officer & Founder</h3>
               <p className="mt-5 leading-relaxed text-white/70">
-                With deep consulting and transformation experience, James leads THE POLITY with a
-                focus on building strong partnerships and delivering meaningful business outcomes.
+                An accomplished IT and Media professional with over 15 years of experience in technology, digital media, and project management.
               </p>
               <div className="mt-8 space-y-4 border-t border-white/10 pt-6 text-sm text-white/65">
                 <p>
-                  <span className="font-semibold text-white">Expertise:</span> strategic planning,
-                  business transformation, market entry, and portfolio leadership.
+                  <span className="font-semibold text-white">Education:</span> Master's in Project Management, University of Wolverhampton
                 </p>
                 <p>
-                  <span className="font-semibold text-white">Approach:</span> clear thinking, direct
-                  communication, and outcome-focused execution.
+                  <span className="font-semibold text-white">Origin:</span> Igbolomi, Ilaje Local Government Area, Ondo State, Nigeria
+                </p>
+                <p>
+                  <span className="font-semibold text-white">Passion:</span> Travel and photography
                 </p>
               </div>
             </div>
