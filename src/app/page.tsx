@@ -183,25 +183,6 @@ export default function Home() {
                 </motion.div>
               </div>
 
-<motion.div 
-                  variants={fadeInUp}
-                  className="relative hidden lg:block"
-                >
-                  <div className="relative">
-                    <div className="relative z-10 grid grid-cols-2 gap-6">
-                      <div className="space-y-6">
-                        <img src={getImage('hero-1')} alt="IT Consulting" className="h-40 w-full object-cover rounded-3xl border border-white/10 backdrop-blur-sm" />
-                        <img src={getImage('hero-2')} alt="Team collaboration" className="h-56 w-full object-cover rounded-3xl border border-white/10 backdrop-blur-sm" />
-                      </div>
-                      <div className="space-y-6 pt-12">
-                        <img src={getImage('hero-3')} alt="Modern office" className="h-56 w-full object-cover rounded-3xl border border-white/10 backdrop-blur-sm" />
-                        <img src={getImage('hero-4')} alt="Business meeting" className="h-40 w-full object-cover rounded-3xl border border-white/10 backdrop-blur-sm" />
-                      </div>
-                    </div>
-                    <div className="absolute -top-4 -right-4 w-20 h-20 bg-[#FF6B35]/20 rounded-2xl border border-[#FF6B35]/30 backdrop-blur-sm" />
-                    <div className="absolute -bottom-6 -left-6 w-16 h-16 bg-[#001F3F]/40 rounded-2xl border border-white/10 backdrop-blur-sm" />
-                  </div>
-                </motion.div>
             </motion.div>
           </div>
 

@@ -16,18 +16,18 @@ const navLinks = [
 ];
 
 const services = [
-  { name: 'IT Consultancy', href: '/services/it-consultancy' },
-  { name: 'Media', href: '/services/media', hasSubMenu: true },
-  { name: 'Project Management', href: '/services/project-management' },
+  { name: 'IT Consultancy', href: '/services/it-consultancy', subItems: [] },
+  { name: 'Media', href: '/services/media', hasSubMenu: true, subItems: [
+    { name: 'Photography', href: '/services/media/photography' },
+    { name: 'Events', href: '/services/media/events' },
+    { name: 'Photo Tourism', href: '/services/media/photo-tourism' },
+    { name: 'Portraits', href: '/services/media/portraits' },
+    { name: 'Visuals', href: '/services/media/visuals' },
+  ]},
+  { name: 'Project Management', href: '/services/project-management', subItems: [] },
 ];
 
-const mediaServices = [
-  { name: 'Photography', href: '/services/media/photography' },
-  { name: 'Events', href: '/services/media/events' },
-  { name: 'Photo Tourism', href: '/services/media/photo-tourism' },
-  { name: 'Portraits', href: '/services/media/portraits' },
-  { name: 'Visuals', href: '/services/media/visuals' },
-];
+
 
 export default function Header() {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -110,13 +110,13 @@ export default function Header() {
                               {service.hasSubMenu && <ChevronDown className="w-3 h-3 -rotate-90" />}
                             </Link>
                             
-                            {service.hasSubMenu && hoveredService === 'Media' && (
+                            {service.hasSubMenu && service.subItems && service.subItems.length > 0 && (
                               <motion.div
                                 initial={{ opacity: 0, x: 10 }}
                                 animate={{ opacity: 1, x: 0 }}
                                 className="absolute top-0 left-full ml-1 w-48 bg-[#111] border border-white/10 rounded-xl shadow-2xl overflow-hidden"
                               >
-                                {mediaServices.map((media) => (
+                                {service.subItems.map((media) => (
                                   <Link
                                     key={media.name}
                                     href={media.href}
