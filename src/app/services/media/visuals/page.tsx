@@ -111,6 +111,15 @@ export default function Visuals() {
             </div>
           </div>
         </section>
+
+        <section className="px-6 pb-12 sm:px-8">
+          <div className="mx-auto max-w-7xl text-center">
+            <Link href="/services/media/visuals/slideshow" className="inline-flex items-center gap-2 px-8 py-4 bg-[#FF6B35] text-white rounded-full font-medium hover:bg-[#FF9F66] transition-colors">
+              View Full Gallery <ArrowRight className="w-5 h-5" />
+            </Link>
+          </div>
+        </section>
+
         <section className="px-6 pb-24 sm:px-8 lg:px-12">
           <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mx-auto max-w-5xl rounded-3xl border border-white/10 bg-gradient-to-br from-[#001F3F] to-[#0a0a0a] p-10 text-center lg:p-14">
             <h2 className="text-4xl font-bold sm:text-5xl">Get Visual Content</h2>

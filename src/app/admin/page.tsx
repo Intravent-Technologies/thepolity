@@ -728,48 +728,33 @@ const HOMEPAGE_SECTION_GROUPS = [
     ]
   },
   {
-    title: '🎉 Events Service Page',
+    title: '🎉 Events - Slideshow Images',
     sections: [
-      { key: 'events-1', label: 'Weddings' },
-      { key: 'events-2', label: 'Birthdays' },
-      { key: 'events-3', label: 'Graduations' },
-      { key: 'events-4', label: 'Corporate' },
+      { key: 'events-slideshow', label: 'All Events Images (for slideshow)' },
     ]
   },
   {
-    title: '📷 Photography Service Page',
+    title: '📷 Photography - Slideshow Images',
     sections: [
-      { key: 'photography-1', label: 'Products' },
-      { key: 'photography-2', label: 'Real Estate' },
-      { key: 'photography-3', label: 'Food' },
-      { key: 'photography-4', label: 'Fashion' },
+      { key: 'photography_slideshow', label: 'All Photography Images (for slideshow)' },
     ]
   },
   {
-    title: '👤 Portraits Service Page',
+    title: '👤 Portraits - Slideshow Images',
     sections: [
-      { key: 'portraits-1', label: 'Corporate' },
-      { key: 'portraits-2', label: 'Family' },
-      { key: 'portraits-3', label: 'Headshots' },
-      { key: 'portraits-4', label: 'Creative' },
+      { key: 'portraits_slideshow', label: 'All Portraits Images (for slideshow)' },
     ]
   },
   {
-    title: '🏔️ Photo Tourism Service Page',
+    title: '🏔️ Photo Tourism - Slideshow Images',
     sections: [
-      { key: 'photo-tourism-1', label: 'Mountains' },
-      { key: 'photo-tourism-2', label: 'Beach' },
-      { key: 'photo-tourism-3', label: 'City' },
-      { key: 'photo-tourism-4', label: 'Nature' },
+      { key: 'photo-tourism_slideshow', label: 'All Photo Tourism Images (for slideshow)' },
     ]
   },
   {
-    title: '🎨 Visuals Service Page',
+    title: '🎨 Visuals - Slideshow Images',
     sections: [
-      { key: 'visuals-1', label: 'Brand Design' },
-      { key: 'visuals-2', label: 'Social Media' },
-      { key: 'visuals-3', label: 'Product' },
-      { key: 'visuals-4', label: 'Video' },
+      { key: 'visuals_slideshow', label: 'All Visuals Images (for slideshow)' },
     ]
   },
   {
@@ -848,29 +833,47 @@ function HomepageManager() {
     finally { setUploading(false); }
   };
 
-  const getImageForSection = (section: string) => images.find(img => img.section === section)?.imageUrl || '';
+  const getImagesForSection = (section: string) => images.filter(img => img.section === section);
+  const isSlideshowSection = (key: string) => key.includes('_slideshow');
 
   return (
     <div className="space-y-8">
       {HOMEPAGE_SECTION_GROUPS.map((group) => (
         <div key={group.title} className="bg-[#111] rounded-2xl p-6 border border-white/10">
           <h2 className="text-xl font-bold text-white mb-2">{group.title}</h2>
-          <p className="text-white/60 text-sm mb-6">Click a section below to upload an image</p>
+          <p className="text-white/60 text-sm mb-6">{isSlideshowSection(group.sections[0]?.key || '') ? 'Upload multiple images for the slideshow' : 'Click a section below to upload an image'}</p>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {group.sections.map((section) => (
-              <div key={section.key} className="bg-[#0a0a0a] rounded-xl p-4 border border-white/10">
-                <h3 className="text-sm font-medium text-white mb-3">{section.label}</h3>
-                {getImageForSection(section.key) ? (
-                  <div className="relative mb-3">
-                    <img src={getImageForSection(section.key)} alt={section.label} className="w-full h-24 object-cover rounded-lg" />
-                    <button onClick={async () => { const img = images.find(i => i.section === section.key); if (img?.id) { await fetch(`/api/homepage-images?id=${img.id}`, { method: 'DELETE' }); loadImages(); }}} className="absolute top-1 right-1 bg-red-500 text-white text-xs px-2 py-1 rounded">Delete</button>
-                  </div>
-                ) : ( <div className="w-full h-24 bg-white/5 rounded-lg mb-3 flex items-center justify-center text-white/30 text-sm">No image</div> )}
-                {selectedSection === section.key && ( <div className="mt-2"><input type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] || null)} className="text-xs text-white/60 mb-2" />{file && (<button onClick={handleUpload} disabled={uploading} className="w-full bg-[#FF6B35] text-white text-sm py-2 rounded-lg font-medium disabled:opacity-50">{uploading ? 'Uploading...' : 'Upload'}</button>)}</div> )}
-                <button onClick={() => setSelectedSection(section.key)} className="text-xs text-[#FF6B35] hover:underline">{selectedSection === section.key ? '✓ Selected' : 'Select to upload'}</button>
-              </div>
-            ))}
+            {group.sections.map((section) => {
+              const sectionImages = getImagesForSection(section.key);
+              const isSlideshow = isSlideshowSection(section.key);
+              
+              return (
+                <div key={section.key} className="bg-[#0a0a0a] rounded-xl p-4 border border-white/10">
+                  <h3 className="text-sm font-medium text-white mb-3">{section.label}</h3>
+                  
+                  {sectionImages.length > 0 ? (
+                    <div className="space-y-2 mb-3">
+                      {sectionImages.map((img, idx) => (
+                        <div key={img.id} className="relative">
+                          <img src={img.imageUrl} alt={`${section.label} ${idx + 1}`} className="w-full h-24 object-cover rounded-lg" />
+                          <button onClick={async () => { await fetch(`/api/homepage-images?id=${img.id}`, { method: 'DELETE' }); loadImages(); }} className="absolute top-1 right-1 bg-red-500 text-white text-xs px-2 py-1 rounded">Delete</button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : ( <div className="w-full h-24 bg-white/5 rounded-lg mb-3 flex items-center justify-center text-white/30 text-sm">No image</div> )}
+                  
+                  {selectedSection === section.key && ( 
+                    <div className="mt-2">
+                      <input type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] || null)} className="text-xs text-white/60 mb-2" />
+                      {file && (<button onClick={handleUpload} disabled={uploading} className="w-full bg-[#FF6B35] text-white text-sm py-2 rounded-lg font-medium disabled:opacity-50">{uploading ? 'Uploading...' : 'Upload'}</button>)}
+                    </div> 
+                  )}
+                  <button onClick={() => setSelectedSection(section.key)} className="text-xs text-[#FF6B35] hover:underline">{selectedSection === section.key ? '✓ Selected' : 'Select to upload'}</button>
+                  {isSlideshow && sectionImages.length > 0 && <span className="text-xs text-green-400 ml-2">({sectionImages.length} images)</span>}
+                </div>
+              );
+            })}
           </div>
         </div>
       ))}
