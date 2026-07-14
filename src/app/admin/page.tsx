@@ -157,6 +157,7 @@ function PortfolioManager() {
   const [category, setCategory] = useState('Project');
   const [image, setImage] = useState('');
   const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => { fetchItems(); }, []);
@@ -165,7 +166,7 @@ function PortfolioManager() {
     try {
       const response = await fetch('/api/portfolio');
       const data = await response.json();
-      setItems(data);
+      setItems(Array.isArray(data) ? data : []);
     } catch (error) { console.error('Error:', error); }
     finally { setLoading(false); }
   };
@@ -180,7 +181,8 @@ function PortfolioManager() {
     try {
       const response = await fetch('/api/upload', { method: 'POST', body: formData });
       const data = await response.json();
-      setImage(data.url);
+      if (data.url) setImage(data.url);
+      else alert(data.error || 'Upload failed');
     } catch (error) { alert('Upload failed'); }
     finally { setUploading(false); }
   };
@@ -188,13 +190,16 @@ function PortfolioManager() {
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !description || !image) { alert('Fill all fields'); return; }
+    setSaving(true);
     try {
       const res = await fetch('/api/portfolio', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title, description, image, category }) });
-      const newItem = await res.json();
-      setItems([newItem, ...items]);
+      const data = await res.json();
+      if (data.error) { alert(data.error); return; }
+      setItems([data, ...items]);
       setTitle(''); setDescription(''); setCategory('Project'); setImage('');
       alert('Added!');
     } catch { alert('Failed'); }
+    finally { setSaving(false); }
   };
 
   const handleDelete = async (id: string) => {
@@ -212,16 +217,20 @@ function PortfolioManager() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="Title" className="px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40" />
           <select value={category} onChange={e => setCategory(e.target.value)} className="px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white">
-            <option>Project</option><option>Case Study</option><option>Campaign</option><option>Branding</option><option>Design</option>
+            <option className="bg-[#111]">Project</option><option className="bg-[#111]">Case Study</option><option className="bg-[#111]">Campaign</option><option className="bg-[#111]">Branding</option><option className="bg-[#111]">Design</option>
           </select>
         </div>
         <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} placeholder="Description" className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40" />
         <div>
-          <input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploading} className="text-white/60" />
+          <label className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white/60 text-sm cursor-pointer hover:bg-white/10 hover:text-white/80 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+            Choose image
+            <input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploading} className="hidden" />
+          </label>
           {uploading && <span className="text-white/40 ml-4">Uploading...</span>}
           {image && <div className="mt-2 w-20 h-20 rounded overflow-hidden"><img src={image} className="w-full h-full object-cover" /></div>}
         </div>
-        <button type="submit" className="px-6 py-3 bg-[#FF6B35] text-white rounded-lg font-medium hover:bg-[#FF9F66]">Add Item</button>
+        <button type="submit" disabled={saving || uploading} className="px-6 py-3 bg-[#FF6B35] text-white rounded-lg font-medium hover:bg-[#FF9F66] disabled:opacity-50">{saving ? 'Saving...' : 'Add Item'}</button>
       </form>
 
       <div className="border-t border-white/10 mt-8 pt-8">
@@ -230,11 +239,15 @@ function PortfolioManager() {
           <div className="space-y-3">
             {items.map(item => (
               <div key={item.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded bg-white/10 overflow-hidden"><img src={item.image} className="w-full h-full object-cover" /></div>
-                  <div><div className="text-white font-medium">{item.title}</div><div className="text-white/40 text-sm">{item.category}</div></div>
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-12 h-12 rounded bg-white/10 overflow-hidden flex-shrink-0"><img src={item.image} className="w-full h-full object-cover" /></div>
+                  <div className="min-w-0">
+                    <div className="text-white font-medium">{item.title}</div>
+                    <div className="text-white/40 text-sm">{item.category}</div>
+                    {item.description && <div className="text-white/30 text-xs truncate max-w-md">{item.description}</div>}
+                  </div>
                 </div>
-                <button onClick={() => handleDelete(item.id)} className="px-3 py-1 bg-red-500/20 text-red-400 rounded hover:bg-red-500/40 text-sm">Delete</button>
+                <button onClick={() => handleDelete(item.id)} className="px-3 py-1 bg-red-500/20 text-red-400 rounded hover:bg-red-500/40 text-sm flex-shrink-0 ml-3">Delete</button>
               </div>
             ))}
           </div>
@@ -258,7 +271,7 @@ function GalleryManager() {
     try {
       const response = await fetch('/api/gallery');
       const data = await response.json();
-      setItems(data);
+      setItems(Array.isArray(data) ? data : []);
     } catch {}
     finally { setLoading(false); }
   };
@@ -273,8 +286,10 @@ function GalleryManager() {
     try {
       const uploadRes = await fetch('/api/upload', { method: 'POST', body: formData });
       const uploadData = await uploadRes.json();
+      if (!uploadData.url) { alert(uploadData.error || 'Upload failed'); setUploading(false); return; }
       const res = await fetch('/api/gallery', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title, type, url: uploadData.url }) });
       const newItem = await res.json();
+      if (newItem.error) { alert(newItem.error); setUploading(false); return; }
       setItems([newItem, ...items]);
       setTitle(''); setFile(null);
       alert('Added!');
@@ -301,7 +316,11 @@ function GalleryManager() {
           </select>
         </div>
         <div>
-          <input type="file" accept={type === 'image' ? 'image/*' : 'video/*'} onChange={e => setFile(e.target.files?.[0] || null)} disabled={uploading} className="text-white/60" />
+          <label className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white/60 text-sm cursor-pointer hover:bg-white/10 hover:text-white/80 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+            Choose {type === 'image' ? 'image' : 'video'}
+            <input type="file" accept={type === 'image' ? 'image/*' : 'video/*'} onChange={e => setFile(e.target.files?.[0] || null)} disabled={uploading} className="hidden" />
+          </label>
           {uploading && <span className="text-white/40 ml-4">Uploading...</span>}
         </div>
         <button type="submit" disabled={uploading} className="px-6 py-3 bg-[#FF6B35] text-white rounded-lg font-medium hover:bg-[#FF9F66] disabled:opacity-50">{uploading ? 'Uploading...' : 'Add Item'}</button>
@@ -312,9 +331,17 @@ function GalleryManager() {
         {loading ? <p className="text-white/40">Loading...</p> : items.length === 0 ? <p className="text-white/40">No items</p> : (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {items.map(item => (
-              <div key={item.id} className="relative rounded-lg overflow-hidden">
-                {item.type === 'image' ? <img src={item.url} className="w-full h-32 object-cover" /> : <div className="w-full h-32 bg-white/10 flex items-center justify-center text-white/40">🎬</div>}
-                <button onClick={() => handleDelete(item.id)} className="absolute top-2 right-2 px-2 py-1 bg-red-500 text-white text-xs rounded">Delete</button>
+              <div key={item.id} className="relative rounded-lg overflow-hidden bg-white/5">
+                {item.type === 'image' ? (
+                  <img src={item.url} alt={item.title} className="w-full h-32 object-cover" />
+                ) : (
+                  <video src={item.url} controls className="w-full h-32 object-cover" />
+                )}
+                <div className="p-2">
+                  <p className="text-white text-xs font-medium truncate">{item.title}</p>
+                  <p className="text-white/40 text-xs capitalize">{item.type}</p>
+                </div>
+                <button onClick={() => handleDelete(item.id)} className="absolute top-2 right-2 px-2 py-1 bg-red-500 text-white text-xs rounded hover:bg-red-600">Delete</button>
               </div>
             ))}
           </div>
@@ -332,6 +359,7 @@ function BlogManager() {
   const [excerpt, setExcerpt] = useState('');
   const [image, setImage] = useState('');
   const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => { fetchPosts(); }, []);
@@ -340,7 +368,7 @@ function BlogManager() {
     try {
       const response = await fetch('/api/blog');
       const data = await response.json();
-      setPosts(data);
+      setPosts(Array.isArray(data) ? data : []);
     } catch {}
     finally { setLoading(false); }
   };
@@ -355,7 +383,8 @@ function BlogManager() {
     try {
       const response = await fetch('/api/upload', { method: 'POST', body: formData });
       const data = await response.json();
-      setImage(data.url);
+      if (data.url) setImage(data.url);
+      else alert(data.error || 'Upload failed');
     } catch { alert('Upload failed'); }
     finally { setUploading(false); }
   };
@@ -363,13 +392,16 @@ function BlogManager() {
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !excerpt) { alert('Fill all fields'); return; }
+    setSaving(true);
     try {
       const res = await fetch('/api/blog', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title, category, date, excerpt, image }) });
-      const newPost = await res.json();
-      setPosts([newPost, ...posts]);
+      const data = await res.json();
+      if (data.error) { alert(data.error); return; }
+      setPosts([data, ...posts]);
       setTitle(''); setCategory('Strategy'); setExcerpt(''); setImage('');
       alert('Added!');
     } catch { alert('Failed'); }
+    finally { setSaving(false); }
   };
 
   const handleDelete = async (id: string) => {
@@ -389,17 +421,21 @@ function BlogManager() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="Title" className="px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40" />
           <select value={category} onChange={e => setCategory(e.target.value)} className="px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white">
-            {categories.map(c => <option key={c} value={c}>{c}</option>)}
+            {categories.map(c => <option key={c} value={c} className="bg-[#111]">{c}</option>)}
           </select>
           <input type="date" value={date} onChange={e => setDate(e.target.value)} className="px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white" />
         </div>
         <textarea value={excerpt} onChange={e => setExcerpt(e.target.value)} rows={3} placeholder="Excerpt" className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40" />
         <div>
-          <input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploading} className="text-white/60" />
+          <label className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white/60 text-sm cursor-pointer hover:bg-white/10 hover:text-white/80 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+            Choose image
+            <input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploading} className="hidden" />
+          </label>
           {uploading && <span className="text-white/40 ml-4">Uploading...</span>}
           {image && <div className="mt-2 w-20 h-20 rounded overflow-hidden"><img src={image} className="w-full h-full object-cover" /></div>}
         </div>
-        <button type="submit" className="px-6 py-3 bg-[#FF6B35] text-white rounded-lg font-medium hover:bg-[#FF9F66]">Add Post</button>
+        <button type="submit" disabled={saving || uploading} className="px-6 py-3 bg-[#FF6B35] text-white rounded-lg font-medium hover:bg-[#FF9F66] disabled:opacity-50">{saving ? 'Saving...' : 'Add Post'}</button>
       </form>
 
       <div className="border-t border-white/10 mt-8 pt-8">
@@ -408,11 +444,15 @@ function BlogManager() {
           <div className="space-y-3">
             {posts.map(post => (
               <div key={post.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded bg-white/10 overflow-hidden">{post.image && <img src={post.image} className="w-full h-full object-cover" />}</div>
-                  <div><div className="text-white font-medium">{post.title}</div><div className="text-white/40 text-sm">{post.category} | {post.date}</div></div>
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-12 h-12 rounded bg-white/10 overflow-hidden flex-shrink-0">{post.image && <img src={post.image} className="w-full h-full object-cover" />}</div>
+                  <div className="min-w-0">
+                    <div className="text-white font-medium">{post.title}</div>
+                    <div className="text-white/40 text-sm">{post.category} | {post.date}</div>
+                    {post.excerpt && <div className="text-white/30 text-xs truncate max-w-md">{post.excerpt}</div>}
+                  </div>
                 </div>
-                <button onClick={() => handleDelete(post.id)} className="px-3 py-1 bg-red-500/20 text-red-400 rounded hover:bg-red-500/40 text-sm">Delete</button>
+                <button onClick={() => handleDelete(post.id)} className="px-3 py-1 bg-red-500/20 text-red-400 rounded hover:bg-red-500/40 text-sm flex-shrink-0 ml-3">Delete</button>
               </div>
             ))}
           </div>
@@ -430,6 +470,7 @@ function WorkManager() {
   const [description, setDescription] = useState('');
   const [image, setImage] = useState('');
   const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => { fetchProjects(); }, []);
@@ -438,7 +479,7 @@ function WorkManager() {
     try {
       const response = await fetch('/api/work');
       const data = await response.json();
-      setProjects(data);
+      setProjects(Array.isArray(data) ? data : []);
     } catch {}
     finally { setLoading(false); }
   };
@@ -453,7 +494,8 @@ function WorkManager() {
     try {
       const response = await fetch('/api/upload', { method: 'POST', body: formData });
       const data = await response.json();
-      setImage(data.url);
+      if (data.url) setImage(data.url);
+      else alert(data.error || 'Upload failed');
     } catch { alert('Upload failed'); }
     finally { setUploading(false); }
   };
@@ -461,13 +503,16 @@ function WorkManager() {
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !description) { alert('Fill all fields'); return; }
+    setSaving(true);
     try {
       const res = await fetch('/api/work', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title, category, client, description, image }) });
-      const newProject = await res.json();
-      setProjects([newProject, ...projects]);
+      const data = await res.json();
+      if (data.error) { alert(data.error); return; }
+      setProjects([data, ...projects]);
       setTitle(''); setCategory('Web Development'); setClient(''); setDescription(''); setImage('');
       alert('Added!');
     } catch { alert('Failed'); }
+    finally { setSaving(false); }
   };
 
   const handleDelete = async (id: string) => {
@@ -487,17 +532,21 @@ function WorkManager() {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="Title" className="px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40" />
           <select value={category} onChange={e => setCategory(e.target.value)} className="px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white">
-            {categories.map(c => <option key={c} value={c}>{c}</option>)}
+            {categories.map(c => <option key={c} value={c} className="bg-[#111]">{c}</option>)}
           </select>
           <input type="text" value={client} onChange={e => setClient(e.target.value)} placeholder="Client name" className="px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40" />
         </div>
         <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} placeholder="Description" className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40" />
         <div>
-          <input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploading} className="text-white/60" />
+          <label className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white/60 text-sm cursor-pointer hover:bg-white/10 hover:text-white/80 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+            Choose image
+            <input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploading} className="hidden" />
+          </label>
           {uploading && <span className="text-white/40 ml-4">Uploading...</span>}
           {image && <div className="mt-2 w-20 h-20 rounded overflow-hidden"><img src={image} className="w-full h-full object-cover" /></div>}
         </div>
-        <button type="submit" className="px-6 py-3 bg-[#FF6B35] text-white rounded-lg font-medium hover:bg-[#FF9F66]">Add Project</button>
+        <button type="submit" disabled={saving || uploading} className="px-6 py-3 bg-[#FF6B35] text-white rounded-lg font-medium hover:bg-[#FF9F66] disabled:opacity-50">{saving ? 'Saving...' : 'Add Project'}</button>
       </form>
 
       <div className="border-t border-white/10 mt-8 pt-8">
@@ -506,11 +555,15 @@ function WorkManager() {
           <div className="space-y-3">
             {projects.map(project => (
               <div key={project.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 rounded bg-white/10 overflow-hidden">{project.image && <img src={project.image} className="w-full h-full object-cover" />}</div>
-                  <div><div className="text-white font-medium">{project.title}</div><div className="text-white/40 text-sm">{project.category} | {project.client}</div></div>
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-12 h-12 rounded bg-white/10 overflow-hidden flex-shrink-0">{project.image && <img src={project.image} className="w-full h-full object-cover" />}</div>
+                  <div className="min-w-0">
+                    <div className="text-white font-medium">{project.title}</div>
+                    <div className="text-white/40 text-sm">{project.category} | {project.client}</div>
+                    {project.description && <div className="text-white/30 text-xs truncate max-w-md">{project.description}</div>}
+                  </div>
                 </div>
-                <button onClick={() => handleDelete(project.id)} className="px-3 py-1 bg-red-500/20 text-red-400 rounded hover:bg-red-500/40 text-sm">Delete</button>
+                <button onClick={() => handleDelete(project.id)} className="px-3 py-1 bg-red-500/20 text-red-400 rounded hover:bg-red-500/40 text-sm flex-shrink-0 ml-3">Delete</button>
               </div>
             ))}
           </div>
@@ -527,6 +580,7 @@ function TeamManager() {
   const [bio, setBio] = useState('');
   const [image, setImage] = useState('');
   const [uploading, setUploading] = useState(false);
+  const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => { fetchMembers(); }, []);
@@ -535,7 +589,7 @@ function TeamManager() {
     try {
       const response = await fetch('/api/team');
       const data = await response.json();
-      setMembers(data);
+      setMembers(Array.isArray(data) ? data : []);
     } catch {}
     finally { setLoading(false); }
   };
@@ -550,7 +604,8 @@ function TeamManager() {
     try {
       const response = await fetch('/api/upload', { method: 'POST', body: formData });
       const data = await response.json();
-      setImage(data.url);
+      if (data.url) setImage(data.url);
+      else alert(data.error || 'Upload failed');
     } catch { alert('Upload failed'); }
     finally { setUploading(false); }
   };
@@ -558,13 +613,16 @@ function TeamManager() {
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !role || !bio) { alert('Fill all fields'); return; }
+    setSaving(true);
     try {
       const res = await fetch('/api/team', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, role, bio, image }) });
-      const newMember = await res.json();
-      setMembers([newMember, ...members]);
+      const data = await res.json();
+      if (data.error) { alert(data.error); return; }
+      setMembers([data, ...members]);
       setName(''); setRole(''); setBio(''); setImage('');
       alert('Added!');
     } catch { alert('Failed'); }
+    finally { setSaving(false); }
   };
 
   const handleDelete = async (id: string) => {
@@ -584,17 +642,21 @@ function TeamManager() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Name" className="px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40" />
           <select value={role} onChange={e => setRole(e.target.value)} className="px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white">
-            <option value="">Select role</option>
-            {roles.map(r => <option key={r} value={r}>{r}</option>)}
+            <option value="" className="bg-[#111]">Select role</option>
+            {roles.map(r => <option key={r} value={r} className="bg-[#111]">{r}</option>)}
           </select>
         </div>
         <textarea value={bio} onChange={e => setBio(e.target.value)} rows={3} placeholder="Bio" className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40" />
         <div>
-          <input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploading} className="text-white/60" />
+          <label className="inline-flex items-center gap-2 px-4 py-2 bg-white/5 border border-white/10 rounded-lg text-white/60 text-sm cursor-pointer hover:bg-white/10 hover:text-white/80 transition-colors">
+            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+            Choose image
+            <input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploading} className="hidden" />
+          </label>
           {uploading && <span className="text-white/40 ml-4">Uploading...</span>}
           {image && <div className="mt-2 w-20 h-20 rounded-full overflow-hidden"><img src={image} className="w-full h-full object-cover" /></div>}
         </div>
-        <button type="submit" className="px-6 py-3 bg-[#FF6B35] text-white rounded-lg font-medium hover:bg-[#FF9F66]">Add Member</button>
+        <button type="submit" disabled={saving || uploading} className="px-6 py-3 bg-[#FF6B35] text-white rounded-lg font-medium hover:bg-[#FF9F66] disabled:opacity-50">{saving ? 'Saving...' : 'Add Member'}</button>
       </form>
 
       <div className="border-t border-white/10 mt-8 pt-8">
@@ -603,11 +665,17 @@ function TeamManager() {
           <div className="space-y-3">
             {members.map(member => (
               <div key={member.id} className="flex items-center justify-between p-3 bg-white/5 rounded-lg">
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-white/10 flex items-center justify-center text-white font-bold">{member.name[0]}</div>
-                  <div><div className="text-white font-medium">{member.name}</div><div className="text-white/40 text-sm">{member.role}</div></div>
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-10 h-10 rounded-full bg-white/10 flex-shrink-0 overflow-hidden">
+                    {member.image ? <img src={member.image} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-white font-bold">{member.name[0]}</div>}
+                  </div>
+                  <div className="min-w-0">
+                    <div className="text-white font-medium">{member.name}</div>
+                    <div className="text-white/40 text-sm">{member.role}</div>
+                    {member.bio && <div className="text-white/30 text-xs truncate max-w-md">{member.bio}</div>}
+                  </div>
                 </div>
-                <button onClick={() => handleDelete(member.id)} className="px-3 py-1 bg-red-500/20 text-red-400 rounded hover:bg-red-500/40 text-sm">Delete</button>
+                <button onClick={() => handleDelete(member.id)} className="px-3 py-1 bg-red-500/20 text-red-400 rounded hover:bg-red-500/40 text-sm flex-shrink-0 ml-3">Delete</button>
               </div>
             ))}
           </div>
@@ -623,6 +691,7 @@ function ReviewsManager() {
   const [role, setRole] = useState('');
   const [content, setContent] = useState('');
   const [rating, setRating] = useState(5);
+  const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => { fetchReviews(); }, []);
@@ -631,7 +700,7 @@ function ReviewsManager() {
     try {
       const response = await fetch('/api/reviews');
       const data = await response.json();
-      setReviews(data);
+      setReviews(Array.isArray(data) ? data : []);
     } catch {}
     finally { setLoading(false); }
   };
@@ -639,13 +708,16 @@ function ReviewsManager() {
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !role || !content) { alert('Fill all fields'); return; }
+    setSaving(true);
     try {
       const res = await fetch('/api/reviews', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, role, content, rating }) });
-      const newReview = await res.json();
-      setReviews([newReview, ...reviews]);
+      const data = await res.json();
+      if (data.error) { alert(data.error); return; }
+      setReviews([data, ...reviews]);
       setName(''); setRole(''); setContent(''); setRating(5);
       alert('Added!');
     } catch { alert('Failed'); }
+    finally { setSaving(false); }
   };
 
   const handleDelete = async (id: string) => {
@@ -667,11 +739,11 @@ function ReviewsManager() {
         <div>
           <label className="block text-white/60 text-sm mb-2">Rating</label>
           <select value={rating} onChange={e => setRating(parseInt(e.target.value))} className="px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white">
-            {[1,2,3,4,5].map(r => <option key={r} value={r}>{r} Star{r > 1 ? 's' : ''}</option>)}
+            {[1,2,3,4,5].map(r => <option key={r} value={r} className="bg-[#111]">{r} Star{r > 1 ? 's' : ''}</option>)}
           </select>
         </div>
         <textarea value={content} onChange={e => setContent(e.target.value)} rows={4} placeholder="Review content" className="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-lg text-white placeholder:text-white/40" />
-        <button type="submit" className="px-6 py-3 bg-[#FF6B35] text-white rounded-lg font-medium hover:bg-[#FF9F66]">Add Review</button>
+        <button type="submit" disabled={saving} className="px-6 py-3 bg-[#FF6B35] text-white rounded-lg font-medium hover:bg-[#FF9F66] disabled:opacity-50">{saving ? 'Saving...' : 'Add Review'}</button>
       </form>
 
       <div className="border-t border-white/10 mt-8 pt-8">
@@ -681,11 +753,16 @@ function ReviewsManager() {
             {reviews.map(review => (
               <div key={review.id} className="p-4 bg-white/5 rounded-lg">
                 <div className="flex items-center justify-between mb-2">
-                  <div><div className="text-white font-medium">{review.name}</div><div className="text-white/40 text-sm">{review.role}</div></div>
-                  <div className="flex">{[...Array(review.rating)].map((_,i) => <span key={i} className="text-yellow-400">★</span>)}</div>
+                  <div className="min-w-0">
+                    <div className="text-white font-medium">{review.name}</div>
+                    <div className="text-white/40 text-sm">{review.role}</div>
+                  </div>
+                  <div className="flex items-center gap-3 flex-shrink-0">
+                    <div className="flex">{[...Array(review.rating)].map((_,i) => <span key={i} className="text-yellow-400">★</span>)}</div>
+                    <button onClick={() => handleDelete(review.id)} className="px-3 py-1 bg-red-500/20 text-red-400 rounded hover:bg-red-500/40 text-sm">Delete</button>
+                  </div>
                 </div>
-                <p className="text-white/60 text-sm mb-2">&ldquo;{review.content}&rdquo;</p>
-                <button onClick={() => handleDelete(review.id)} className="px-3 py-1 bg-red-500/20 text-red-400 rounded hover:bg-red-500/40 text-sm">Delete</button>
+                <p className="text-white/60 text-sm">&ldquo;{review.content}&rdquo;</p>
               </div>
             ))}
           </div>
@@ -813,8 +890,9 @@ function HomepageManager() {
   const loadImages = async () => {
     try {
       const res = await fetch('/api/homepage-images');
-      if (res.ok) { const data = await res.json(); setImages(data); }
-    } catch (e) { console.error('Failed to load images:', e); }
+      if (res.ok) { const data = await res.json(); setImages(Array.isArray(data) ? data : []); }
+      else { setImages([]); }
+    } catch (e) { console.error('Failed to load images:', e); setImages([]); }
   };
 
   const handleUpload = async () => {
@@ -865,7 +943,11 @@ function HomepageManager() {
                   
                   {selectedSection === section.key && ( 
                     <div className="mt-2">
-                      <input type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] || null)} className="text-xs text-white/60 mb-2" />
+                      <label className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/5 border border-white/10 rounded-lg text-white/60 text-xs cursor-pointer hover:bg-white/10 hover:text-white/80 transition-colors mb-2">
+                        <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
+                        Choose image
+                        <input type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] || null)} className="hidden" />
+                      </label>
                       {file && (<button onClick={handleUpload} disabled={uploading} className="w-full bg-[#FF6B35] text-white text-sm py-2 rounded-lg font-medium disabled:opacity-50">{uploading ? 'Uploading...' : 'Upload'}</button>)}
                     </div> 
                   )}

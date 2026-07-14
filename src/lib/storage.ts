@@ -93,8 +93,7 @@ function homepageImagesFilePath(): string {
 let supabaseClient: SupabaseClient | null = null;
 
 export function isSupabaseConfigured(): boolean {
-  // Always return true now - we fallback to hardcoded URL if env missing
-  return true;
+  return !!(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY);
 }
 
 function getSupabaseAdminClient(): SupabaseClient {
@@ -259,16 +258,26 @@ export async function saveHomepageImage(section: string, imageUrl: string): Prom
 }
 
 export async function deleteHomepageImage(id: string): Promise<void> {
-  if (isSupabaseConfigured()) {
-    const supabase = getSupabaseAdminClient();
-    await supabase.from('homepage_images').delete().eq('id', id);
-    return;
+  const FALLBACK_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdranN1ZnF1cHhrYnp1ZHNqZHVxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTkxMTc4OSwiZXhwIjoyMDkxNDg3Nzg5fQ.WkXFD6bbDcmJluaS1Sl3kNPF0uBqPV9He2LeZUA4AC0';
+  const SUPABASE_PROJECT_URL = 'https://gkjsufqupxkbzudsjduq.supabase.co';
+
+  try {
+    const deleteUrl = `${SUPABASE_PROJECT_URL}/rest/v1/homepage_images?id=eq.${encodeURIComponent(id)}`;
+    await fetch(deleteUrl, {
+      method: 'DELETE',
+      headers: {
+        'apikey': FALLBACK_KEY,
+        'Authorization': `Bearer ${FALLBACK_KEY}`,
+      },
+    });
+  } catch (e) {
+    console.log('[Storage] Delete via REST failed, trying local:', e);
+    const items = readLocalJson<HomepageImage>(homepageImagesFilePath());
+    writeLocalJson(
+      homepageImagesFilePath(),
+      items.filter((item) => item.id !== id)
+    );
   }
-  const items = readLocalJson<HomepageImage>(homepageImagesFilePath());
-  writeLocalJson(
-    homepageImagesFilePath(),
-    items.filter((item) => item.id !== id)
-  );
 }
 
 export async function getPortfolioItems(): Promise<PortfolioItem[]> {

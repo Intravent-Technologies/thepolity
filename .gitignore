@@ -38,6 +38,9 @@ prod_error.log
 .env*
 !.env.example
 
+# uploads
+/public/uploads/
+
 # vercel
 .vercel
 
