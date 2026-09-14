@@ -12,7 +12,7 @@
 
 ### 2. **Secure Password-Protected Admin Dashboard** 
 - **URL:** `http://localhost:3000/secure-admin-dashboard`
-- **Login Page:** Password authentication (default: `PolityAdmin123!@#`)
+- **Login Page:** Password authentication (set via `ADMIN_PASSWORD` env var)
 - **Token-Based Sessions:** Secure session management with localStorage
 - **Admin-Only Access:** Completely hidden from public navigation
 - **Beautiful Dark UI:** Glassmorphism design with Framer Motion effects
@@ -62,7 +62,7 @@ Contact:  http://localhost:3000/contact
 
 **Step 1:** Go to `http://localhost:3000/secure-admin-dashboard`
 
-**Step 2:** Enter password: `PolityAdmin123!@#`
+**Step 2:** Enter the password from your `ADMIN_PASSWORD` environment variable
 
 **Step 3:** Click "Access Dashboard"
 
@@ -89,10 +89,8 @@ http://localhost:3000/secure-admin-dashboard/dashboard
 
 ## 🔐 Security Settings
 
-### Default Admin Password
-```
-PolityAdmin123!@#
-```
+### Admin Password
+Set via the `ADMIN_PASSWORD` environment variable — there is no default.
 
 ### Change Password for Production
 
@@ -181,7 +179,7 @@ npm run dev
 
 ### Issue: Password not working
 1. Check `.env.local` file exists
-2. Verify `ADMIN_PASSWORD=PolityAdmin123!@#` is set
+2. Verify `ADMIN_PASSWORD` is set in `.env.local` and matches what you're entering
 3. Clear localStorage: Press F12 → Console → `localStorage.clear()`
 4. Refresh page
 
@@ -243,7 +241,7 @@ The website is now:
 **Start by accessing the secure admin dashboard:**
 ```
 http://localhost:3000/secure-admin-dashboard
-Password: PolityAdmin123!@#
+Use the password from your `ADMIN_PASSWORD` environment variable
 ```
 
 Enjoy your new stunning website! 🎊

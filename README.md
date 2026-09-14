@@ -119,8 +119,8 @@ http://localhost:3000
 ### Accessing the Admin Dashboard
 
 1. **URL:** `http://localhost:3000/secure-admin-dashboard`
-2. **Default Password:** `PolityAdmin123!@#` (see `.env.local`)
-3. **Session Duration:** 7 days (with token in localStorage)
+2. **Password:** set via the `ADMIN_PASSWORD` environment variable (see `.env.local` / Vercel env vars; there is no default password)
+3. **Session Duration:** 7 days (httpOnly cookie)
 
 ### Security Features
 
@@ -381,8 +381,6 @@ Available for use and modification for THE POLITY Services.
 | Admin Login | http://localhost:3000/secure-admin-dashboard |
 | Admin Dashboard | http://localhost:3000/secure-admin-dashboard/dashboard |
 
-## Default Credentials
+## Admin Credentials
 
-**Admin Password:** `PolityAdmin123!@#`
-
-⚠️ **Change this immediately in production!**
+Set the admin password via the `ADMIN_PASSWORD` environment variable (and `ADMIN_SESSION_SECRET` for session signing). There is no default password — the admin login will fail to start without these set.

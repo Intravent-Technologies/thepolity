@@ -1,8 +1,16 @@
 import crypto from 'crypto';
 
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'PolityAdmin123!@#';
-const ADMIN_SESSION_SECRET =
-  process.env.ADMIN_SESSION_SECRET || 'the-polity-admin-session-secret';
+function requiredEnv(name: string): string {
+  const value = process.env[name];
+  if (!value) {
+    throw new Error(`${name} environment variable is required`);
+  }
+  return value;
+}
+
+const ADMIN_PASSWORD = requiredEnv('ADMIN_PASSWORD');
+const ADMIN_SESSION_SECRET = requiredEnv('ADMIN_SESSION_SECRET');
+
 export const ADMIN_COOKIE_NAME = 'the_polity_admin_session';
 
 export function hashPassword(password: string): string {
