@@ -23,6 +23,15 @@ interface GalleryItem {
 
 type DashboardTab = 'portfolio' | 'gallery';
 
+async function uploadErrorMessage(response: Response, fallback: string): Promise<string> {
+  try {
+    const data = await response.json();
+    return data?.details || data?.error || fallback;
+  } catch {
+    return fallback;
+  }
+}
+
 export default function AdminDashboard() {
   const [tab, setTab] = useState<DashboardTab>('portfolio');
   const [status, setStatus] = useState<'checking' | 'authorized' | 'unauthorized'>('checking');
@@ -192,14 +201,14 @@ function PortfolioManager() {
       });
 
       if (!response.ok) {
-        throw new Error('Upload failed');
+        throw new Error(await uploadErrorMessage(response, 'Upload failed'));
       }
 
       const data = await response.json();
       setImage(data.url);
     } catch (error) {
       console.error('Portfolio image upload error:', error);
-      alert('Failed to upload image');
+      alert(error instanceof Error ? error.message : 'Failed to upload image');
     } finally {
       setUploading(false);
     }
@@ -445,7 +454,7 @@ function GalleryManager() {
       });
 
       if (!uploadResponse.ok) {
-        throw new Error('Upload failed');
+        throw new Error(await uploadErrorMessage(uploadResponse, 'Upload failed'));
       }
 
       const uploadData = await uploadResponse.json();
@@ -458,7 +467,7 @@ function GalleryManager() {
       });
 
       if (!response.ok) {
-        throw new Error('Create failed');
+        throw new Error(await uploadErrorMessage(response, 'Create failed'));
       }
 
       const newItem = await response.json();
