@@ -56,9 +56,9 @@ export default function Photography({ params }: { params: { slug: string } }) {
   return (
     <>
       <Header />
-      <main className="overflow-x-hidden bg-[#0a0a0a] pt-20 text-white">
+      <main className="overflow-x-hidden bg-white pt-20 text-[#0a0a0a]">
         <section className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#001F3F]/30 via-[#0a0a0a] to-[#0a0a0a]" />
+          <div className="absolute inset-0 bg-gradient-to-br from-[#001F3F]/10 via-white to-white" />
           <div className="relative mx-auto flex min-h-[60vh] max-w-7xl items-center px-6 py-24 sm:px-8 lg:px-12">
             <motion.div
               initial={{ opacity: 0, y: 24 }}
@@ -72,7 +72,7 @@ export default function Photography({ params }: { params: { slug: string } }) {
               <h1 className="text-5xl font-bold leading-tight sm:text-6xl lg:text-7xl">
                 <span className="text-[#FF6B35]">{service.title}</span>
               </h1>
-              <p className="mt-6 max-w-3xl text-lg text-white/70 sm:text-xl">
+              <p className="mt-6 max-w-3xl text-lg text-black/70 sm:text-xl">
                 {service.description}
               </p>
             </motion.div>
@@ -86,15 +86,15 @@ export default function Photography({ params }: { params: { slug: string } }) {
                 initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                className="rounded-2xl border border-white/10 bg-white/5 p-8"
+                className="rounded-2xl border border-black/10 bg-black/5 p-8"
               >
                 <Icon className="w-16 h-16 text-[#FF6B35] mb-6" />
                 <h2 className="text-2xl font-bold mb-4">Professional {service.title}</h2>
-                <p className="text-white/60 mb-6">
+                <p className="text-black/60 mb-6">
                   We deliver high-quality {service.title.toLowerCase()} services tailored to your needs. 
                   Our experienced team ensures every detail is captured perfectly.
                 </p>
-                <ul className="space-y-3 text-white/70">
+                <ul className="space-y-3 text-black/70">
                   <li className="flex items-center gap-2">
                     <span className="w-2 h-2 rounded-full bg-[#FF6B35]" />
                     High-resolution delivery
@@ -115,10 +115,10 @@ export default function Photography({ params }: { params: { slug: string } }) {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.1 }}
-                className="rounded-2xl border border-white/10 bg-white/5 p-8"
+                className="rounded-2xl border border-black/10 bg-black/5 p-8"
               >
                 <h3 className="text-xl font-bold mb-4">What's Included</h3>
-                <ul className="space-y-4 text-white/70">
+                <ul className="space-y-4 text-black/70">
                   <li>• Professional {service.title.toLowerCase()}</li>
                   <li>• Multiple locations (where applicable)</li>
                   <li>• High-resolution digital files</li>
@@ -139,7 +139,7 @@ export default function Photography({ params }: { params: { slug: string } }) {
               className="mb-16 text-center"
             >
               <h2 className="text-4xl font-bold mb-4">Our Photography</h2>
-              <p className="text-white/70">Professional shots for every need</p>
+              <p className="text-black/70">Professional shots for every need</p>
             </motion.div>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {galleryImages.map((img, index) => (
@@ -149,7 +149,7 @@ export default function Photography({ params }: { params: { slug: string } }) {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
-                  className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5"
+                  className="group relative overflow-hidden rounded-2xl border border-black/10 bg-black/5"
                 >
                   {images[img.key] ? (
                     <img src={images[img.key]} alt={img.title} className="w-full aspect-[4/3] object-cover" />
@@ -160,7 +160,7 @@ export default function Photography({ params }: { params: { slug: string } }) {
                   )}
                   <div className="p-6">
                     <h3 className="text-xl font-bold mb-2 group-hover:text-[#FF6B35] transition-colors">{img.title}</h3>
-                    <p className="text-white/60 text-sm">{img.desc}</p>
+                    <p className="text-black/60 text-sm">{img.desc}</p>
                   </div>
                 </motion.div>
               ))}
@@ -181,10 +181,10 @@ export default function Photography({ params }: { params: { slug: string } }) {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="mx-auto max-w-5xl rounded-3xl border border-white/10 bg-gradient-to-br from-[#001F3F] to-[#0a0a0a] p-10 text-center lg:p-14"
+            className="mx-auto max-w-5xl rounded-3xl border border-black/10 bg-gradient-to-br from-[#001F3F]/10 to-white p-10 text-center lg:p-14"
           >
             <h2 className="text-4xl font-bold sm:text-5xl">Ready for {service.title}?</h2>
-            <p className="mx-auto mt-5 max-w-2xl text-lg text-white/70">
+            <p className="mx-auto mt-5 max-w-2xl text-lg text-black/70">
               Contact us to book your session.
             </p>
             <Link

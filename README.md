@@ -41,17 +41,17 @@ A stunning, modern website replica for THE POLITY Services with beautiful Framer
 - Drag-and-drop file management
 
 ### 🎨 **Modern Design**
-- Dark mode admin dashboard
+- Light, airy interface on white
 - Glassmorphism effects
 - Gradient backgrounds
-- Orange accent colors (#f97316)
+- Brand palette: orange `#FF6B35` and navy `#001F3F`
 - Smooth transitions
 - Professional typography
 
 ## Project Structure
 
 ```
-thepolity-web/
+thepolity/
 ├── src/
 │   ├── app/
 │   │   ├── page.tsx                          # Home page
@@ -96,7 +96,7 @@ thepolity-web/
 
 1. Navigate to the project directory:
 ```bash
-cd C:\Users\these\thepolity-web
+cd thepolity
 ```
 
 2. Install dependencies (if not already done):
@@ -119,8 +119,12 @@ http://localhost:3000
 ### Accessing the Admin Dashboard
 
 1. **URL:** `http://localhost:3000/secure-admin-dashboard`
-2. **Default Password:** `PolityAdmin123!@#` (see `.env.local`)
-3. **Session Duration:** 7 days (with token in localStorage)
+2. **Password:** the value of `ADMIN_PASSWORD` in your `.env.local`. There is
+   **no default password** — if the variable is unset the login endpoint
+   returns `503` and rejects every password, so the dashboard stays locked
+   rather than falling back to a known credential.
+3. **Session Duration:** 8 hours by default (`ADMIN_SESSION_TTL_HOURS`), held in
+   an `httpOnly` cookie — not in `localStorage`, so page scripts cannot read it.
 
 ### Security Features
 
@@ -163,11 +167,12 @@ ADMIN_PASSWORD=YourNewSecurePassword123!@#
 ## 🎨 Customization
 
 ### Colors
-- Primary Orange: `#f97316`
-- Dark Background: `#0f172a` (slate-900)
-- Gradients: Orange to Orange-600
+- Primary Orange: `#FF6B35`
+- Navy: `#001F3F`
+- Background: white (`#ffffff`)
+- Foreground: near-black (`#0a0a0a`)
 
-Edit component files or Tailwind config to change colors.
+Edit component files or the CSS variables in `src/app/globals.css` to change colors.
 
 ### Animations
 - Animation variants in `src/lib/animations.ts`
@@ -383,6 +388,8 @@ Available for use and modification for THE POLITY Services.
 
 ## Default Credentials
 
-**Admin Password:** `PolityAdmin123!@#`
-
-⚠️ **Change this immediately in production!**
+There are no default credentials. Admin access is driven entirely by
+`ADMIN_PASSWORD` and `ADMIN_SESSION_SECRET` in `.env.local` (see
+`.env.example`). If either is missing the admin login returns `503` and
+rejects every password, so an unconfigured deploy is locked rather than
+falling back to a guessable secret.

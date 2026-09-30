@@ -18,9 +18,9 @@ export default function Media() {
   return (
     <>
       <Header />
-      <main className="overflow-x-hidden bg-[#0a0a0a] pt-20 text-white">
+      <main className="overflow-x-hidden bg-white pt-20 text-[#0a0a0a]">
         <section className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#001F3F]/30 via-[#0a0a0a] to-[#0a0a0a]" />
+          <div className="absolute inset-0 bg-gradient-to-br from-[#001F3F]/10 via-white to-white" />
           <div className="relative mx-auto flex min-h-[60vh] max-w-7xl items-center px-6 py-24 sm:px-8 lg:px-12">
             <motion.div
               initial={{ opacity: 0, y: 24 }}
@@ -35,7 +35,7 @@ export default function Media() {
                 Capturing moments,
                 <span className="text-[#FF6B35]"> creating memories.</span>
               </h1>
-              <p className="mt-6 max-w-3xl text-lg text-white/70 sm:text-xl">
+              <p className="mt-6 max-w-3xl text-lg text-black/70 sm:text-xl">
                 Professional photography, events coverage, and visual storytelling.
               </p>
             </motion.div>
@@ -52,11 +52,11 @@ export default function Media() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.08 }}
-                  className="group rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] p-8 transition-all duration-300 hover:border-[#FF6B35]/50"
+                  className="group rounded-3xl border border-black/10 bg-gradient-to-br from-black/5 to-black/[0.02] p-8 transition-all duration-300 hover:border-[#FF6B35]/50"
                 >
                   <service.icon className="w-12 h-12 text-[#FF6B35] mb-4" />
                   <h2 className="mb-4 text-2xl font-bold">{service.title}</h2>
-                  <p className="mb-6 text-white/70">{service.description}</p>
+                  <p className="mb-6 text-black/70">{service.description}</p>
                   <Link
                     href={`/services/media/${service.slug}`}
                     className="inline-flex items-center gap-2 text-sm font-medium text-[#FF6B35] hover:underline"
@@ -74,10 +74,10 @@ export default function Media() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="mx-auto max-w-5xl rounded-3xl border border-white/10 bg-gradient-to-br from-[#001F3F] to-[#0a0a0a] p-10 text-center lg:p-14"
+            className="mx-auto max-w-5xl rounded-3xl border border-black/10 bg-gradient-to-br from-[#001F3F]/10 to-white p-10 text-center lg:p-14"
           >
             <h2 className="text-4xl font-bold sm:text-5xl">Ready to capture your moments?</h2>
-            <p className="mx-auto mt-5 max-w-2xl text-lg text-white/70">
+            <p className="mx-auto mt-5 max-w-2xl text-lg text-black/70">
               Contact us today to discuss your media needs.
             </p>
             <Link

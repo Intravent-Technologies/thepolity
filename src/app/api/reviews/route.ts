@@ -4,65 +4,46 @@ import {
   addReview,
   deleteReview,
 } from '@/lib/storage';
-import { ADMIN_COOKIE_NAME, validateAdminSessionToken } from '@/lib/auth';
+import { parseContentBody, type ContentEntity } from '@/lib/content-schema';
+import { readIdParam, readJsonBody, requireAdmin, toErrorResponse } from '@/lib/api-guard';
+
+const ENTITY: ContentEntity = 'reviews';
 
 export async function GET() {
   try {
-    const reviews = await getReviews();
-    return NextResponse.json(reviews);
+    const items = await getReviews();
+    return NextResponse.json(items);
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to fetch reviews' },
-      { status: 500 }
-    );
+    console.error('[api:reviews] GET failed:', error);
+    return NextResponse.json({ error: 'Failed to fetch reviews' }, { status: 500 });
   }
 }
 
 export async function POST(request: NextRequest) {
-  try {
-    const token = request.cookies.get(ADMIN_COOKIE_NAME)?.value;
-    if (!validateAdminSessionToken(token)) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+  const denied = requireAdmin(request);
+  if (denied) {
+    return denied;
+  }
 
-    const data = await request.json();
-    const review = await addReview(data);
-    return NextResponse.json(review, { status: 201 });
+  try {
+    const body = parseContentBody(ENTITY, await readJsonBody(request));
+    const item = await addReview(body as Parameters<typeof addReview>[0]);
+    return NextResponse.json(item, { status: 201 });
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to create review' },
-      { status: 500 }
-    );
+    return toErrorResponse(error, 'Failed to create reviews');
   }
 }
 
 export async function DELETE(request: NextRequest) {
-  try {
-    const token = request.cookies.get(ADMIN_COOKIE_NAME)?.value;
-    if (!validateAdminSessionToken(token)) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+  const denied = requireAdmin(request);
+  if (denied) {
+    return denied;
+  }
 
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-    if (!id) {
-      return NextResponse.json(
-        { error: 'Missing id parameter' },
-        { status: 400 }
-      );
-    }
-    await deleteReview(id);
+  try {
+    await deleteReview(readIdParam(request));
     return NextResponse.json({ success: true });
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to delete review' },
-      { status: 500 }
-    );
+    return toErrorResponse(error, 'Failed to delete reviews');
   }
 }

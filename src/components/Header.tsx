@@ -47,7 +47,7 @@ export default function Header() {
     <header
       className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
         isScrolled
-          ? 'bg-[#0a0a0a]/95 backdrop-blur-md border-b border-white/10'
+          ? 'bg-white/95 backdrop-blur-md border-b border-black/10'
           : 'bg-transparent'
       }`}
     >
@@ -60,7 +60,7 @@ export default function Header() {
               transition={{ duration: 0.5 }}
             >
               <span className="text-2xl font-bold tracking-tight">
-                <span className="text-white">THE</span>
+                <span className="text-[#0a0a0a]">THE</span>
                 <span className="text-[#FF6B35]"> POLITY</span>
               </span>
             </motion.div>
@@ -79,7 +79,7 @@ export default function Header() {
               >
                 <Link
                   href={link.href}
-                  className="text-sm font-medium text-white/80 hover:text-white transition-colors duration-200 relative group flex items-center gap-1"
+                  className="text-sm font-medium text-black/80 hover:text-[#0a0a0a] transition-colors duration-200 relative group flex items-center gap-1"
                 >
                   {link.name}
                   {link.hasDropdown && <ChevronDown className="w-4 h-4" />}
@@ -93,7 +93,7 @@ export default function Header() {
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
                         exit={{ opacity: 0, y: 10 }}
-                        className="absolute top-full left-0 mt-2 w-56 bg-[#111] border border-white/10 rounded-xl shadow-2xl overflow-hidden"
+                        className="absolute top-full left-0 mt-2 w-56 bg-white border border-black/10 rounded-xl shadow-2xl overflow-hidden"
                       >
                         {services.map((service) => (
                           <div
@@ -104,7 +104,7 @@ export default function Header() {
                           >
                             <Link
                               href={service.href}
-                              className="flex items-center justify-between px-4 py-3 text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+                              className="flex items-center justify-between px-4 py-3 text-sm text-black/70 hover:text-[#0a0a0a] hover:bg-black/5 transition-colors"
                             >
                               {service.name}
                               {service.hasSubMenu && <ChevronDown className="w-3 h-3 -rotate-90" />}
@@ -114,13 +114,13 @@ export default function Header() {
                               <motion.div
                                 initial={{ opacity: 0, x: 10 }}
                                 animate={{ opacity: 1, x: 0 }}
-                                className="absolute top-0 left-full ml-1 w-48 bg-[#111] border border-white/10 rounded-xl shadow-2xl overflow-hidden"
+                                className="absolute top-0 left-full ml-1 w-48 bg-white border border-black/10 rounded-xl shadow-2xl overflow-hidden"
                               >
                                 {service.subItems.map((media) => (
                                   <Link
                                     key={media.name}
                                     href={media.href}
-                                    className="block px-4 py-3 text-sm text-white/70 hover:text-white hover:bg-white/5 transition-colors"
+                                    className="block px-4 py-3 text-sm text-black/70 hover:text-[#0a0a0a] hover:bg-black/5 transition-colors"
                                   >
                                     {media.name}
                                   </Link>
@@ -153,7 +153,7 @@ export default function Header() {
 
           <button
             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden p-2 text-white"
+            className="md:hidden p-2 text-[#0a0a0a]"
           >
             {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
           </button>
@@ -166,7 +166,7 @@ export default function Header() {
             initial={{ opacity: 0, height: 0 }}
             animate={{ opacity: 1, height: 'auto' }}
             exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-[#0a0a0a] border-t border-white/10"
+            className="md:hidden bg-white border-t border-black/10"
           >
             <nav className="flex flex-col px-6 py-4 gap-4">
               {navLinks.map((link) => (
@@ -174,7 +174,7 @@ export default function Header() {
                   key={link.name}
                   href={link.href}
                   onClick={() => setIsMobileMenuOpen(false)}
-                  className="text-white/80 hover:text-white py-2 transition-colors"
+                  className="text-black/80 hover:text-[#0a0a0a] py-2 transition-colors"
                 >
                   {link.name}
                 </Link>

@@ -40,9 +40,9 @@ export default function Contact() {
   return (
     <>
       <Header />
-      <main className="overflow-x-hidden bg-[#0a0a0a] pt-20 text-white">
+      <main className="overflow-x-hidden bg-white pt-20 text-[#0a0a0a]">
         <section className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#001F3F]/30 via-[#0a0a0a] to-[#0a0a0a]" />
+          <div className="absolute inset-0 bg-gradient-to-br from-[#001F3F]/10 via-white to-white" />
           <div className="relative mx-auto flex min-h-[55vh] max-w-7xl items-center px-6 py-24 sm:px-8 lg:px-12">
             <motion.div
               initial={{ opacity: 0, y: 24 }}
@@ -57,7 +57,7 @@ export default function Contact() {
                 Let&apos;s talk about what your
                 <span className="text-[#FF6B35]"> next move requires.</span>
               </h1>
-              <p className="mt-6 max-w-3xl text-lg text-white/70 sm:text-xl">
+              <p className="mt-6 max-w-3xl text-lg text-black/70 sm:text-xl">
                 Ready to transform your business? Let&apos;s discuss how we can help you achieve your goals.
               </p>
             </motion.div>
@@ -70,24 +70,24 @@ export default function Contact() {
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="rounded-3xl border border-white/10 bg-gradient-to-br from-[#001F3F]/35 to-[#0f0f0f] p-8"
+              className="rounded-3xl border border-black/10 bg-gradient-to-br from-[#001F3F]/35 to-[#fafafa] p-8"
             >
               <h2 className="text-3xl font-bold sm:text-4xl">Reach us directly</h2>
-              <p className="mt-4 text-white/70">
+              <p className="mt-4 text-black/70">
                 If you already know what you need, send us a note and we will follow up quickly.
               </p>
 
               <div className="mt-10 space-y-6">
                 {contactInfo.map((info) => (
-                  <div key={info.label} className="flex gap-4 rounded-2xl border border-white/10 bg-white/5 p-5">
+                  <div key={info.label} className="flex gap-4 rounded-2xl border border-black/10 bg-black/5 p-5">
                     <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-[#FF6B35]">
-                      <info.icon className="h-5 w-5 text-white" />
+                      <info.icon className="h-5 w-5 text-[#0a0a0a]" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium uppercase tracking-[0.2em] text-white/45">
+                      <p className="text-sm font-medium uppercase tracking-[0.2em] text-black/45">
                         {info.label}
                       </p>
-                      <p className="mt-1 text-lg text-white">{info.value}</p>
+                      <p className="mt-1 text-lg text-[#0a0a0a]">{info.value}</p>
                     </div>
                   </div>
                 ))}
@@ -98,10 +98,10 @@ export default function Contact() {
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] p-8"
+              className="rounded-3xl border border-black/10 bg-gradient-to-br from-black/5 to-black/[0.02] p-8"
             >
               <h2 className="text-3xl font-bold sm:text-4xl">Send a message</h2>
-              <p className="mt-4 text-white/70">
+              <p className="mt-4 text-black/70">
                 Tell us about your goals, current challenges, or the support you are looking for.
               </p>
 
@@ -120,7 +120,7 @@ export default function Contact() {
                       onChange={handleChange}
                       required
                       placeholder="Your name"
-                      className="w-full rounded-2xl border border-white/15 bg-black/20 px-5 py-4 text-white placeholder:text-white/35 focus:border-[#FF6B35] focus:outline-none"
+                      className="w-full rounded-2xl border border-black/15 bg-black/5 px-5 py-4 text-[#0a0a0a] placeholder:text-black/35 focus:border-[#FF6B35] focus:outline-none"
                     />
                   </Field>
                   <Field label="Email">
@@ -131,7 +131,7 @@ export default function Contact() {
                       onChange={handleChange}
                       required
                       placeholder="your@email.com"
-                      className="w-full rounded-2xl border border-white/15 bg-black/20 px-5 py-4 text-white placeholder:text-white/35 focus:border-[#FF6B35] focus:outline-none"
+                      className="w-full rounded-2xl border border-black/15 bg-black/5 px-5 py-4 text-[#0a0a0a] placeholder:text-black/35 focus:border-[#FF6B35] focus:outline-none"
                     />
                   </Field>
                 </div>
@@ -143,7 +143,7 @@ export default function Contact() {
                       value={formData.phone}
                       onChange={handleChange}
                       placeholder="+1 (555) 123-4567"
-                      className="w-full rounded-2xl border border-white/15 bg-black/20 px-5 py-4 text-white placeholder:text-white/35 focus:border-[#FF6B35] focus:outline-none"
+                      className="w-full rounded-2xl border border-black/15 bg-black/5 px-5 py-4 text-[#0a0a0a] placeholder:text-black/35 focus:border-[#FF6B35] focus:outline-none"
                     />
                   </Field>
                   <Field label="Company">
@@ -152,7 +152,7 @@ export default function Contact() {
                       value={formData.company}
                       onChange={handleChange}
                       placeholder="Your company"
-                      className="w-full rounded-2xl border border-white/15 bg-black/20 px-5 py-4 text-white placeholder:text-white/35 focus:border-[#FF6B35] focus:outline-none"
+                      className="w-full rounded-2xl border border-black/15 bg-black/5 px-5 py-4 text-[#0a0a0a] placeholder:text-black/35 focus:border-[#FF6B35] focus:outline-none"
                     />
                   </Field>
                 </div>
@@ -165,7 +165,7 @@ export default function Contact() {
                     required
                     rows={6}
                     placeholder="Tell us how we can help..."
-                    className="w-full resize-none rounded-2xl border border-white/15 bg-black/20 px-5 py-4 text-white placeholder:text-white/35 focus:border-[#FF6B35] focus:outline-none"
+                    className="w-full resize-none rounded-2xl border border-black/15 bg-black/5 px-5 py-4 text-[#0a0a0a] placeholder:text-black/35 focus:border-[#FF6B35] focus:outline-none"
                   />
                 </Field>
 
@@ -194,7 +194,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="mb-2 block text-sm font-medium uppercase tracking-[0.2em] text-white/55">
+      <span className="mb-2 block text-sm font-medium uppercase tracking-[0.2em] text-black/55">
         {label}
       </span>
       {children}

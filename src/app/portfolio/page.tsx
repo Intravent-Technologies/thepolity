@@ -48,9 +48,9 @@ export default function Portfolio() {
   return (
     <>
       <Header />
-      <main className="overflow-x-hidden bg-[#0a0a0a] pt-20 text-white">
+      <main className="overflow-x-hidden bg-white pt-20 text-[#0a0a0a]">
         <section className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#001F3F]/30 via-[#0a0a0a] to-[#0a0a0a]" />
+          <div className="absolute inset-0 bg-gradient-to-br from-[#001F3F]/10 via-white to-white" />
           <div className="relative mx-auto flex min-h-[60vh] max-w-7xl items-center px-6 py-24 sm:px-8 lg:px-12">
             <motion.div
               initial={{ opacity: 0, y: 24 }}
@@ -65,7 +65,7 @@ export default function Portfolio() {
                 Our work speaks for 
                 <span className="text-[#FF6B35]"> itself.</span>
               </h1>
-              <p className="mt-6 max-w-3xl text-lg text-white/70 sm:text-xl">
+              <p className="mt-6 max-w-3xl text-lg text-black/70 sm:text-xl">
                 Browse our portfolio by service category to see how we've helped businesses transform their digital presence and achieve measurable results.
               </p>
             </motion.div>
@@ -83,7 +83,7 @@ export default function Portfolio() {
                   className={`px-6 py-2 rounded-full text-sm font-medium transition-colors ${
                     filter === cat
                       ? 'bg-[#FF6B35] text-white'
-                      : 'border border-white/20 text-white/70 hover:text-white hover:border-white/40'
+                      : 'border border-black/20 text-black/70 hover:text-[#0a0a0a] hover:border-black/40'
                   }`}
                 >
                   {cat}
@@ -92,11 +92,11 @@ export default function Portfolio() {
             </div>
 
             {loading ? (
-              <p className="text-white/60">Loading portfolio...</p>
+              <p className="text-black/60">Loading portfolio...</p>
             ) : filteredItems.length === 0 ? (
-              <div className="rounded-3xl border border-white/10 bg-white/5 p-10 text-center">
+              <div className="rounded-3xl border border-black/10 bg-black/5 p-10 text-center">
                 <h2 className="text-3xl font-bold">No projects in this category yet</h2>
-                <p className="mt-4 text-white/65">
+                <p className="mt-4 text-black/65">
                   We're constantly adding new work. Check back soon or contact us to discuss your project.
                 </p>
               </div>
@@ -109,7 +109,7 @@ export default function Portfolio() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: index * 0.08 }}
-                    className="overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02]"
+                    className="overflow-hidden rounded-3xl border border-black/10 bg-gradient-to-br from-black/5 to-black/[0.02]"
                   >
                     <div className="h-64 bg-black">
                       <img src={item.image} alt={item.title} className="h-full w-full object-cover" />
@@ -117,7 +117,7 @@ export default function Portfolio() {
                     <div className="p-8">
                       <p className="mb-3 text-sm font-semibold text-[#FF6B35]">{item.category}</p>
                       <h2 className="mb-4 text-3xl font-bold">{item.title}</h2>
-                      <p className="leading-relaxed text-white/70">{item.description || 'Delivering exceptional results through strategic planning and execution.'}</p>
+                      <p className="leading-relaxed text-black/70">{item.description || 'Delivering exceptional results through strategic planning and execution.'}</p>
                     </div>
                   </motion.article>
                 ))}
@@ -131,10 +131,10 @@ export default function Portfolio() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="mx-auto max-w-5xl rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 to-[#FF6B35]/10 p-10 text-center lg:p-14"
+            className="mx-auto max-w-5xl rounded-3xl border border-black/10 bg-gradient-to-br from-black/5 to-[#FF6B35]/10 p-10 text-center lg:p-14"
           >
             <h2 className="text-4xl font-bold sm:text-5xl">Ready for your own success story?</h2>
-            <p className="mx-auto mt-5 max-w-2xl text-lg text-white/70">
+            <p className="mx-auto mt-5 max-w-2xl text-lg text-black/70">
               We can help you shape the next case study with a plan that fits your team and your market.
             </p>
             <Link

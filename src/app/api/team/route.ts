@@ -4,65 +4,46 @@ import {
   addTeamMember,
   deleteTeamMember,
 } from '@/lib/storage';
-import { ADMIN_COOKIE_NAME, validateAdminSessionToken } from '@/lib/auth';
+import { parseContentBody, type ContentEntity } from '@/lib/content-schema';
+import { readIdParam, readJsonBody, requireAdmin, toErrorResponse } from '@/lib/api-guard';
+
+const ENTITY: ContentEntity = 'team';
 
 export async function GET() {
   try {
-    const members = await getTeamMembers();
-    return NextResponse.json(members);
+    const items = await getTeamMembers();
+    return NextResponse.json(items);
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to fetch team members' },
-      { status: 500 }
-    );
+    console.error('[api:team] GET failed:', error);
+    return NextResponse.json({ error: 'Failed to fetch team' }, { status: 500 });
   }
 }
 
 export async function POST(request: NextRequest) {
-  try {
-    const token = request.cookies.get(ADMIN_COOKIE_NAME)?.value;
-    if (!validateAdminSessionToken(token)) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+  const denied = requireAdmin(request);
+  if (denied) {
+    return denied;
+  }
 
-    const data = await request.json();
-    const member = await addTeamMember(data);
-    return NextResponse.json(member, { status: 201 });
+  try {
+    const body = parseContentBody(ENTITY, await readJsonBody(request));
+    const item = await addTeamMember(body as Parameters<typeof addTeamMember>[0]);
+    return NextResponse.json(item, { status: 201 });
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to create team member' },
-      { status: 500 }
-    );
+    return toErrorResponse(error, 'Failed to create team');
   }
 }
 
 export async function DELETE(request: NextRequest) {
-  try {
-    const token = request.cookies.get(ADMIN_COOKIE_NAME)?.value;
-    if (!validateAdminSessionToken(token)) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+  const denied = requireAdmin(request);
+  if (denied) {
+    return denied;
+  }
 
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-    if (!id) {
-      return NextResponse.json(
-        { error: 'Missing id parameter' },
-        { status: 400 }
-      );
-    }
-    await deleteTeamMember(id);
+  try {
+    await deleteTeamMember(readIdParam(request));
     return NextResponse.json({ success: true });
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to delete team member' },
-      { status: 500 }
-    );
+    return toErrorResponse(error, 'Failed to delete team');
   }
 }

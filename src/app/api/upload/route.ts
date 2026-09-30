@@ -1,75 +1,112 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { ADMIN_COOKIE_NAME, validateAdminSessionToken } from '@/lib/auth';
+import { clientIp, rateLimit } from '@/lib/rate-limit';
+import {
+  containsMarkup,
+  detectContentType,
+  hasAllowedExtension,
+  isAllowedUploadType,
+  safeUploadName,
+} from '@/lib/validate';
 import { uploadMediaFile, saveHomepageImage } from '@/lib/storage';
 
+const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
+const MAX_VIDEO_BYTES = 100 * 1024 * 1024;
+const MAX_UPLOADS_PER_HOUR = 120;
+const UPLOAD_TYPES = ['portfolio', 'gallery', 'homepage'] as const;
+
+type UploadType = (typeof UPLOAD_TYPES)[number];
+
+function isUploadType(value: unknown): value is UploadType {
+  return typeof value === 'string' && (UPLOAD_TYPES as readonly string[]).includes(value);
+}
+
 export async function POST(request: NextRequest) {
+  const ip = clientIp(request);
+  const limit = rateLimit(`upload:${ip}`, MAX_UPLOADS_PER_HOUR, 60 * 60 * 1000);
+
+  if (!limit.ok) {
+    return NextResponse.json(
+      { error: 'Too many uploads. Please try again later.' },
+      { status: 429, headers: { 'Retry-After': String(limit.retryAfterSeconds) } }
+    );
+  }
+
+  const token = request.cookies.get(ADMIN_COOKIE_NAME)?.value;
+  if (!validateAdminSessionToken(token)) {
+    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  }
+
+  let formData: FormData;
   try {
-    const token = request.cookies.get(ADMIN_COOKIE_NAME)?.value;
-    if (!validateAdminSessionToken(token)) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    formData = await request.formData();
+  } catch {
+    return NextResponse.json({ error: 'Invalid upload request' }, { status: 400 });
+  }
 
-    const formData = await request.formData();
-    const file = formData.get('file') as File;
-    const type = formData.get('type') as string; // 'portfolio', 'gallery', or 'homepage'
-    const section = formData.get('section') as string; // For homepage images
+  const file = formData.get('file');
+  const type = formData.get('type');
+  const section = formData.get('section');
 
-    if (!file) {
-      return NextResponse.json(
-        { error: 'No file provided' },
-        { status: 400 }
-      );
-    }
+  if (!(file instanceof File) || file.size === 0) {
+    return NextResponse.json({ error: 'No file provided' }, { status: 400 });
+  }
 
-    if (!['portfolio', 'gallery', 'homepage'].includes(type)) {
-      return NextResponse.json(
-        { error: 'Invalid upload type' },
-        { status: 400 }
-      );
-    }
+  if (!isUploadType(type)) {
+    return NextResponse.json({ error: 'Invalid upload type' }, { status: 400 });
+  }
 
-    const isImage = file.type.startsWith('image/');
-    const isVideo = file.type.startsWith('video/');
-    const isValidPortfolioFile = type === 'portfolio' && isImage;
-    const isValidGalleryFile = type === 'gallery' && (isImage || isVideo);
-    const isValidHomepageFile = type === 'homepage' && isImage;
+  const buffer = Buffer.from(await file.arrayBuffer());
 
-    if (!isValidPortfolioFile && !isValidGalleryFile && !isValidHomepageFile) {
-      return NextResponse.json(
-        { error: 'Unsupported file type for this upload' },
-        { status: 400 }
-      );
-    }
+  const detected = detectContentType(buffer);
+  if (!detected || !isAllowedUploadType(detected)) {
+    return NextResponse.json(
+      { error: 'Unsupported file type. Allowed: JPEG, PNG, WebP, GIF, AVIF, TIFF, MP4, WebM, MOV.' },
+      { status: 400 }
+    );
+  }
 
-    const bytes = await file.arrayBuffer();
-    const buffer = Buffer.from(bytes);
+  if (containsMarkup(buffer)) {
+    return NextResponse.json(
+      { error: 'File rejected: it contains markup or script content.' },
+      { status: 400 }
+    );
+  }
 
-    let directory: 'portfolio' | 'gallery' = type === 'homepage' ? 'gallery' : (type as 'portfolio' | 'gallery');
-    
+  if (!hasAllowedExtension(file.name, detected)) {
+    return NextResponse.json(
+      { error: 'File extension does not match the file contents.' },
+      { status: 400 }
+    );
+  }
+
+  const isVideo = detected.startsWith('video/');
+  const maxBytes = isVideo ? MAX_VIDEO_BYTES : MAX_IMAGE_BYTES;
+
+  if (buffer.byteLength > maxBytes) {
+    return NextResponse.json(
+      { error: `File too large. Maximum size is ${Math.round(maxBytes / (1024 * 1024))}MB.` },
+      { status: 413 }
+    );
+  }
+
+  const directory = type === 'homepage' ? 'gallery' : type;
+
+  try {
     const uploaded = await uploadMediaFile({
       buffer,
-      contentType: file.type,
-      filename: file.name,
+      contentType: detected,
+      filename: `${Date.now()}-${safeUploadName(file.name)}`,
       directory,
     });
 
-    // If homepage type, save the mapping
-    if (type === 'homepage' && section) {
-      try {
-        console.log('[Upload] Saving homepage image:', section, uploaded.url);
-        await saveHomepageImage(section, uploaded.url);
-        console.log('[Upload] Homepage image saved successfully');
-      } catch (e) {
-        console.error('[Upload] Failed to save homepage image mapping:', e);
-      }
+    if (type === 'homepage' && typeof section === 'string' && section.length > 0) {
+      await saveHomepageImage(section, uploaded.url);
     }
 
     return NextResponse.json(uploaded, { status: 200 });
   } catch (error) {
-    console.error('Upload error:', error);
-    return NextResponse.json(
-      { error: 'Upload failed', details:error instanceof Error ? error.message : String(error) },
-      { status: 500 }
-    );
+    console.error('[upload] failed:', error);
+    return NextResponse.json({ error: 'Upload failed' }, { status: 500 });
   }
 }

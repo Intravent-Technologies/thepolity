@@ -39,9 +39,9 @@ export default function Services() {
   return (
     <>
       <Header />
-      <main className="overflow-x-hidden bg-[#0a0a0a] pt-20 text-white">
+      <main className="overflow-x-hidden bg-white pt-20 text-[#0a0a0a]">
         <section className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#001F3F]/30 via-[#0a0a0a] to-[#0a0a0a]" />
+          <div className="absolute inset-0 bg-gradient-to-br from-[#001F3F]/10 via-white to-white" />
           <div className="relative mx-auto flex min-h-[60vh] max-w-7xl items-center px-6 py-24 sm:px-8 lg:px-12">
             <motion.div
               initial={{ opacity: 0, y: 24 }}
@@ -56,7 +56,7 @@ export default function Services() {
                 Expert support for
                 <span className="text-[#FF6B35]"> your business.</span>
               </h1>
-              <p className="mt-6 max-w-3xl text-lg text-white/70 sm:text-xl">
+              <p className="mt-6 max-w-3xl text-lg text-black/70 sm:text-xl">
                 IT Consultancy, Media services, and Project Management tailored to your needs.
               </p>
             </motion.div>
@@ -73,14 +73,14 @@ export default function Services() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.08 }}
-                  className="group rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02] p-8 transition-all duration-300 hover:border-[#FF6B35]/50"
+                  className="group rounded-3xl border border-black/10 bg-gradient-to-br from-black/5 to-black/[0.02] p-8 transition-all duration-300 hover:border-[#FF6B35]/50"
                 >
                   <p className="mb-5 text-sm font-semibold uppercase tracking-[0.3em] text-[#FF6B35]">
                     Service 0{index + 1}
                   </p>
                   <h2 className="mb-4 text-3xl font-bold">{service.title}</h2>
-                  <p className="mb-4 text-white/70">{service.description}</p>
-                  <p className="text-sm leading-relaxed text-white/55">{service.details}</p>
+                  <p className="mb-4 text-black/70">{service.description}</p>
+                  <p className="text-sm leading-relaxed text-black/55">{service.details}</p>
                   
                   {service.hasSubMenu && (
                     <div className="mt-4 space-y-2">
@@ -88,7 +88,7 @@ export default function Services() {
                         <Link
                           key={sub.slug}
                           href={`/services/media/${sub.slug}`}
-                          className="flex items-center gap-2 text-sm text-white/60 hover:text-white transition-colors"
+                          className="flex items-center gap-2 text-sm text-black/60 hover:text-[#0a0a0a] transition-colors"
                         >
                           <sub.icon className="w-4 h-4" />
                           {sub.title}
@@ -109,7 +109,7 @@ export default function Services() {
           </div>
         </section>
 
-        <section className="bg-gradient-to-b from-[#0a0a0a] to-[#0f0f0f] px-6 py-24 sm:px-8 lg:px-12">
+        <section className="bg-gradient-to-b from-white to-[#fafafa] px-6 py-24 sm:px-8 lg:px-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -123,10 +123,10 @@ export default function Services() {
             ].map(([title, copy]) => (
               <div
                 key={title}
-                className="rounded-2xl border border-white/10 bg-white/5 p-8"
+                className="rounded-2xl border border-black/10 bg-black/5 p-8"
               >
                 <h3 className="mb-3 text-2xl font-bold">{title}</h3>
-                <p className="leading-relaxed text-white/65">{copy}</p>
+                <p className="leading-relaxed text-black/65">{copy}</p>
               </div>
             ))}
           </motion.div>
@@ -137,10 +137,10 @@ export default function Services() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="mx-auto max-w-5xl rounded-3xl border border-white/10 bg-gradient-to-br from-[#001F3F] to-[#0a0a0a] p-10 text-center lg:p-14"
+            className="mx-auto max-w-5xl rounded-3xl border border-black/10 bg-gradient-to-br from-[#001F3F]/10 to-white p-10 text-center lg:p-14"
           >
             <h2 className="text-4xl font-bold sm:text-5xl">Ready to get started?</h2>
-            <p className="mx-auto mt-5 max-w-2xl text-lg text-white/70">
+            <p className="mx-auto mt-5 max-w-2xl text-lg text-black/70">
               Contact us today for a free consultation.
             </p>
             <Link

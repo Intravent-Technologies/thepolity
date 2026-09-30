@@ -42,7 +42,7 @@ export default function Footer() {
   };
 
   return (
-    <footer className="bg-[#0a0a0a] border-t border-white/10">
+    <footer className="bg-white border-t border-black/10">
       <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-16">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -52,14 +52,14 @@ export default function Footer() {
           >
             <Link
               href={`tel:${contactInfo.phone}`}
-              className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white hover:text-[#FF6B35] transition-colors"
+              className="text-2xl sm:text-3xl lg:text-4xl font-bold text-[#0a0a0a] hover:text-[#FF6B35] transition-colors"
             >
               {contactInfo.phone}
             </Link>
-            <p className="text-white/60 mt-2">{contactInfo.address}</p>
+            <p className="text-black/60 mt-2">{contactInfo.address}</p>
             <Link
               href={`mailto:${contactInfo.email}`}
-              className="text-white/60 hover:text-[#FF6B35] transition-colors text-sm mt-2 block"
+              className="text-black/60 hover:text-[#FF6B35] transition-colors text-sm mt-2 block"
             >
               {contactInfo.email}
             </Link>
@@ -75,11 +75,11 @@ export default function Footer() {
           <motion.div variants={itemVariants} className="lg:col-span-1">
             <Link href="/" className="inline-block mb-6">
               <span className="text-2xl font-bold">
-                <span className="text-white">THE</span>
+                <span className="text-[#0a0a0a]">THE</span>
                 <span className="text-[#FF6B35]"> POLITY</span>
               </span>
             </Link>
-            <p className="text-white/60 text-sm leading-relaxed mb-6">
+            <p className="text-black/60 text-sm leading-relaxed mb-6">
               Innovative strategies powered by technology and media expertise, delivering measurable results and sustainable growth for your organization.
             </p>
             <Link
@@ -91,13 +91,13 @@ export default function Footer() {
           </motion.div>
 
           <motion.div variants={itemVariants}>
-            <h3 className="text-white font-semibold mb-6">Quick Links</h3>
+            <h3 className="text-[#0a0a0a] font-semibold mb-6">Quick Links</h3>
             <ul className="space-y-4">
               {quickLinks.map((link) => (
                 <li key={link.name}>
                   <Link
                     href={link.href}
-                    className="text-white/60 hover:text-white transition-colors text-sm"
+                    className="text-black/60 hover:text-[#0a0a0a] transition-colors text-sm"
                   >
                     {link.name}
                   </Link>
@@ -107,13 +107,13 @@ export default function Footer() {
           </motion.div>
 
           <motion.div variants={itemVariants}>
-            <h3 className="text-white font-semibold mb-6">Discover More</h3>
+            <h3 className="text-[#0a0a0a] font-semibold mb-6">Discover More</h3>
             <ul className="space-y-4">
               {discoverLinks.map((link) => (
                 <li key={link.name}>
                   <Link
                     href={link.href}
-                    className="text-white/60 hover:text-white transition-colors text-sm"
+                    className="text-black/60 hover:text-[#0a0a0a] transition-colors text-sm"
                   >
                     {link.name}
                   </Link>
@@ -123,13 +123,13 @@ export default function Footer() {
           </motion.div>
 
           <motion.div variants={itemVariants}>
-            <h3 className="text-white font-semibold mb-6">Follow us</h3>
+            <h3 className="text-[#0a0a0a] font-semibold mb-6">Follow us</h3>
             <div className="flex gap-4">
               <Link
                 href="https://linkedin.com/company/thepolityservices"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 border border-white/10 text-white/60 hover:bg-[#FF6B35] hover:border-[#FF6B35] hover:text-white transition-all text-xs font-medium"
+                className="w-10 h-10 flex items-center justify-center rounded-full bg-black/5 border border-black/10 text-black/60 hover:bg-[#FF6B35] hover:border-[#FF6B35] hover:text-white transition-all text-xs font-medium"
               >
                 Li
               </Link>
@@ -137,7 +137,7 @@ export default function Footer() {
                 href="https://twitter.com/thepolityservices"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 border border-white/10 text-white/60 hover:bg-[#FF6B35] hover:border-[#FF6B35] hover:text-white transition-all text-xs font-medium"
+                className="w-10 h-10 flex items-center justify-center rounded-full bg-black/5 border border-black/10 text-black/60 hover:bg-[#FF6B35] hover:border-[#FF6B35] hover:text-white transition-all text-xs font-medium"
               >
                 X
               </Link>
@@ -145,7 +145,7 @@ export default function Footer() {
                 href="https://instagram.com/thepolityservices"
                 target="_blank"
                 rel="noopener noreferrer"
-                className="w-10 h-10 flex items-center justify-center rounded-full bg-white/5 border border-white/10 text-white/60 hover:bg-[#FF6B35] hover:border-[#FF6B35] hover:text-white transition-all text-xs font-medium"
+                className="w-10 h-10 flex items-center justify-center rounded-full bg-black/5 border border-black/10 text-black/60 hover:bg-[#FF6B35] hover:border-[#FF6B35] hover:text-white transition-all text-xs font-medium"
               >
                 Ig
               </Link>
@@ -154,20 +154,20 @@ export default function Footer() {
         </motion.div>
       </div>
 
-      <div className="border-t border-white/10">
+      <div className="border-t border-black/10">
         <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12 py-6">
           <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
-            <p className="text-white/40 text-sm">
+            <p className="text-black/40 text-sm">
               © 2025 — All rights reserved | Powered by{' '}
               <Link href="/" className="text-[#FF6B35] hover:underline">
                 KIPS Media.
               </Link>
             </p>
             <div className="flex gap-6">
-              <Link href="/privacy-policy" className="text-white/40 text-sm hover:text-white transition-colors">
+              <Link href="/privacy-policy" className="text-black/40 text-sm hover:text-[#0a0a0a] transition-colors">
                 Privacy Policy
               </Link>
-              <Link href="/terms" className="text-white/40 text-sm hover:text-white transition-colors">
+              <Link href="/terms" className="text-black/40 text-sm hover:text-[#0a0a0a] transition-colors">
                 Terms
               </Link>
             </div>

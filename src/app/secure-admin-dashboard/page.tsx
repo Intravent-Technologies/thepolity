@@ -37,14 +37,14 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-900 via-gray-800 to-black px-4">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 via-white to-white px-4">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md"
       >
         <motion.div
-          className="rounded-2xl border border-white/20 bg-white/10 p-8 shadow-2xl backdrop-blur-xl"
+          className="rounded-2xl border border-black/20 bg-black/10 p-8 shadow-2xl backdrop-blur-xl"
           whileHover={{ scale: 1.02 }}
         >
           <div className="mb-8 text-center">
@@ -53,13 +53,13 @@ export default function AdminLogin() {
               animate={{ rotate: [45, 50, 45] }}
               transition={{ duration: 2, repeat: Infinity }}
             />
-            <h1 className="mb-2 text-3xl font-bold text-white">Admin Access</h1>
-            <p className="text-gray-300">THE POLITY Secure Dashboard</p>
+            <h1 className="mb-2 text-3xl font-bold text-[#0a0a0a]">Admin Access</h1>
+            <p className="text-gray-600">THE POLITY Secure Dashboard</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
             <div>
-              <label className="mb-2 block text-sm font-medium text-gray-300">
+              <label className="mb-2 block text-sm font-medium text-gray-600">
                 Admin Password
               </label>
               <motion.input
@@ -70,7 +70,7 @@ export default function AdminLogin() {
                   setError('');
                 }}
                 placeholder="Enter admin password"
-                className="w-full rounded-lg border border-white/20 bg-white/5 px-4 py-3 text-white placeholder-gray-500 transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-orange-500"
+                className="w-full rounded-lg border border-black/20 bg-black/5 px-4 py-3 text-[#0a0a0a] placeholder-gray-500 transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-orange-500"
                 whileFocus={{ scale: 1.02 }}
               />
             </div>
@@ -96,7 +96,7 @@ export default function AdminLogin() {
             </motion.button>
           </form>
 
-          <p className="mt-6 text-center text-xs text-gray-400">
+          <p className="mt-6 text-center text-xs text-gray-500">
             Authorized administrators can upload portfolio items, gallery images, and gallery videos.
           </p>
         </motion.div>

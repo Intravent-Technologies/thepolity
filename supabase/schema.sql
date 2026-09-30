@@ -86,19 +86,17 @@ alter table public.team_members enable row level security;
 alter table public.reviews enable row level security;
 alter table public.homepage_images enable row level security;
 
--- Allow public read access
+-- Allow public read access (site content is intentionally public)
 create policy "Public read access - portfolio" on public.portfolio_items for select using (true);
 create policy "Public read access - gallery" on public.gallery_items for select using (true);
 create policy "Public read access - blog" on public.blog_posts for select using (true);
 create policy "Public read access - work" on public.work_projects for select using (true);
 create policy "Public read access - team" on public.team_members for select using (true);
 create policy "Public read access - reviews" on public.reviews for select using (true);
+create policy "Public read access - homepage" on public.homepage_images for select using (true);
 
--- Allow service role full access (for admin operations)
-create policy "Service role access - portfolio" on public.portfolio_items for all using (true) with check (true);
-create policy "Service role access - gallery" on public.gallery_items for all using (true) with check (true);
-create policy "Service role access - blog" on public.blog_posts for all using (true) with check (true);
-create policy "Service role access - work" on public.work_projects for all using (true) with check (true);
-create policy "Service role access - team" on public.team_members for all using (true) with check (true);
-create policy "Service role access - reviews" on public.reviews for all using (true) with check (true);
-create policy "Service role access - homepage" on public.homepage_images for all using (true) with check (true);
+-- No write policies are created on purpose.
+-- Writes are performed exclusively by the server with the service_role key,
+-- which bypasses RLS entirely. Adding a `for all using (true)` policy here
+-- would grant the public `anon` key full INSERT/UPDATE/DELETE on every table.
+

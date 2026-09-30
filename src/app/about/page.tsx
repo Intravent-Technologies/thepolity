@@ -42,9 +42,9 @@ export default function About() {
   return (
     <>
       <Header />
-      <main className="overflow-x-hidden bg-[#0a0a0a] pt-20 text-white">
+      <main className="overflow-x-hidden bg-white pt-20 text-[#0a0a0a]">
         <section className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#001F3F]/30 via-[#0a0a0a] to-[#0a0a0a]" />
+          <div className="absolute inset-0 bg-gradient-to-br from-[#001F3F]/10 via-white to-white" />
           <div className="relative mx-auto flex min-h-[60vh] max-w-7xl items-center px-6 py-24 sm:px-8 lg:px-12">
             <motion.div
               initial={{ opacity: 0, y: 24 }}
@@ -59,7 +59,7 @@ export default function About() {
                 Our story is built on
                 <span className="text-[#FF6B35]"> strategy, trust, and execution.</span>
               </h1>
-              <p className="mt-6 max-w-3xl text-lg text-white/70 sm:text-xl">
+              <p className="mt-6 max-w-3xl text-lg text-black/70 sm:text-xl">
                 We help ambitious teams turn complex goals into practical plans, stronger brands, and
                 measurable business progress.
               </p>
@@ -88,19 +88,19 @@ export default function About() {
                 initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                className="rounded-3xl border border-white/10 bg-gradient-to-br from-white/6 to-white/[0.02] p-8 lg:p-10"
+                className="rounded-3xl border border-black/10 bg-gradient-to-br from-black/6 to-black/[0.02] p-8 lg:p-10"
               >
                 <p className="mb-4 text-sm font-semibold uppercase tracking-[0.3em] text-[#FF6B35]">
                   {item.eyebrow}
                 </p>
                 <h2 className="mb-5 text-3xl font-bold leading-tight sm:text-4xl">{item.title}</h2>
-                <p className="text-lg leading-relaxed text-white/70">{item.body}</p>
+                <p className="text-lg leading-relaxed text-black/70">{item.body}</p>
               </motion.article>
             ))}
           </div>
         </section>
 
-        <section className="bg-gradient-to-b from-[#0a0a0a] to-[#0f0f0f] px-6 py-24 sm:px-8 lg:px-12">
+        <section className="bg-gradient-to-b from-white to-[#fafafa] px-6 py-24 sm:px-8 lg:px-12">
           <div className="mx-auto max-w-7xl">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -112,7 +112,7 @@ export default function About() {
                 Core Values
               </p>
               <h2 className="text-4xl font-bold sm:text-5xl">What guides our work</h2>
-              <p className="mt-4 text-lg text-white/70">
+              <p className="mt-4 text-lg text-black/70">
                 Our approach stays grounded in the same principles whether we are shaping a strategy,
                 building momentum, or helping a client navigate change.
               </p>
@@ -126,11 +126,11 @@ export default function About() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.08 }}
-                  className="rounded-2xl border border-white/10 bg-gradient-to-br from-white/5 to-transparent p-8"
+                  className="rounded-2xl border border-black/10 bg-gradient-to-br from-black/5 to-transparent p-8"
                 >
                   <p className="mb-4 text-sm font-semibold text-[#FF6B35]">0{index + 1}</p>
                   <h3 className="mb-3 text-2xl font-bold">{value.title}</h3>
-                  <p className="leading-relaxed text-white/65">{value.description}</p>
+                  <p className="leading-relaxed text-black/65">{value.description}</p>
                 </motion.article>
               ))}
             </div>
@@ -142,38 +142,38 @@ export default function About() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="mx-auto grid max-w-6xl gap-10 rounded-3xl border border-white/10 bg-gradient-to-br from-[#001F3F]/45 to-[#0a0a0a] p-8 lg:grid-cols-[1.1fr_0.9fr] lg:p-12"
+            className="mx-auto grid max-w-6xl gap-10 rounded-3xl border border-black/10 bg-gradient-to-br from-[#001F3F]/45 to-white p-8 lg:grid-cols-[1.1fr_0.9fr] lg:p-12"
           >
             <div>
               <p className="mb-4 text-sm font-semibold uppercase tracking-[0.35em] text-[#FF6B35]">
                 Leadership
               </p>
               <h2 className="text-4xl font-bold sm:text-5xl">Guided by visionary leadership</h2>
-              <p className="mt-6 text-lg leading-relaxed text-white/70">
+              <p className="mt-6 text-lg leading-relaxed text-black/70">
                 Our CEO brings over 15 years of experience in technology, digital media, and project management.
               </p>
-              <p className="mt-4 text-lg leading-relaxed text-white/70">
+              <p className="mt-4 text-lg leading-relaxed text-black/70">
                 With a Master's degree in Project Management from the University of Wolverhampton, Temidayo leads THE POLITY with a focus on digital transformation and creative excellence.
               </p>
             </div>
 
-            <div className="rounded-3xl border border-white/10 bg-white/5 p-8">
+            <div className="rounded-3xl border border-black/10 bg-black/5 p-8">
               <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[#FF6B35]">
                 Temidayo Ololade Awotula
               </p>
               <h3 className="mt-3 text-3xl font-bold">Chief Executive Officer & Founder</h3>
-              <p className="mt-5 leading-relaxed text-white/70">
+              <p className="mt-5 leading-relaxed text-black/70">
                 An accomplished IT and Media professional with over 15 years of experience in technology, digital media, and project management.
               </p>
-              <div className="mt-8 space-y-4 border-t border-white/10 pt-6 text-sm text-white/65">
+              <div className="mt-8 space-y-4 border-t border-black/10 pt-6 text-sm text-black/65">
                 <p>
-                  <span className="font-semibold text-white">Education:</span> Master's in Project Management, University of Wolverhampton
+                  <span className="font-semibold text-[#0a0a0a]">Education:</span> Master's in Project Management, University of Wolverhampton
                 </p>
                 <p>
-                  <span className="font-semibold text-white">Origin:</span> Igbolomi, Ilaje Local Government Area, Ondo State, Nigeria
+                  <span className="font-semibold text-[#0a0a0a]">Origin:</span> Igbolomi, Ilaje Local Government Area, Ondo State, Nigeria
                 </p>
                 <p>
-                  <span className="font-semibold text-white">Passion:</span> Travel and photography
+                  <span className="font-semibold text-[#0a0a0a]">Passion:</span> Travel and photography
                 </p>
               </div>
             </div>
@@ -185,10 +185,10 @@ export default function About() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="mx-auto max-w-5xl rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 to-[#FF6B35]/10 p-10 text-center lg:p-14"
+            className="mx-auto max-w-5xl rounded-3xl border border-black/10 bg-gradient-to-br from-black/5 to-[#FF6B35]/10 p-10 text-center lg:p-14"
           >
             <h2 className="text-4xl font-bold sm:text-5xl">Ready to build with a sharper strategy?</h2>
-            <p className="mx-auto mt-5 max-w-2xl text-lg text-white/70">
+            <p className="mx-auto mt-5 max-w-2xl text-lg text-black/70">
               We bring the same clarity, pacing, and visual identity from the homepage into every part
               of the experience, and we bring that same consistency to client work too.
             </p>

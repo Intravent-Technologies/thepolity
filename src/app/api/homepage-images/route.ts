@@ -1,57 +1,57 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { ADMIN_COOKIE_NAME, validateAdminSessionToken } from '@/lib/auth';
-import { getHomepageImages, saveHomepageImage, deleteHomepageImage } from '@/lib/storage';
+import {
+  getHomepageImages,
+  saveHomepageImage,
+  deleteHomepageImage,
+} from '@/lib/storage';
+import { parseContentBody } from '@/lib/content-schema';
+import {
+  readIdParam,
+  readJsonBody,
+  requireAdmin,
+  toErrorResponse,
+} from '@/lib/api-guard';
 
-export async function GET(request: NextRequest) {
+export async function GET() {
   try {
-    console.log('[HomepageImages] GET called');
     const images = await getHomepageImages();
-    console.log('[HomepageImages] Got images:', images.length);
     return NextResponse.json(images);
   } catch (error) {
-    console.error('[HomepageImages] Failed to fetch:', error);
-    // Return empty array instead of error to allow site to work
+    console.error('[api:homepage-images] GET failed:', error);
+    // Return empty array so a storage outage cannot take the homepage down.
     return NextResponse.json([]);
   }
 }
 
 export async function POST(request: NextRequest) {
-  try {
-    // Auth disabled for now - uploads failing
-    // const token = request.cookies.get(ADMIN_COOKIE_NAME)?.value;
-    // if (!validateAdminSessionToken(token)) {
-    //   return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    // }
+  const denied = requireAdmin(request);
+  if (denied) {
+    return denied;
+  }
 
-    const { section, imageUrl } = await request.json();
-    
-    if (!section || !imageUrl) {
-      return NextResponse.json({ error: 'Missing section or imageUrl' }, { status: 400 });
-    }
+  try {
+    const { section, imageUrl } = parseContentBody(
+      'homepage-images',
+      await readJsonBody(request)
+    ) as { section: string; imageUrl: string };
 
     await saveHomepageImage(section, imageUrl);
-
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Failed to save homepage image:', error);
-    return NextResponse.json({ error: 'Failed to save image' }, { status: 500 });
+    return toErrorResponse(error, 'Failed to save homepage image');
   }
 }
 
 export async function DELETE(request: NextRequest) {
+  const denied = requireAdmin(request);
+  if (denied) {
+    return denied;
+  }
+
   try {
-    // Auth disabled
-
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-    
-    if (id) {
-      await deleteHomepageImage(id);
-    }
-
+    await deleteHomepageImage(readIdParam(request));
     return NextResponse.json({ success: true });
   } catch (error) {
-    console.error('Failed to delete homepage image:', error);
-    return NextResponse.json({ error: 'Failed to delete image' }, { status: 500 });
+    return toErrorResponse(error, 'Failed to delete homepage image');
   }
 }

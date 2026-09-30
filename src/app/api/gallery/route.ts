@@ -4,65 +4,46 @@ import {
   addGalleryItem,
   deleteGalleryItem,
 } from '@/lib/storage';
-import { ADMIN_COOKIE_NAME, validateAdminSessionToken } from '@/lib/auth';
+import { parseContentBody, type ContentEntity } from '@/lib/content-schema';
+import { readIdParam, readJsonBody, requireAdmin, toErrorResponse } from '@/lib/api-guard';
+
+const ENTITY: ContentEntity = 'gallery';
 
 export async function GET() {
   try {
     const items = await getGalleryItems();
     return NextResponse.json(items);
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to fetch gallery items' },
-      { status: 500 }
-    );
+    console.error('[api:gallery] GET failed:', error);
+    return NextResponse.json({ error: 'Failed to fetch gallery' }, { status: 500 });
   }
 }
 
 export async function POST(request: NextRequest) {
-  try {
-    const token = request.cookies.get(ADMIN_COOKIE_NAME)?.value;
-    if (!validateAdminSessionToken(token)) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+  const denied = requireAdmin(request);
+  if (denied) {
+    return denied;
+  }
 
-    const data = await request.json();
-    const item = await addGalleryItem(data);
+  try {
+    const body = parseContentBody(ENTITY, await readJsonBody(request));
+    const item = await addGalleryItem(body as Parameters<typeof addGalleryItem>[0]);
     return NextResponse.json(item, { status: 201 });
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to create gallery item' },
-      { status: 500 }
-    );
+    return toErrorResponse(error, 'Failed to create gallery');
   }
 }
 
 export async function DELETE(request: NextRequest) {
-  try {
-    const token = request.cookies.get(ADMIN_COOKIE_NAME)?.value;
-    if (!validateAdminSessionToken(token)) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+  const denied = requireAdmin(request);
+  if (denied) {
+    return denied;
+  }
 
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-    if (!id) {
-      return NextResponse.json(
-        { error: 'Missing id parameter' },
-        { status: 400 }
-      );
-    }
-    await deleteGalleryItem(id);
+  try {
+    await deleteGalleryItem(readIdParam(request));
     return NextResponse.json({ success: true });
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to delete gallery item' },
-      { status: 500 }
-    );
+    return toErrorResponse(error, 'Failed to delete gallery');
   }
 }

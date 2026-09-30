@@ -46,25 +46,25 @@ export default function PhotoTourism() {
   return (
     <>
       <Header />
-      <main className="overflow-x-hidden bg-[#0a0a0a] pt-20 text-white">
+      <main className="overflow-x-hidden bg-white pt-20 text-[#0a0a0a]">
         <section className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#001F3F]/30 via-[#0a0a0a] to-[#0a0a0a]" />
+          <div className="absolute inset-0 bg-gradient-to-br from-[#001F3F]/10 via-white to-white" />
           <div className="relative mx-auto flex min-h-[60vh] max-w-7xl items-center px-6 py-24 sm:px-8 lg:px-12">
             <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="max-w-4xl">
               <p className="mb-4 text-sm font-semibold uppercase tracking-[0.35em] text-[#FF6B35]">Media</p>
               <h1 className="text-5xl font-bold leading-tight sm:text-6xl lg:text-7xl"><span className="text-[#FF6B35]">Photo Tourism</span></h1>
-              <p className="mt-6 max-w-3xl text-lg text-white/70 sm:text-xl">Capture your journey in stunning visuals.</p>
+              <p className="mt-6 max-w-3xl text-lg text-black/70 sm:text-xl">Capture your journey in stunning visuals.</p>
             </motion.div>
           </div>
         </section>
         <section className="px-6 py-24 sm:px-8 lg:px-12">
           <div className="mx-auto max-w-7xl">
             <div className="grid gap-8 md:grid-cols-2">
-              <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="rounded-2xl border border-white/10 bg-white/5 p-8">
+              <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="rounded-2xl border border-black/10 bg-black/5 p-8">
                 <Map className="w-16 h-16 text-[#FF6B35] mb-6" />
                 <h2 className="text-2xl font-bold mb-4">Photo Tourism</h2>
-                <p className="text-white/60 mb-6">We capture your travels in beautiful, professional photographs.</p>
-                <ul className="space-y-3 text-white/70">
+                <p className="text-black/60 mb-6">We capture your travels in beautiful, professional photographs.</p>
+                <ul className="space-y-3 text-black/70">
                   <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#FF6B35]" />Location scouting</li>
                   <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#FF6B35]" />Travel photography</li>
                   <li className="flex items-center gap-2"><span className="w-2 h-2 rounded-full bg-[#FF6B35]" />Adventure shoots</li>
@@ -83,7 +83,7 @@ export default function PhotoTourism() {
               className="mb-16 text-center"
             >
               <h2 className="text-4xl font-bold mb-4">Our Photo Tours</h2>
-              <p className="text-white/70">Adventure photography worldwide</p>
+              <p className="text-black/70">Adventure photography worldwide</p>
             </motion.div>
             <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
               {tourImages.map((tour, index) => (
@@ -93,7 +93,7 @@ export default function PhotoTourism() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
-                  className="group relative overflow-hidden rounded-2xl border border-white/10 bg-white/5"
+                  className="group relative overflow-hidden rounded-2xl border border-black/10 bg-black/5"
                 >
                   {images[tour.key] ? (
                     <img src={images[tour.key]} alt={tour.title} className="w-full aspect-[4/3] object-cover" />
@@ -104,7 +104,7 @@ export default function PhotoTourism() {
                   )}
                   <div className="p-6">
                     <h3 className="text-xl font-bold mb-2 group-hover:text-[#FF6B35] transition-colors">{tour.title}</h3>
-                    <p className="text-white/60 text-sm">{tour.desc}</p>
+                    <p className="text-black/60 text-sm">{tour.desc}</p>
                   </div>
                 </motion.div>
               ))}
@@ -121,9 +121,9 @@ export default function PhotoTourism() {
         </section>
 
         <section className="px-6 pb-24 sm:px-8 lg:px-12">
-          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mx-auto max-w-5xl rounded-3xl border border-white/10 bg-gradient-to-br from-[#001F3F] to-[#0a0a0a] p-10 text-center lg:p-14">
+          <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="mx-auto max-w-5xl rounded-3xl border border-black/10 bg-gradient-to-br from-[#001F3F]/10 to-white p-10 text-center lg:p-14">
             <h2 className="text-4xl font-bold sm:text-5xl">Book Your Photo Tourism</h2>
-            <p className="mx-auto mt-5 max-w-2xl text-lg text-white/70">Let's capture your journey.</p>
+            <p className="mx-auto mt-5 max-w-2xl text-lg text-black/70">Let's capture your journey.</p>
             <Link href="/contact" className="mt-8 inline-flex items-center gap-2 rounded-full bg-[#FF6B35] px-8 py-4 font-medium text-white hover:bg-[#FF9F66]">Book Now<ArrowRight className="h-5 w-5" /></Link>
           </motion.div>
         </section>

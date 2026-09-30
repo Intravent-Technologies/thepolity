@@ -4,65 +4,46 @@ import {
   addPortfolioItem,
   deletePortfolioItem,
 } from '@/lib/storage';
-import { ADMIN_COOKIE_NAME, validateAdminSessionToken } from '@/lib/auth';
+import { parseContentBody, type ContentEntity } from '@/lib/content-schema';
+import { readIdParam, readJsonBody, requireAdmin, toErrorResponse } from '@/lib/api-guard';
+
+const ENTITY: ContentEntity = 'portfolio';
 
 export async function GET() {
   try {
     const items = await getPortfolioItems();
     return NextResponse.json(items);
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to fetch portfolio items' },
-      { status: 500 }
-    );
+    console.error('[api:portfolio] GET failed:', error);
+    return NextResponse.json({ error: 'Failed to fetch portfolio' }, { status: 500 });
   }
 }
 
 export async function POST(request: NextRequest) {
-  try {
-    const token = request.cookies.get(ADMIN_COOKIE_NAME)?.value;
-    if (!validateAdminSessionToken(token)) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+  const denied = requireAdmin(request);
+  if (denied) {
+    return denied;
+  }
 
-    const data = await request.json();
-    const item = await addPortfolioItem(data);
+  try {
+    const body = parseContentBody(ENTITY, await readJsonBody(request));
+    const item = await addPortfolioItem(body as Parameters<typeof addPortfolioItem>[0]);
     return NextResponse.json(item, { status: 201 });
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to create portfolio item' },
-      { status: 500 }
-    );
+    return toErrorResponse(error, 'Failed to create portfolio');
   }
 }
 
 export async function DELETE(request: NextRequest) {
-  try {
-    const token = request.cookies.get(ADMIN_COOKIE_NAME)?.value;
-    if (!validateAdminSessionToken(token)) {
-      return NextResponse.json(
-        { error: 'Unauthorized' },
-        { status: 401 }
-      );
-    }
+  const denied = requireAdmin(request);
+  if (denied) {
+    return denied;
+  }
 
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
-    if (!id) {
-      return NextResponse.json(
-        { error: 'Missing id parameter' },
-        { status: 400 }
-      );
-    }
-    await deletePortfolioItem(id);
+  try {
+    await deletePortfolioItem(readIdParam(request));
     return NextResponse.json({ success: true });
   } catch (error) {
-    return NextResponse.json(
-      { error: 'Failed to delete portfolio item' },
-      { status: 500 }
-    );
+    return toErrorResponse(error, 'Failed to delete portfolio');
   }
 }

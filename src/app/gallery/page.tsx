@@ -38,9 +38,9 @@ export default function Gallery() {
   return (
     <>
       <Header />
-      <main className="overflow-x-hidden bg-[#0a0a0a] pt-20 text-white">
+      <main className="overflow-x-hidden bg-white pt-20 text-[#0a0a0a]">
         <section className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#001F3F]/30 via-[#0a0a0a] to-[#0a0a0a]" />
+          <div className="absolute inset-0 bg-gradient-to-br from-[#001F3F]/10 via-white to-white" />
           <div className="relative mx-auto flex min-h-[60vh] max-w-7xl items-center px-6 py-24 sm:px-8 lg:px-12">
             <motion.div
               initial={{ opacity: 0, y: 24 }}
@@ -55,7 +55,7 @@ export default function Gallery() {
                 Visual stories from our
                 <span className="text-[#FF6B35]"> recent projects.</span>
               </h1>
-              <p className="mt-6 max-w-3xl text-lg text-white/70 sm:text-xl">
+              <p className="mt-6 max-w-3xl text-lg text-black/70 sm:text-xl">
                 Explore our gallery to see the quality of our work across photography, events, and creative media services.
               </p>
             </motion.div>
@@ -65,11 +65,11 @@ export default function Gallery() {
         <section className="px-6 py-24 sm:px-8 lg:px-12">
           <div className="mx-auto max-w-7xl">
             {loading ? (
-              <p className="text-white/60">Loading gallery...</p>
+              <p className="text-black/60">Loading gallery...</p>
             ) : items.length === 0 ? (
-              <div className="rounded-3xl border border-white/10 bg-white/5 p-10 text-center">
+              <div className="rounded-3xl border border-black/10 bg-black/5 p-10 text-center">
                 <h2 className="text-3xl font-bold">No gallery items yet</h2>
-                <p className="mt-4 text-white/65">
+                <p className="mt-4 text-black/65">
                   We're adding new content regularly. Contact us to see examples of our work.
                 </p>
               </div>
@@ -82,7 +82,7 @@ export default function Gallery() {
                     whileInView={{ opacity: 1, y: 0 }}
                     viewport={{ once: true }}
                     transition={{ delay: index * 0.08 }}
-                    className="overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-white/5 to-white/[0.02]"
+                    className="overflow-hidden rounded-3xl border border-black/10 bg-gradient-to-br from-black/5 to-black/[0.02]"
                   >
                     <div className="h-72 bg-black">
                       {item.type === 'image' ? (
@@ -114,10 +114,10 @@ export default function Gallery() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="mx-auto max-w-5xl rounded-3xl border border-white/10 bg-gradient-to-br from-[#001F3F] to-[#0a0a0a] p-10 text-center lg:p-14"
+            className="mx-auto max-w-5xl rounded-3xl border border-black/10 bg-gradient-to-br from-[#001F3F]/10 to-white p-10 text-center lg:p-14"
           >
             <h2 className="text-4xl font-bold sm:text-5xl">Want to work with a team like this?</h2>
-            <p className="mx-auto mt-5 max-w-2xl text-lg text-white/70">
+            <p className="mx-auto mt-5 max-w-2xl text-lg text-black/70">
               We would love to hear what you are building and where you need support.
             </p>
             <Link

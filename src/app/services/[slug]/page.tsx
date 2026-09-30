@@ -109,7 +109,7 @@ export default function ServiceDetail() {
     return (
       <>
         <Header />
-        <main className="overflow-x-hidden bg-[#0a0a0a] pt-20 text-white min-h-screen">
+        <main className="overflow-x-hidden bg-white pt-20 text-[#0a0a0a] min-h-screen">
           <div className="mx-auto max-w-7xl px-6 py-24">
             <h1 className="text-3xl font-bold">Service Not Found</h1>
             <Link href="/services" className="mt-4 inline-flex items-center gap-2 text-[#FF6B35]">
@@ -127,15 +127,15 @@ export default function ServiceDetail() {
   return (
     <>
       <Header />
-      <main className="overflow-x-hidden bg-[#0a0a0a] pt-20 text-white">
+      <main className="overflow-x-hidden bg-white pt-20 text-[#0a0a0a]">
         <div className="mx-auto max-w-7xl px-6 py-4">
-          <Link href="/services" className="inline-flex items-center gap-2 text-white/60 hover:text-white transition-colors text-sm">
+          <Link href="/services" className="inline-flex items-center gap-2 text-black/60 hover:text-[#0a0a0a] transition-colors text-sm">
             <ArrowLeft className="h-4 w-4" /> Back to Services
           </Link>
         </div>
 
         <section className="relative overflow-hidden">
-          <div className="absolute inset-0 bg-gradient-to-br from-[#001F3F]/30 via-[#0a0a0a] to-[#0a0a0a]" />
+          <div className="absolute inset-0 bg-gradient-to-br from-[#001F3F]/10 via-white to-white" />
           <div className="relative mx-auto flex min-h-[50vh] max-w-7xl items-center px-6 py-16 sm:px-8 lg:px-12">
             <motion.div
               initial={{ opacity: 0, y: 24 }}
@@ -150,8 +150,8 @@ export default function ServiceDetail() {
                 <Icon className="h-10 w-10 text-[#FF6B35]" />
                 <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold">{service.title}</h1>
               </div>
-              <p className="mt-4 text-xl text-white/70 max-w-2xl">{service.description}</p>
-              <p className="mt-6 text-lg text-white/55 max-w-3xl leading-relaxed">{service.details}</p>
+              <p className="mt-4 text-xl text-black/70 max-w-2xl">{service.description}</p>
+              <p className="mt-6 text-lg text-black/55 max-w-3xl leading-relaxed">{service.details}</p>
             </motion.div>
           </div>
         </section>
@@ -165,7 +165,7 @@ export default function ServiceDetail() {
               className="mb-12"
             >
               <h2 className="text-3xl font-bold">What&apos;s Included</h2>
-              <p className="mt-3 text-white/60">Comprehensive components designed to deliver results.</p>
+              <p className="mt-3 text-black/60">Comprehensive components designed to deliver results.</p>
             </motion.div>
             <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
               {service.features.map((feature, index) => (
@@ -175,17 +175,17 @@ export default function ServiceDetail() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.05 }}
-                  className="flex items-start gap-4 rounded-2xl border border-white/10 bg-white/5 p-6"
+                  className="flex items-start gap-4 rounded-2xl border border-black/10 bg-black/5 p-6"
                 >
                   <CheckCircle2 className="h-6 w-6 flex-shrink-0 text-[#FF6B35]" />
-                  <span className="text-white/90">{feature}</span>
+                  <span className="text-black/90">{feature}</span>
                 </motion.div>
               ))}
             </div>
           </div>
         </section>
 
-        <section className="bg-gradient-to-b from-[#0a0a0a] to-[#0f0f0f] px-6 py-24 sm:px-8 lg:px-12">
+        <section className="bg-gradient-to-b from-white to-[#fafafa] px-6 py-24 sm:px-8 lg:px-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -197,9 +197,9 @@ export default function ServiceDetail() {
               ['Execution', 'We deliver with visible progress, structured communication, and steady momentum.'],
               ['Growth', 'We leave teams with clearer systems, stronger positioning, and reusable foundations.'],
             ].map(([title, copy]) => (
-              <div key={title} className="rounded-2xl border border-white/10 bg-white/5 p-8">
+              <div key={title} className="rounded-2xl border border-black/10 bg-black/5 p-8">
                 <h3 className="mb-3 text-2xl font-bold">{title}</h3>
-                <p className="leading-relaxed text-white/65">{copy}</p>
+                <p className="leading-relaxed text-black/65">{copy}</p>
               </div>
             ))}
           </motion.div>
@@ -210,10 +210,10 @@ export default function ServiceDetail() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="mx-auto max-w-5xl rounded-3xl border border-white/10 bg-gradient-to-br from-[#001F3F] to-[#0a0a0a] p-10 text-center lg:p-14"
+            className="mx-auto max-w-5xl rounded-3xl border border-black/10 bg-gradient-to-br from-[#001F3F]/10 to-white p-10 text-center lg:p-14"
           >
             <h2 className="text-4xl font-bold sm:text-5xl">Ready to get started?</h2>
-            <p className="mx-auto mt-5 max-w-2xl text-lg text-white/70">
+            <p className="mx-auto mt-5 max-w-2xl text-lg text-black/70">
               Let&apos;s discuss how we can help with your {service.title.toLowerCase()} needs.
             </p>
             <Link

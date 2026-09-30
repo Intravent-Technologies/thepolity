@@ -50,10 +50,10 @@ export default function Slideshow({ sectionKey, title }: SlideshowProps) {
     return (
       <>
         <Header />
-        <main className="min-h-screen bg-[#0a0a0a] pt-20 flex items-center justify-center">
+        <main className="min-h-screen bg-white pt-20 flex items-center justify-center">
           <div className="text-center">
-            <h1 className="text-4xl font-bold text-white mb-4">{title}</h1>
-            <p className="text-white/60">No images uploaded yet. Add images from the admin panel.</p>
+            <h1 className="text-4xl font-bold text-[#0a0a0a] mb-4">{title}</h1>
+            <p className="text-black/60">No images uploaded yet. Add images from the admin panel.</p>
           </div>
         </main>
       </>
@@ -63,9 +63,9 @@ export default function Slideshow({ sectionKey, title }: SlideshowProps) {
   return (
     <>
       <Header />
-      <main className="min-h-screen bg-[#0a0a0a] pt-20">
+      <main className="min-h-screen bg-white pt-20">
         <div className="max-w-7xl mx-auto px-6 py-12">
-          <h1 className="text-4xl font-bold text-white mb-8 text-center">{title}</h1>
+          <h1 className="text-4xl font-bold text-[#0a0a0a] mb-8 text-center">{title}</h1>
           
           <div className="relative">
             <motion.div
@@ -115,7 +115,7 @@ export default function Slideshow({ sectionKey, title }: SlideshowProps) {
             </div>
           </div>
 
-          <p className="text-center text-white/60 mt-6">Click image to view fullscreen • Use arrow keys to navigate</p>
+          <p className="text-center text-black/60 mt-6">Click image to view fullscreen • Use arrow keys to navigate</p>
         </div>
 
         <AnimatePresence>

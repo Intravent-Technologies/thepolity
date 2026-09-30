@@ -166,118 +166,89 @@ function writeLocalJson<T>(filePath: string, items: T[]): void {
   fs.writeFileSync(filePath, JSON.stringify(items, null, 2));
 }
 
+type HomepageImageRow = {
+  id: string;
+  section: string;
+  image_url: string;
+};
+
+function toHomepageImage(row: HomepageImageRow): HomepageImage {
+  return { id: row.id, section: row.section, imageUrl: row.image_url };
+}
+
 export async function getHomepageImages(): Promise<HomepageImage[]> {
-  console.log('[Storage] getHomepageImages start');
-  
-  // Always try REST API directly with known service key
-  const FALLBACK_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdranN1ZnF1cHhrYnp1ZHNqZHVxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTkxMTc4OSwiZXhwIjoyMDkxNDg3Nzg5fQ.WkXFD6bbDcmJluaS1Sl3kNPF0uBqPV9He2LeZUA4AC0';
-  const SUPABASE_PROJECT_URL = 'https://gkjsufqupxkbzudsjduq.supabase.co';
-  
-  try {
-    const url = `${SUPABASE_PROJECT_URL}/rest/v1/homepage_images?select=*`;
-    console.log('[Storage] Fetching from:', url);
-    const res = await fetch(url, {
-      headers: {
-        'apikey': FALLBACK_KEY,
-        'Authorization': `Bearer ${FALLBACK_KEY}`,
-      }
-    });
-    console.log('[Storage] Response status:', res.status);
-    if (res.ok) {
-      const data = await res.json();
-      console.log('[Storage] Got data:', data.length, 'items');
-      return data.map((item: any) => ({
-        id: item.id,
-        section: item.section,
-        imageUrl: item.image_url,
-      }));
-    }
-  } catch (e) {
-    console.log('[Storage] Fetch failed:', e);
+  if (!isSupabaseConfigured()) {
+    return readLocalJson<HomepageImage>(homepageImagesFilePath());
   }
-  
-  return readLocalJson<HomepageImage>(homepageImagesFilePath());
+
+  const { data, error } = await getSupabaseAdminClient()
+    .from('homepage_images')
+    .select('id, section, image_url');
+
+  if (error || !data) {
+    console.error('[Storage] homepage_images read failed:', error?.message);
+    return readLocalJson<HomepageImage>(homepageImagesFilePath());
+  }
+
+  return (data as HomepageImageRow[]).map(toHomepageImage);
 }
 
 export async function saveHomepageImage(section: string, imageUrl: string): Promise<void> {
-  console.log('[Storage] saveHomepageImage:', section, imageUrl);
-  
-  const FALLBACK_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdranN1ZnF1cHhrYnp1ZHNqZHVxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTkxMTc4OSwiZXhwIjoyMDkxNDg3Nzg5fQ.WkXFD6bbDcmJluaS1Sl3kNPF0uBqPV9He2LeZUA4AC0';
-  const SUPABASE_PROJECT_URL = 'https://gkjsufqupxkbzudsjduq.supabase.co';
-  
-  // Use REST API directly
-  const checkUrl = `${SUPABASE_PROJECT_URL}/rest/v1/homepage_images?section=eq.${section}`;
-  try {
-    const checkRes = await fetch(checkUrl, {
-      headers: {
-        'apikey': FALLBACK_KEY,
-        'Authorization': `Bearer ${FALLBACK_KEY}`,
-      }
-    });
-    
-    if (checkRes.ok) {
-      const existing = await checkRes.json();
-      if (existing && existing.length > 0) {
-        // Update
-        const updateUrl = `${SUPABASE_PROJECT_URL}/rest/v1/homepage_images?section=eq.${section}`;
-        await fetch(updateUrl, {
-          method: 'PATCH',
-          headers: {
-            'apikey': FALLBACK_KEY,
-            'Authorization': `Bearer ${FALLBACK_KEY}`,
-            'Content-Type': 'application/json',
-            'Prefer': 'return=minimal',
-          },
-          body: JSON.stringify({ section, image_url: imageUrl, updated_at: new Date().toISOString() })
-        });
-        console.log('[Storage] Updated:', section);
-        return;
-      }
-    }
-  } catch (e) {
-    console.log('[Storage] Check failed:', e);
+  if (!isSupabaseConfigured()) {
+    const items = readLocalJson<HomepageImage>(homepageImagesFilePath());
+    const next = items.filter((item) => item.section !== section);
+    next.unshift({ id: section, section, imageUrl });
+    writeLocalJson(homepageImagesFilePath(), next);
+    return;
   }
-  
-  // Insert new
-  try {
-    const insertUrl = `${SUPABASE_PROJECT_URL}/rest/v1/homepage_images`;
-    const res = await fetch(insertUrl, {
-      method: 'POST',
-      headers: {
-        'apikey': FALLBACK_KEY,
-        'Authorization': `Bearer ${FALLBACK_KEY}`,
-        'Content-Type': 'application/json',
-        'Prefer': 'return=minimal',
-      },
-      body: JSON.stringify({ id: section, section, image_url: imageUrl })
-    });
-    console.log('[Storage] Insert result:', res.status, section);
-  } catch (e) {
-    console.log('[Storage] Insert failed:', e);
+
+  const supabase = getSupabaseAdminClient();
+  const { data: existing, error: lookupError } = await supabase
+    .from('homepage_images')
+    .select('id')
+    .eq('section', section)
+    .maybeSingle();
+
+  if (lookupError) {
+    throw lookupError;
+  }
+
+  if (existing) {
+    const { error } = await supabase
+      .from('homepage_images')
+      .update({ image_url: imageUrl, updated_at: new Date().toISOString() })
+      .eq('section', section);
+    if (error) {
+      throw error;
+    }
+    return;
+  }
+
+  const { error } = await supabase
+    .from('homepage_images')
+    .insert({ id: section, section, image_url: imageUrl });
+  if (error) {
+    throw error;
   }
 }
 
 export async function deleteHomepageImage(id: string): Promise<void> {
-  const FALLBACK_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImdranN1ZnF1cHhrYnp1ZHNqZHVxIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NTkxMTc4OSwiZXhwIjoyMDkxNDg3Nzg5fQ.WkXFD6bbDcmJluaS1Sl3kNPF0uBqPV9He2LeZUA4AC0';
-  const SUPABASE_PROJECT_URL = 'https://gkjsufqupxkbzudsjduq.supabase.co';
-
-  try {
-    const deleteUrl = `${SUPABASE_PROJECT_URL}/rest/v1/homepage_images?id=eq.${encodeURIComponent(id)}`;
-    await fetch(deleteUrl, {
-      method: 'DELETE',
-      headers: {
-        'apikey': FALLBACK_KEY,
-        'Authorization': `Bearer ${FALLBACK_KEY}`,
-      },
-    });
-  } catch (e) {
-    console.log('[Storage] Delete via REST failed, trying local:', e);
-    const items = readLocalJson<HomepageImage>(homepageImagesFilePath());
-    writeLocalJson(
-      homepageImagesFilePath(),
-      items.filter((item) => item.id !== id)
-    );
+  if (isSupabaseConfigured()) {
+    const { error } = await getSupabaseAdminClient()
+      .from('homepage_images')
+      .delete()
+      .eq('id', id);
+    if (error) {
+      throw error;
+    }
+    return;
   }
+
+  const items = readLocalJson<HomepageImage>(homepageImagesFilePath());
+  writeLocalJson(
+    homepageImagesFilePath(),
+    items.filter((item) => item.id !== id)
+  );
 }
 
 export async function getPortfolioItems(): Promise<PortfolioItem[]> {
