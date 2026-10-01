@@ -25,16 +25,16 @@ interface HomepageImages {
 /* Image keys are managed from the admin dashboard, so these identifiers are a
    contract — renaming one silently breaks that control. */
 const defaultImages: HomepageImages = {
-  'hero-visual-1': '/hero-visual-media.svg',
-  'hero-visual-2': '/hero-visual-it.svg',
-  'hero-visual-3': '/hero-visual-projects.svg',
-  'hero-visual-4': '/hero-visual-creative.svg',
-  'service-it': '/service-it.svg',
-  'service-media': '/service-media.svg',
-  'service-project': '/service-project.svg',
-  'blog-1': '/blog-creative.svg',
-  'blog-2': '/blog-creative.svg',
-  'blog-3': '/blog-creative.svg',
+  'hero-visual-1': '/hero-visual-media.jpg',
+  'hero-visual-2': '/hero-visual-it.jpg',
+  'hero-visual-3': '/hero-visual-projects.jpg',
+  'hero-visual-4': '/hero-visual-creative.jpg',
+  'service-it': '/service-it.jpg',
+  'service-media': '/service-media.jpg',
+  'service-project': '/service-project.jpg',
+  'blog-1': '/blog-1.jpg',
+  'blog-2': '/blog-2.jpg',
+  'blog-3': '/blog-3.jpg',
 };
 
 const SERVICES = [

@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import UploadField from '@/components/UploadField';
 import { notify, ToastViewport } from '@/components/admin/Toast';
 import { CategoryLabel, Eyebrow } from '@/components/ui';
+import Logo from '@/components/Logo';
 
 interface PortfolioItem {
   id: string;
@@ -109,9 +110,7 @@ export default function AdminDashboard() {
       <header className="border-b border-line bg-surface">
         <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
           <Link href="/" className="flex items-baseline gap-2">
-            <span className="font-display text-xl tracking-tight text-ink">
-              The <span className="text-brand-500">Polity</span>.
-            </span>
+            <Logo className="h-6" />
             <Eyebrow>Admin</Eyebrow>
           </Link>
           <button

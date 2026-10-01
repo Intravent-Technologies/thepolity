@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ButtonLink, Container } from "./ui";
+import Logo from "./Logo";
 
 /* Brand marks are not part of the lucide icon set, so they are inlined here.
    All three are 24x24, inherit currentColor, and are aria-hidden — the
@@ -85,9 +86,7 @@ export default function Footer() {
               aria-label="The Polity — home"
               className="inline-block"
             >
-              <span className="font-display text-2xl tracking-tight text-ink-inverse">
-                The <span className="text-brand-500">Polity</span>.
-              </span>
+              <Logo variant="inverse" className="h-8" />
             </Link>
             <p className="mt-5 max-w-sm text-[0.95rem] leading-relaxed text-ink-inverse/65">
               Strategy, technology and media under one roof. We help

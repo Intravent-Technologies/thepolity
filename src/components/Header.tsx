@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { ChevronDown, Menu, X } from "lucide-react";
 import { ButtonLink, Container } from "./ui";
+import Logo from "./Logo";
 
 const SERVICES = [
   { name: "IT Consultancy", href: "/services/it-consultancy" },
@@ -25,13 +26,7 @@ const NAV = [
 ];
 
 function Wordmark({ className = "" }: { className?: string }) {
-  return (
-    <span className={`font-display text-xl tracking-tight ${className}`}>
-      <span className="text-ink">The </span>
-      <span className="text-brand-500">Polity</span>
-      <span className="text-brand-500">.</span>
-    </span>
-  );
+  return <Logo className={`h-6 ${className}`} />;
 }
 
 export default function Header() {
