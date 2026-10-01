@@ -63,11 +63,11 @@ export default function Photography({ params }: { params: { slug: string } }) {
               transition={{ duration: 0.7 }}
               className="max-w-4xl"
             >
-              <p className="mb-4 text-sm font-semibold uppercase tracking-[0.35em] text-[color:var(--color-brand-500)]">
+              <p className="tp-label mb-4 text-brand-600">
                 Media
               </p>
               <h1 className="text-display text-ink">
-                <span className="text-[color:var(--color-brand-500)]">{service.title}</span>
+                <span className="text-brand-500">{service.title}</span>
               </h1>
               <p className="mt-6 max-w-3xl text-lg text-ink-muted sm:text-xl">
                 {service.description}
@@ -83,9 +83,9 @@ export default function Photography({ params }: { params: { slug: string } }) {
                 initial={{ opacity: 0, y: 24 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                className="rounded-card border border-line bg-surface-sunken p-8"
+                className="rounded-card border border-line bg-surface p-8"
               >
-                <Icon className="w-16 h-16 text-[color:var(--color-brand-500)] mb-6" />
+                <Icon className="w-16 h-16 text-brand-500 mb-6" />
                 <h2 className="text-headline text-ink mb-4">Professional {service.title}</h2>
                 <p className="text-ink-muted mb-6">
                   We deliver high-quality {service.title.toLowerCase()} services tailored to your needs. 
@@ -112,7 +112,7 @@ export default function Photography({ params }: { params: { slug: string } }) {
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
                 transition={{ delay: 0.1 }}
-                className="rounded-card border border-line bg-surface-sunken p-8"
+                className="rounded-card border border-line bg-surface p-8"
               >
                 <h3 className="text-xl font-bold mb-4">What&apos;s Included</h3>
                 <ul className="space-y-4 text-ink-muted">
@@ -146,7 +146,7 @@ export default function Photography({ params }: { params: { slug: string } }) {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
-                  className="group relative overflow-hidden rounded-card border border-line bg-surface-sunken"
+                  className="group relative overflow-hidden rounded-card border border-line bg-surface"
                 >
                   {images[img.key] ? (
                     <Image
@@ -157,12 +157,12 @@ export default function Photography({ params }: { params: { slug: string } }) {
                       className="object-cover"
                     />
                   ) : (
-                    <div className="flex aspect-[4/3] items-center justify-center bg-surface-sunken">
+                    <div className="flex aspect-[4/3] items-center justify-center bg-surface">
                       <Camera className="size-10 text-brand-500/50" aria-hidden="true" />
                     </div>
                   )}
                   <div className="p-6">
-                    <h3 className="text-xl font-bold mb-2 group-hover:text-[color:var(--color-brand-500)] transition-colors">{img.title}</h3>
+                    <h3 className="text-xl font-bold mb-2 group-hover:text-brand-500 transition-colors">{img.title}</h3>
                     <p className="text-ink-muted text-sm">{img.desc}</p>
                   </div>
                 </motion.div>

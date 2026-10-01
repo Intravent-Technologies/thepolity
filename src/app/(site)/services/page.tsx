@@ -45,12 +45,12 @@ export default function Services() {
               transition={{ duration: 0.7 }}
               className="max-w-4xl"
             >
-              <p className="mb-4 text-sm font-semibold uppercase tracking-[0.35em] text-[color:var(--color-brand-500)]">
+              <p className="tp-label mb-4 text-brand-600">
                 Our Services
               </p>
               <h1 className="text-display text-ink">
                 Expert support for
-                <span className="text-[color:var(--color-brand-500)]"> your business.</span>
+                <span className="text-brand-500"> your business.</span>
               </h1>
               <p className="mt-6 max-w-3xl text-lg text-ink-muted sm:text-xl">
                 IT Consultancy, Media services, and Project Management tailored to your needs.
@@ -71,7 +71,7 @@ export default function Services() {
                   transition={{ delay: index * 0.08 }}
                   className="group rounded-card border border-line bg-surface p-8 transition-[border-color] duration-200 hover:border-brand-500/40"
                 >
-                  <p className="mb-5 text-sm font-semibold uppercase tracking-[0.3em] text-[color:var(--color-brand-500)]">
+                  <p className="tp-label mb-5 text-brand-600">
                     Service 0{index + 1}
                   </p>
                   <h2 className="text-headline text-ink mb-4">{service.title}</h2>
@@ -95,7 +95,7 @@ export default function Services() {
                   
                   <Link
                     href={`/services/${service.slug}`}
-                    className="mt-8 inline-flex items-center gap-2 text-sm font-medium text-[color:var(--color-brand-500)] hover:underline"
+                    className="mt-8 inline-flex items-center gap-2 text-sm font-medium text-brand-500 hover:underline"
                   >
                     Explore service <ArrowRight className="h-4 w-4" />
                   </Link>
@@ -105,7 +105,7 @@ export default function Services() {
           </div>
         </section>
 
-        <section className="bg-surface-sunken px-6 py-24 sm:px-8 lg:px-12">
+        <section className="bg-surface px-6 py-24 sm:px-8 lg:px-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -119,7 +119,7 @@ export default function Services() {
             ].map(([title, copy]) => (
               <div
                 key={title}
-                className="rounded-card border border-line bg-surface-sunken p-8"
+                className="rounded-card border border-line bg-surface p-8"
               >
                 <h3 className="mb-3 text-2xl font-bold">{title}</h3>
                 <p className="leading-relaxed text-ink-muted">{copy}</p>

@@ -59,8 +59,8 @@ export default function Blog() {
         <section className="relative overflow-hidden">
           <div className="relative mx-auto flex min-h-[50vh] max-w-7xl items-center px-6 py-20 sm:px-8 lg:px-12">
             <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="max-w-4xl">
-              <p className="mb-4 text-sm font-semibold uppercase tracking-[0.35em] text-[color:var(--color-brand-500)]">Blog</p>
-              <h1 className="text-display text-ink">Insights &<span className="text-[color:var(--color-brand-500)]"> Ideas</span></h1>
+              <p className="tp-label mb-4 text-brand-600">Blog</p>
+              <h1 className="text-display text-ink">Insights &<span className="text-brand-500"> Ideas</span></h1>
               <p className="mt-6 max-w-3xl text-lg text-ink-muted sm:text-xl">Expert perspectives on business strategy, technology, and growth.</p>
             </motion.div>
           </div>
@@ -77,15 +77,15 @@ export default function Blog() {
                         <Image src={post.image} alt={post.title} fill sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" className="object-cover" />
                       </div>
                     ) : (
-                      <div className="h-48 bg-surface-sunken rounded-card mb-6 border border-line group-hover:border-[color:var(--color-brand-500)]/50 transition-colors" />
+                      <div className="h-48 bg-surface rounded-card mb-6 border border-line group-hover:border-[color:var(--color-brand-500)]/50 transition-colors" />
                     )}
                     <div className="flex items-center gap-4 mb-3">
-                      <span className="text-[color:var(--color-brand-500)] text-sm font-medium">{post.category}</span>
+                      <span className="text-brand-500 text-sm font-medium">{post.category}</span>
                       <span className="text-ink-subtle text-sm">{post.date}</span>
                     </div>
-                    <h3 className="text-xl font-bold mb-3 group-hover:text-[color:var(--color-brand-500)] transition-colors">{post.title}</h3>
+                    <h3 className="text-xl font-bold mb-3 group-hover:text-brand-500 transition-colors">{post.title}</h3>
                     <p className="text-ink-muted text-sm mb-4">{post.excerpt}</p>
-                    <Link href="#" className="inline-flex items-center gap-2 text-[color:var(--color-brand-500)] text-sm font-medium group-hover:gap-3 transition-all">Read More <ArrowRight className="w-4 h-4" /></Link>
+                    <Link href="#" className="inline-flex items-center gap-2 text-brand-500 text-sm font-medium group-hover:gap-3 transition-all">Read More <ArrowRight className="w-4 h-4" /></Link>
                   </motion.article>
                 ))}
               </div>

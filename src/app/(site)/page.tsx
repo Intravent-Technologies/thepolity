@@ -8,8 +8,12 @@ import {
   Badge,
   Button,
   ButtonLink,
+  CategoryLabel,
   Container,
   Eyebrow,
+  Marquee,
+  NumberedRow,
+  Panel,
   Section,
   SectionHeading,
 } from '@/components/ui';
@@ -35,7 +39,7 @@ const defaultImages: HomepageImages = {
 
 const SERVICES = [
   {
-    title: 'IT Consultancy',
+    label: 'IT Consultancy',
     href: '/services/it-consultancy',
     image: 'service-it',
     description:
@@ -43,7 +47,7 @@ const SERVICES = [
     points: ['Technology roadmap', 'Cloud & infrastructure', 'Managed support'],
   },
   {
-    title: 'Media',
+    label: 'Media',
     href: '/services/media',
     image: 'service-media',
     description:
@@ -51,7 +55,7 @@ const SERVICES = [
     points: ['Photography & portraits', 'Event coverage', 'Photo tourism & visuals'],
   },
   {
-    title: 'Project Management',
+    label: 'Project Management',
     href: '/services/project-management',
     image: 'service-project',
     description:
@@ -111,6 +115,23 @@ const POSTS = [
   { title: 'Building Brands That Last', category: 'Branding', date: 'Jan 5, 2025' },
 ];
 
+/* Practice names, repeated for the loop. */
+const DISCIPLINES = [
+  'Technology',
+  'Media',
+  'Delivery',
+  'Strategy',
+  'Production',
+  'Support',
+];
+
+const PROOF_POINTS = [
+  { value: '10+', label: 'Years combined practice experience' },
+  { value: 'UK', label: 'Wide, nationwide client base' },
+  { value: '3', label: 'Practices under one roof' },
+  { value: '0', label: 'Discovery fees' },
+];
+
 export default function Home() {
   const [images, setImages] = useState<HomepageImages>(defaultImages);
   const [email, setEmail] = useState('');
@@ -166,17 +187,17 @@ export default function Home() {
   return (
     <>
       {/* ---------------------------------------------------------------- Hero */}
-      <Section tone="surface" className="pt-16 sm:pt-24 pb-20 sm:pb-28">
+      <Section tone="cream" className="pb-16 pt-14 sm:pb-24 sm:pt-20">
         <Container>
-          <div className="grid items-center gap-14 lg:grid-cols-12 lg:gap-16">
-            <div className="lg:col-span-7">
-              <Eyebrow>Strategy · Technology · Media</Eyebrow>
+          <Eyebrow>Strategy · Technology · Media</Eyebrow>
 
-              <h1 className="text-display text-ink mt-6 text-display text-ink">
-                One team for the work that decides whether growth actually happens.
-              </h1>
+          <h1 className="mt-7 max-w-5xl text-display text-ink">
+            One team for the work that decides whether growth actually happens.
+          </h1>
 
-              <p className="mt-7 max-w-xl text-lg leading-relaxed text-ink-muted">
+          <div className="mt-12 grid items-end gap-10 lg:grid-cols-12 lg:gap-16">
+            <div className="lg:col-span-6">
+              <p className="text-lg leading-relaxed text-ink-muted">
                 The Polity brings IT consultancy, media production and project
                 management together, so you are not coordinating three
                 suppliers to deliver one outcome.
@@ -204,14 +225,14 @@ export default function Home() {
               </ul>
             </div>
 
-            <div className="lg:col-span-5">
+            <div className="lg:col-span-6">
               <div className="grid grid-cols-2 gap-3">
                 {(['hero-visual-1', 'hero-visual-2', 'hero-visual-3', 'hero-visual-4'] as const).map(
                   (key, i) => (
                     <div
                       key={key}
-                      className={`relative aspect-4/5 overflow-hidden rounded-card border border-line bg-surface-sunken ${
-                        i % 2 === 1 ? 'mt-6' : ''
+                      className={`relative aspect-4/5 overflow-hidden rounded-card border border-line bg-surface ${
+                        i % 2 === 1 ? 'mt-8' : ''
                       }`}
                     >
                       <Image
@@ -220,7 +241,7 @@ export default function Home() {
                         aria-hidden="true"
                         fill
                         priority={i < 2}
-                        sizes="(min-width: 1024px) 22vw, 46vw"
+                        sizes="(min-width: 1024px) 23vw, 46vw"
                         className="object-cover"
                       />
                     </div>
@@ -232,19 +253,57 @@ export default function Home() {
         </Container>
       </Section>
 
-  {/* ------------------------------------------------------------- Services */}
-      <Section tone="sunken">
-        <Container>
-          <SectionHeading
-            eyebrow="What we do"
-            title="Three practices, one point of contact."
-            lede="Engage a single service or let them work together. Either way, you deal with one team and one invoice."
-          />
+      {/* ------------------------------------------------------------ Marquee */}
+      <div className="tp-rule-top border-b border-line bg-surface py-5">
+        <Marquee durationSeconds={40} itemClassName="gap-14 pr-14">
+          {DISCIPLINES.map((item) => (
+            <span key={item} className="tp-label flex items-center gap-14 text-ink-subtle">
+              {item}
+              <span aria-hidden="true" className="size-1.5 rounded-full bg-brand-500" />
+            </span>
+          ))}
+        </Marquee>
+      </div>
 
-          <div className="mt-16 grid gap-px overflow-hidden rounded-card border border-line bg-line md:grid-cols-3">
-            {SERVICES.map((service, i) => (
-              <article key={service.title} className="flex flex-col bg-surface p-8">
-                <div className="relative aspect-16/10 overflow-hidden rounded-card border border-line bg-surface-sunken">
+      {/* ------------------------------------------------------------- Proof */}
+      <Section tone="surface" className="py-16 sm:py-20">
+        <Container>
+          <dl className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+            {PROOF_POINTS.map((point) => (
+              <div key={point.label} className="tp-rule-top pt-6">
+                <dt className="font-display text-5xl leading-none text-ink tabular">{point.value}</dt>
+                <dd className="mt-4 text-sm leading-relaxed text-ink-muted">{point.label}</dd>
+              </div>
+            ))}
+          </dl>
+        </Container>
+      </Section>
+
+      {/* ------------------------------------------------------------ Services */}
+      <Section tone="navy">
+        <Container>
+          <div className="flex flex-wrap items-end justify-between gap-8">
+            <SectionHeading
+              category="What we do"
+              title="Three practices, one point of contact."
+              invert
+              className="max-w-2xl"
+            />
+            <ButtonLink
+              href="/services"
+              variant="inverse"
+              size="sm"
+              className="shrink-0"
+            >
+              All services
+              <ArrowRight className="size-4" aria-hidden="true" />
+            </ButtonLink>
+          </div>
+
+          <div className="mt-16 grid gap-px overflow-hidden rounded-card border border-ink-inverse/15 bg-ink-inverse/15 md:grid-cols-3">
+            {SERVICES.map((service) => (
+              <article key={service.label} className="flex flex-col bg-navy-500 p-8">
+                <div className="relative aspect-16/10 overflow-hidden rounded-card border border-ink-inverse/10 bg-navy-400">
                   <Image
                     src={images[service.image]}
                     alt=""
@@ -255,17 +314,16 @@ export default function Home() {
                   />
                 </div>
 
-                <p className="mt-7 text-xs font-semibold tabular tracking-[0.18em] text-ink-subtle">
-                  {String(i + 1).padStart(2, '0')}
-                </p>
-                <h3 className="mt-3 text-title text-ink">{service.title}</h3>
-                <p className="mt-3 flex-1 text-[0.95rem] leading-relaxed text-ink-muted">
+                <CategoryLabel invert className="mt-7 text-2xl">
+                  {service.label}
+                </CategoryLabel>
+                <p className="mt-4 flex-1 text-[0.95rem] leading-relaxed text-ink-inverse/70">
                   {service.description}
                 </p>
 
                 <ul className="mt-6 space-y-2">
                   {service.points.map((point) => (
-                    <li key={point} className="flex items-start gap-2.5 text-sm text-ink-muted">
+                    <li key={point} className="flex items-start gap-2.5 text-sm text-ink-inverse/60">
                       <Check className="mt-0.5 size-3.5 shrink-0 text-brand-500" aria-hidden="true" />
                       {point}
                     </li>
@@ -274,9 +332,9 @@ export default function Home() {
 
                 <Link
                   href={service.href}
-                  className="mt-8 inline-flex items-center gap-1.5 text-sm font-medium text-brand-600 transition-colors duration-200 hover:text-brand-700"
+                  className="mt-8 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-500 transition-colors duration-200 hover:text-brand-400"
                 >
-                  Explore {service.title}
+                  Explore {service.label}
                   <ArrowRight className="size-4" aria-hidden="true" />
                 </Link>
               </article>
@@ -286,42 +344,32 @@ export default function Home() {
       </Section>
 
       {/* ------------------------------------------------------------ Approach */}
-      <Section tone="surface">
+      <Section tone="cream">
         <Container>
           <div className="grid gap-14 lg:grid-cols-12 lg:gap-20">
             <div className="lg:col-span-5">
               <SectionHeading
-                eyebrow="How we work"
+                category="How we work"
                 title="Straight answers, senior people, no surprises."
                 lede="Most of our work comes from clients who were let down somewhere else. That shapes how we operate."
               />
 
               <ol className="mt-12 space-y-8">
                 {PRINCIPLES.map((principle, i) => (
-                  <li key={principle.title} className="border-t border-line pt-6">
-                    <div className="flex gap-5">
-                      <span className="text-xs font-semibold tabular tracking-[0.18em] text-brand-600">
-                        {String(i + 1).padStart(2, '0')}
-                      </span>
-                      <div>
-                        <h3 className="text-lg font-semibold text-ink">{principle.title}</h3>
-                        <p className="mt-2 text-[0.95rem] leading-relaxed text-ink-muted">
-                          {principle.body}
-                        </p>
-                      </div>
-                    </div>
-                  </li>
+                  <NumberedRow key={principle.title} index={i + 1} title={principle.title}>
+                    {principle.body}
+                  </NumberedRow>
                 ))}
               </ol>
             </div>
 
             <div className="lg:col-span-7">
-              <div className="rounded-card border border-line bg-surface-sunken p-8 sm:p-10">
-                <h3 className="text-title text-ink">What getting started looks like</h3>
-                <ol className="mt-8 space-y-5">
+              <Panel>
+                <CategoryLabel>Getting started</CategoryLabel>
+                <ol className="mt-9 space-y-5">
                   {JOURNEY.map((step, i) => (
                     <li key={step} className="flex gap-4">
-                      <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-line-strong bg-surface text-xs font-semibold tabular text-ink-muted">
+                      <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-line-strong bg-cream text-xs font-semibold tabular text-ink-muted">
                         {i + 1}
                       </span>
                       <span className="pt-1 text-[0.95rem] leading-relaxed text-ink-muted">
@@ -337,22 +385,22 @@ export default function Home() {
                     on-site visits are arranged where they genuinely help.
                   </p>
                 </div>
-              </div>
+              </Panel>
             </div>
           </div>
         </Container>
       </Section>
 
       {/* ---------------------------------------------------------------- CTA */}
-      <Section tone="navy" className="py-20 sm:py-24">
+      <Section tone="navy-deep">
         <Container>
           <div className="grid items-end gap-10 lg:grid-cols-12">
             <div className="lg:col-span-7">
-              <Eyebrow className="text-brand-300">Next step</Eyebrow>
-              <h2 className="text-headline text-ink mt-4 text-headline text-ink-inverse">
+              <Eyebrow className="text-brand-400">Next step</Eyebrow>
+              <h2 className="mt-5 text-headline text-ink-inverse">
                 Tell us what you are trying to fix.
               </h2>
-              <p className="mt-5 max-w-xl text-lg leading-relaxed text-ink-inverse/70">
+              <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink-inverse/70">
                 A short call is usually enough to work out whether we can help.
                 If we cannot, we will say so.
               </p>
@@ -366,7 +414,7 @@ export default function Home() {
                 href="tel:+447881168479"
                 size="lg"
                 variant="ghost"
-                className="text-ink-inverse hover:text-white"
+                className="text-ink-inverse hover:text-brand-500"
               >
                 07881 168479
               </ButtonLink>
@@ -379,7 +427,7 @@ export default function Home() {
       <Section tone="surface">
         <Container>
           <SectionHeading
-            eyebrow="Questions"
+            category="Questions"
             title="The things people ask first."
             align="center"
           />
@@ -407,11 +455,11 @@ export default function Home() {
       </Section>
 
       {/* ------------------------------------------------------------- Journal */}
-      <Section tone="sunken">
+      <Section tone="cream">
         <Container>
           <div className="flex flex-wrap items-end justify-between gap-6">
             <SectionHeading
-              eyebrow="Journal"
+              category="Journal"
               title="Thinking out loud."
               className="max-w-xl"
             />
@@ -454,7 +502,7 @@ export default function Home() {
         <Container>
           <div className="mx-auto max-w-2xl text-center">
             <SectionHeading
-              eyebrow="Keep in touch"
+              category="Keep in touch"
               title="Occasional notes, no noise."
               lede="Roughly once a month, when we have something genuinely worth sending."
               align="center"
@@ -474,7 +522,7 @@ export default function Home() {
                   placeholder="you@company.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  className="h-12 flex-1 rounded-full border border-line-strong bg-surface px-5 text-[0.95rem] text-ink placeholder:text-ink-subtle transition-[border-color,box-shadow] duration-200 focus:border-brand-500 focus:outline-none focus-visible:outline-none focus:ring-2 focus:ring-brand-500/25"
+                  className="h-12 flex-1 rounded-full border border-line-strong bg-cream px-5 text-[0.95rem] text-ink placeholder:text-ink-subtle transition-[border-color,box-shadow] duration-200 focus:border-brand-500 focus:outline-none focus-visible:outline-none focus:ring-2 focus:ring-brand-500/25"
                 />
                 <Button type="submit" disabled={status === 'loading'} className="shrink-0">
                   {status === 'loading' ? 'Sending…' : 'Subscribe'}

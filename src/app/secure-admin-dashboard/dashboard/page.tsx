@@ -5,6 +5,8 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import UploadField from '@/components/UploadField';
+import { notify, ToastViewport } from '@/components/admin/Toast';
+import { CategoryLabel, Eyebrow } from '@/components/ui';
 
 interface PortfolioItem {
   id: string;
@@ -90,38 +92,49 @@ export default function AdminDashboard() {
 
   if (!isAuthenticated) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-surface">
-        <div className="h-12 w-12 animate-spin rounded-full border-4 border-[color:var(--color-brand-500)] border-t-transparent" />
+      <div className="flex min-h-screen items-center justify-center bg-cream">
+        <div
+          role="status"
+          aria-label="Checking your session"
+          className="size-12 animate-spin rounded-full border-4 border-brand-500 border-t-transparent"
+        />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-surface">
-      {/* Admin Header */}
-      <header className="bg-surface border-b border-line px-6 py-4">
-        <div className="max-w-7xl mx-auto flex justify-between items-center">
-          <div className="flex items-center gap-8">
-            <Link href="/" className="text-xl font-bold">
-              <span className="text-[color:var(--color-ink)]">THE</span>
-              <span className="text-[color:var(--color-brand-500)]"> POLITY</span>
-              <span className="text-ink-subtle text-sm ml-2">Admin</span>
-            </Link>
-          </div>
+    <div className="min-h-screen bg-cream">
+      <ToastViewport />
+
+      <header className="border-b border-line bg-surface">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
+          <Link href="/" className="flex items-baseline gap-2">
+            <span className="font-display text-xl tracking-tight text-ink">
+              The <span className="text-brand-500">Polity</span>.
+            </span>
+            <Eyebrow>Admin</Eyebrow>
+          </Link>
           <button
             onClick={handleLogout}
-            className="text-ink-muted hover:text-[color:var(--color-ink)] text-sm"
+            className="rounded-full border border-line-strong px-4 py-2 text-sm text-ink-muted transition-colors duration-200 hover:border-brand-500 hover:text-brand-600"
           >
-            Logout
+            Log out
           </button>
         </div>
       </header>
 
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="text-3xl font-bold text-[color:var(--color-ink)] mb-8">Admin Dashboard</h1>
+      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+        <CategoryLabel>Content</CategoryLabel>
+        <p className="mt-3 max-w-xl text-[0.95rem] leading-relaxed text-ink-muted">
+          Everything published to the site is edited here. Changes go live as
+          soon as they are saved.
+        </p>
 
-        {/* Tab Navigation */}
-        <div className="flex flex-wrap gap-2 mb-8">
+        <div
+          role="tablist"
+          aria-label="Content sections"
+          className="mt-8 flex flex-wrap gap-1 border-b border-line"
+        >
           {[
             { key: 'portfolio', label: 'Portfolio' },
             { key: 'gallery', label: 'Gallery' },
@@ -133,11 +146,14 @@ export default function AdminDashboard() {
           ].map((item) => (
             <button
               key={item.key}
+              type="button"
+              role="tab"
               onClick={() => setTab(item.key as Tab)}
-              className={`px-4 py-2 rounded-lg font-semibold transition text-sm ${
+              aria-selected={tab === item.key}
+              className={`-mb-px border-b-2 px-4 py-2.5 text-sm font-semibold transition-colors duration-200 ${
                 tab === item.key
-                  ? 'bg-[color:var(--color-brand-500)] text-white'
-                  : 'bg-surface-sunken text-ink-muted border border-line hover:bg-surface-muted'
+                  ? 'border-brand-500 text-ink'
+                  : 'border-transparent text-ink-muted hover:border-line-strong hover:text-ink'
               }`}
             >
               {item.label}
@@ -179,15 +195,15 @@ function PortfolioManager() {
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !description || !image) { alert('Fill all fields'); return; }
+    if (!title || !description || !image) { notify('Fill all fields'); return; }
     setSaving(true);
     try {
       const res = await fetch('/api/portfolio', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title, description, image, category }) });
       const data = await res.json();
-      if (data.error) { alert(data.error); return; }
+      if (data.error) { notify(data.error); return; }
       setItems([data, ...items]);
       setTitle(''); setDescription(''); setCategory('Project'); setImage('');
-    } catch { alert('Failed'); }
+    } catch { notify('Something went wrong. Please try again.'); }
     finally { setSaving(false); }
   };
 
@@ -201,29 +217,29 @@ function PortfolioManager() {
 
   return (
     <div className="bg-surface rounded-card border border-line p-6">
-      <h2 className="text-xl font-bold text-[color:var(--color-ink)] mb-6">Add Portfolio Item</h2>
+      <h2 className="text-xl font-bold text-ink mb-6">Add Portfolio Item</h2>
       <form onSubmit={handleAdd} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="Title" className="px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)] placeholder:text-ink-subtle" />
-          <select value={category} onChange={e => setCategory(e.target.value)} className="px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)]">
+          <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="Title" className="px-4 py-3 bg-cream border border-line rounded-card text-ink placeholder:text-ink-subtle" />
+          <select value={category} onChange={e => setCategory(e.target.value)} className="px-4 py-3 bg-cream border border-line rounded-card text-ink">
             <option className="bg-surface">Project</option><option className="bg-surface">Case Study</option><option className="bg-surface">Campaign</option><option className="bg-surface">Branding</option><option className="bg-surface">Design</option>
           </select>
         </div>
-        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} placeholder="Description" className="w-full px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)] placeholder:text-ink-subtle" />
+        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} placeholder="Description" className="w-full px-4 py-3 bg-cream border border-line rounded-card text-ink placeholder:text-ink-subtle" />
         <UploadField type="portfolio" label="Choose image" value={image} onChange={setImage} />
-        <button type="submit" disabled={saving || !image} className="px-6 py-3 bg-[color:var(--color-brand-500)] text-white rounded-lg font-medium hover:bg-[color:var(--color-brand-400)] disabled:opacity-50">{saving ? 'Saving...' : 'Add Item'}</button>
+        <button type="submit" disabled={saving || !image} className="px-6 py-3 bg-brand-500 text-white rounded-card font-medium hover:bg-brand-600 disabled:opacity-50">{saving ? 'Saving...' : 'Add Item'}</button>
       </form>
 
       <div className="border-t border-line mt-8 pt-8">
-        <h3 className="text-lg font-bold text-[color:var(--color-ink)] mb-4">Items ({items.length})</h3>
+        <h3 className="text-lg font-bold text-ink mb-4">Items ({items.length})</h3>
         {loading ? <p className="text-ink-subtle">Loading...</p> : items.length === 0 ? <p className="text-ink-subtle">No items</p> : (
           <div className="space-y-3">
             {items.map(item => (
-              <div key={item.id} className="flex items-center justify-between p-3 bg-surface-sunken rounded-lg">
+              <div key={item.id} className="flex items-center justify-between p-3 bg-cream rounded-card">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="relative w-12 h-12 rounded bg-surface-muted overflow-hidden flex-shrink-0"><Image src={item.image} alt="" fill sizes="3rem" className="object-cover" /></div>
+                  <div className="relative w-12 h-12 rounded bg-cream overflow-hidden flex-shrink-0"><Image src={item.image} alt="" fill sizes="3rem" className="object-cover" /></div>
                   <div className="min-w-0">
-                    <div className="text-[color:var(--color-ink)] font-medium">{item.title}</div>
+                    <div className="text-ink font-medium">{item.title}</div>
                     <div className="text-ink-subtle text-sm">{item.category}</div>
                     {item.description && <div className="text-ink-subtle text-xs truncate max-w-md">{item.description}</div>}
                   </div>
@@ -287,11 +303,11 @@ function GalleryManager() {
 
   return (
     <div className="bg-surface rounded-card border border-line p-6">
-      <h2 className="text-xl font-bold text-[color:var(--color-ink)] mb-6">Add Gallery Item</h2>
+      <h2 className="text-xl font-bold text-ink mb-6">Add Gallery Item</h2>
       <form onSubmit={handleAdd} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="Title" className="px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)] placeholder:text-ink-subtle" />
-          <select value={type} onChange={e => setType(e.target.value as 'image' | 'video')} className="px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)]">
+          <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="Title" className="px-4 py-3 bg-cream border border-line rounded-card text-ink placeholder:text-ink-subtle" />
+          <select value={type} onChange={e => setType(e.target.value as 'image' | 'video')} className="px-4 py-3 bg-cream border border-line rounded-card text-ink">
             <option value="image">Image</option><option value="video">Video</option>
           </select>
         </div>
@@ -303,22 +319,22 @@ function GalleryManager() {
           onChange={setUrl}
         />
         {error ? <p role="alert" className="text-sm text-brand-700">{error}</p> : null}
-        <button type="submit" disabled={saving || !url} className="px-6 py-3 bg-[color:var(--color-brand-500)] text-white rounded-lg font-medium hover:bg-[color:var(--color-brand-400)] disabled:opacity-50">{saving ? 'Saving...' : 'Add Item'}</button>
+        <button type="submit" disabled={saving || !url} className="px-6 py-3 bg-brand-500 text-white rounded-card font-medium hover:bg-brand-600 disabled:opacity-50">{saving ? 'Saving...' : 'Add Item'}</button>
       </form>
 
       <div className="border-t border-line mt-8 pt-8">
-        <h3 className="text-lg font-bold text-[color:var(--color-ink)] mb-4">Items ({items.length})</h3>
+        <h3 className="text-lg font-bold text-ink mb-4">Items ({items.length})</h3>
         {loading ? <p className="text-ink-subtle">Loading...</p> : items.length === 0 ? <p className="text-ink-subtle">No items</p> : (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {items.map(item => (
-              <div key={item.id} className="relative rounded-lg overflow-hidden bg-surface-sunken">
+              <div key={item.id} className="relative rounded-card overflow-hidden bg-cream">
                 {item.type === 'image' ? (
                   <Image src={item.url} alt={item.title} fill sizes="(min-width: 768px) 25vw, 50vw" className="h-32 object-cover" />
                 ) : (
                   <video src={item.url} controls className="w-full h-32 object-cover" />
                 )}
                 <div className="p-2">
-                  <p className="text-[color:var(--color-ink)] text-xs font-medium truncate">{item.title}</p>
+                  <p className="text-ink text-xs font-medium truncate">{item.title}</p>
                   <p className="text-ink-subtle text-xs capitalize">{item.type}</p>
                 </div>
                 <button onClick={() => handleDelete(item.id)} className="absolute top-2 right-2 px-2 py-1 rounded bg-ink/80 text-xs text-ink-inverse transition-colors duration-200 hover:bg-ink">Delete</button>
@@ -354,15 +370,15 @@ function BlogManager() {
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !excerpt) { alert('Fill all fields'); return; }
+    if (!title || !excerpt) { notify('Fill all fields'); return; }
     setSaving(true);
     try {
       const res = await fetch('/api/blog', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title, category, date, excerpt, image }) });
       const data = await res.json();
-      if (data.error) { alert(data.error); return; }
+      if (data.error) { notify(data.error); return; }
       setPosts([data, ...posts]);
       setTitle(''); setCategory('Strategy'); setExcerpt(''); setImage('');
-    } catch { alert('Failed'); }
+    } catch { notify('Something went wrong. Please try again.'); }
     finally { setSaving(false); }
   };
 
@@ -378,30 +394,30 @@ function BlogManager() {
 
   return (
     <div className="bg-surface rounded-card border border-line p-6">
-      <h2 className="text-xl font-bold text-[color:var(--color-ink)] mb-6">Add Blog Post</h2>
+      <h2 className="text-xl font-bold text-ink mb-6">Add Blog Post</h2>
       <form onSubmit={handleAdd} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="Title" className="px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)] placeholder:text-ink-subtle" />
-          <select value={category} onChange={e => setCategory(e.target.value)} className="px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)]">
+          <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="Title" className="px-4 py-3 bg-cream border border-line rounded-card text-ink placeholder:text-ink-subtle" />
+          <select value={category} onChange={e => setCategory(e.target.value)} className="px-4 py-3 bg-cream border border-line rounded-card text-ink">
             {categories.map(c => <option key={c} value={c} className="bg-surface">{c}</option>)}
           </select>
-          <input type="date" value={date} onChange={e => setDate(e.target.value)} className="px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)]" />
+          <input type="date" value={date} onChange={e => setDate(e.target.value)} className="px-4 py-3 bg-cream border border-line rounded-card text-ink" />
         </div>
-        <textarea value={excerpt} onChange={e => setExcerpt(e.target.value)} rows={3} placeholder="Excerpt" className="w-full px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)] placeholder:text-ink-subtle" />
+        <textarea value={excerpt} onChange={e => setExcerpt(e.target.value)} rows={3} placeholder="Excerpt" className="w-full px-4 py-3 bg-cream border border-line rounded-card text-ink placeholder:text-ink-subtle" />
         <UploadField type="portfolio" label="Choose image" value={image} onChange={setImage} />
-        <button type="submit" disabled={saving} className="px-6 py-3 bg-[color:var(--color-brand-500)] text-white rounded-lg font-medium hover:bg-[color:var(--color-brand-400)] disabled:opacity-50">{saving ? 'Saving...' : 'Add Post'}</button>
+        <button type="submit" disabled={saving} className="px-6 py-3 bg-brand-500 text-white rounded-card font-medium hover:bg-brand-600 disabled:opacity-50">{saving ? 'Saving...' : 'Add Post'}</button>
       </form>
 
       <div className="border-t border-line mt-8 pt-8">
-        <h3 className="text-lg font-bold text-[color:var(--color-ink)] mb-4">Posts ({posts.length})</h3>
+        <h3 className="text-lg font-bold text-ink mb-4">Posts ({posts.length})</h3>
         {loading ? <p className="text-ink-subtle">Loading...</p> : posts.length === 0 ? <p className="text-ink-subtle">No posts</p> : (
           <div className="space-y-3">
             {posts.map(post => (
-              <div key={post.id} className="flex items-center justify-between p-3 bg-surface-sunken rounded-lg">
+              <div key={post.id} className="flex items-center justify-between p-3 bg-cream rounded-card">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="relative w-12 h-12 rounded bg-surface-muted overflow-hidden flex-shrink-0">{post.image && <Image src={post.image} alt="" fill sizes="3rem" className="object-cover" />}</div>
+                  <div className="relative w-12 h-12 rounded bg-cream overflow-hidden flex-shrink-0">{post.image && <Image src={post.image} alt="" fill sizes="3rem" className="object-cover" />}</div>
                   <div className="min-w-0">
-                    <div className="text-[color:var(--color-ink)] font-medium">{post.title}</div>
+                    <div className="text-ink font-medium">{post.title}</div>
                     <div className="text-ink-subtle text-sm">{post.category} | {post.date}</div>
                     {post.excerpt && <div className="text-ink-subtle text-xs truncate max-w-md">{post.excerpt}</div>}
                   </div>
@@ -439,15 +455,15 @@ function WorkManager() {
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !description) { alert('Fill all fields'); return; }
+    if (!title || !description) { notify('Fill all fields'); return; }
     setSaving(true);
     try {
       const res = await fetch('/api/work', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title, category, client, description, image }) });
       const data = await res.json();
-      if (data.error) { alert(data.error); return; }
+      if (data.error) { notify(data.error); return; }
       setProjects([data, ...projects]);
       setTitle(''); setCategory('Web Development'); setClient(''); setDescription(''); setImage('');
-    } catch { alert('Failed'); }
+    } catch { notify('Something went wrong. Please try again.'); }
     finally { setSaving(false); }
   };
 
@@ -463,30 +479,30 @@ function WorkManager() {
 
   return (
     <div className="bg-surface rounded-card border border-line p-6">
-      <h2 className="text-xl font-bold text-[color:var(--color-ink)] mb-6">Add Work Project</h2>
+      <h2 className="text-xl font-bold text-ink mb-6">Add Work Project</h2>
       <form onSubmit={handleAdd} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="Title" className="px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)] placeholder:text-ink-subtle" />
-          <select value={category} onChange={e => setCategory(e.target.value)} className="px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)]">
+          <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="Title" className="px-4 py-3 bg-cream border border-line rounded-card text-ink placeholder:text-ink-subtle" />
+          <select value={category} onChange={e => setCategory(e.target.value)} className="px-4 py-3 bg-cream border border-line rounded-card text-ink">
             {categories.map(c => <option key={c} value={c} className="bg-surface">{c}</option>)}
           </select>
-          <input type="text" value={client} onChange={e => setClient(e.target.value)} placeholder="Client name" className="px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)] placeholder:text-ink-subtle" />
+          <input type="text" value={client} onChange={e => setClient(e.target.value)} placeholder="Client name" className="px-4 py-3 bg-cream border border-line rounded-card text-ink placeholder:text-ink-subtle" />
         </div>
-        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} placeholder="Description" className="w-full px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)] placeholder:text-ink-subtle" />
+        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} placeholder="Description" className="w-full px-4 py-3 bg-cream border border-line rounded-card text-ink placeholder:text-ink-subtle" />
         <UploadField type="portfolio" label="Choose image" value={image} onChange={setImage} />
-        <button type="submit" disabled={saving} className="px-6 py-3 bg-[color:var(--color-brand-500)] text-white rounded-lg font-medium hover:bg-[color:var(--color-brand-400)] disabled:opacity-50">{saving ? 'Saving...' : 'Add Project'}</button>
+        <button type="submit" disabled={saving} className="px-6 py-3 bg-brand-500 text-white rounded-card font-medium hover:bg-brand-600 disabled:opacity-50">{saving ? 'Saving...' : 'Add Project'}</button>
       </form>
 
       <div className="border-t border-line mt-8 pt-8">
-        <h3 className="text-lg font-bold text-[color:var(--color-ink)] mb-4">Projects ({projects.length})</h3>
+        <h3 className="text-lg font-bold text-ink mb-4">Projects ({projects.length})</h3>
         {loading ? <p className="text-ink-subtle">Loading...</p> : projects.length === 0 ? <p className="text-ink-subtle">No projects</p> : (
           <div className="space-y-3">
             {projects.map(project => (
-              <div key={project.id} className="flex items-center justify-between p-3 bg-surface-sunken rounded-lg">
+              <div key={project.id} className="flex items-center justify-between p-3 bg-cream rounded-card">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="relative w-12 h-12 rounded bg-surface-muted overflow-hidden flex-shrink-0">{project.image && <Image src={project.image} alt="" fill sizes="3rem" className="object-cover" />}</div>
+                  <div className="relative w-12 h-12 rounded bg-cream overflow-hidden flex-shrink-0">{project.image && <Image src={project.image} alt="" fill sizes="3rem" className="object-cover" />}</div>
                   <div className="min-w-0">
-                    <div className="text-[color:var(--color-ink)] font-medium">{project.title}</div>
+                    <div className="text-ink font-medium">{project.title}</div>
                     <div className="text-ink-subtle text-sm">{project.category} | {project.client}</div>
                     {project.description && <div className="text-ink-subtle text-xs truncate max-w-md">{project.description}</div>}
                   </div>
@@ -523,15 +539,15 @@ function TeamManager() {
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !role || !bio) { alert('Fill all fields'); return; }
+    if (!name || !role || !bio) { notify('Fill all fields'); return; }
     setSaving(true);
     try {
       const res = await fetch('/api/team', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, role, bio, image }) });
       const data = await res.json();
-      if (data.error) { alert(data.error); return; }
+      if (data.error) { notify(data.error); return; }
       setMembers([data, ...members]);
       setName(''); setRole(''); setBio(''); setImage('');
-    } catch { alert('Failed'); }
+    } catch { notify('Something went wrong. Please try again.'); }
     finally { setSaving(false); }
   };
 
@@ -547,32 +563,32 @@ function TeamManager() {
 
   return (
     <div className="bg-surface rounded-card border border-line p-6">
-      <h2 className="text-xl font-bold text-[color:var(--color-ink)] mb-6">Add Team Member</h2>
+      <h2 className="text-xl font-bold text-ink mb-6">Add Team Member</h2>
       <form onSubmit={handleAdd} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Name" className="px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)] placeholder:text-ink-subtle" />
-          <select value={role} onChange={e => setRole(e.target.value)} className="px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)]">
+          <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Name" className="px-4 py-3 bg-cream border border-line rounded-card text-ink placeholder:text-ink-subtle" />
+          <select value={role} onChange={e => setRole(e.target.value)} className="px-4 py-3 bg-cream border border-line rounded-card text-ink">
             <option value="" className="bg-surface">Select role</option>
             {roles.map(r => <option key={r} value={r} className="bg-surface">{r}</option>)}
           </select>
         </div>
-        <textarea value={bio} onChange={e => setBio(e.target.value)} rows={3} placeholder="Bio" className="w-full px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)] placeholder:text-ink-subtle" />
+        <textarea value={bio} onChange={e => setBio(e.target.value)} rows={3} placeholder="Bio" className="w-full px-4 py-3 bg-cream border border-line rounded-card text-ink placeholder:text-ink-subtle" />
         <UploadField type="portfolio" label="Choose image" round value={image} onChange={setImage} />
-        <button type="submit" disabled={saving} className="px-6 py-3 bg-[color:var(--color-brand-500)] text-white rounded-lg font-medium hover:bg-[color:var(--color-brand-400)] disabled:opacity-50">{saving ? 'Saving...' : 'Add Member'}</button>
+        <button type="submit" disabled={saving} className="px-6 py-3 bg-brand-500 text-white rounded-card font-medium hover:bg-brand-600 disabled:opacity-50">{saving ? 'Saving...' : 'Add Member'}</button>
       </form>
 
       <div className="border-t border-line mt-8 pt-8">
-        <h3 className="text-lg font-bold text-[color:var(--color-ink)] mb-4">Members ({members.length})</h3>
+        <h3 className="text-lg font-bold text-ink mb-4">Members ({members.length})</h3>
         {loading ? <p className="text-ink-subtle">Loading...</p> : members.length === 0 ? <p className="text-ink-subtle">No members</p> : (
           <div className="space-y-3">
             {members.map(member => (
-              <div key={member.id} className="flex items-center justify-between p-3 bg-surface-sunken rounded-lg">
+              <div key={member.id} className="flex items-center justify-between p-3 bg-cream rounded-card">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="relative w-10 h-10 rounded-full bg-surface-muted flex-shrink-0 overflow-hidden">
-                    {member.image ? <Image src={member.image} alt="" fill sizes="3rem" className="object-cover" /> : <div className="w-full h-full flex items-center justify-center text-[color:var(--color-ink)] font-bold">{member.name[0]}</div>}
+                  <div className="relative w-10 h-10 rounded-full bg-cream flex-shrink-0 overflow-hidden">
+                    {member.image ? <Image src={member.image} alt="" fill sizes="3rem" className="object-cover" /> : <div className="w-full h-full flex items-center justify-center text-ink font-bold">{member.name[0]}</div>}
                   </div>
                   <div className="min-w-0">
-                    <div className="text-[color:var(--color-ink)] font-medium">{member.name}</div>
+                    <div className="text-ink font-medium">{member.name}</div>
                     <div className="text-ink-subtle text-sm">{member.role}</div>
                     {member.bio && <div className="text-ink-subtle text-xs truncate max-w-md">{member.bio}</div>}
                   </div>
@@ -609,16 +625,16 @@ function ReviewsManager() {
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!name || !role || !content) { alert('Fill all fields'); return; }
+    if (!name || !role || !content) { notify('Fill all fields'); return; }
     setSaving(true);
     try {
       const res = await fetch('/api/reviews', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, role, content, rating }) });
       const data = await res.json();
-      if (data.error) { alert(data.error); return; }
+      if (data.error) { notify(data.error); return; }
       setReviews([data, ...reviews]);
       setName(''); setRole(''); setContent(''); setRating(5);
-      alert('Added!');
-    } catch { alert('Failed'); }
+      notify('Review added.', 'success');
+    } catch { notify('Something went wrong. Please try again.'); }
     finally { setSaving(false); }
   };
 
@@ -632,35 +648,35 @@ function ReviewsManager() {
 
   return (
     <div className="bg-surface rounded-card border border-line p-6">
-      <h2 className="text-xl font-bold text-[color:var(--color-ink)] mb-6">Add Review</h2>
+      <h2 className="text-xl font-bold text-ink mb-6">Add Review</h2>
       <form onSubmit={handleAdd} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Name" className="px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)] placeholder:text-ink-subtle" />
-          <input type="text" value={role} onChange={e => setRole(e.target.value)} placeholder="Role (e.g. CEO, Company)" className="px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)] placeholder:text-ink-subtle" />
+          <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Name" className="px-4 py-3 bg-cream border border-line rounded-card text-ink placeholder:text-ink-subtle" />
+          <input type="text" value={role} onChange={e => setRole(e.target.value)} placeholder="Role (e.g. CEO, Company)" className="px-4 py-3 bg-cream border border-line rounded-card text-ink placeholder:text-ink-subtle" />
         </div>
         <div>
           <label className="block text-ink-muted text-sm mb-2">Rating</label>
-          <select value={rating} onChange={e => setRating(parseInt(e.target.value))} className="px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)]">
+          <select value={rating} onChange={e => setRating(parseInt(e.target.value))} className="px-4 py-3 bg-cream border border-line rounded-card text-ink">
             {[1,2,3,4,5].map(r => <option key={r} value={r} className="bg-surface">{r} Star{r > 1 ? 's' : ''}</option>)}
           </select>
         </div>
-        <textarea value={content} onChange={e => setContent(e.target.value)} rows={4} placeholder="Review content" className="w-full px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)] placeholder:text-ink-subtle" />
-        <button type="submit" disabled={saving} className="px-6 py-3 bg-[color:var(--color-brand-500)] text-white rounded-lg font-medium hover:bg-[color:var(--color-brand-400)] disabled:opacity-50">{saving ? 'Saving...' : 'Add Review'}</button>
+        <textarea value={content} onChange={e => setContent(e.target.value)} rows={4} placeholder="Review content" className="w-full px-4 py-3 bg-cream border border-line rounded-card text-ink placeholder:text-ink-subtle" />
+        <button type="submit" disabled={saving} className="px-6 py-3 bg-brand-500 text-white rounded-card font-medium hover:bg-brand-600 disabled:opacity-50">{saving ? 'Saving...' : 'Add Review'}</button>
       </form>
 
       <div className="border-t border-line mt-8 pt-8">
-        <h3 className="text-lg font-bold text-[color:var(--color-ink)] mb-4">Reviews ({reviews.length})</h3>
+        <h3 className="text-lg font-bold text-ink mb-4">Reviews ({reviews.length})</h3>
         {loading ? <p className="text-ink-subtle">Loading...</p> : reviews.length === 0 ? <p className="text-ink-subtle">No reviews</p> : (
           <div className="space-y-3">
             {reviews.map(review => (
-              <div key={review.id} className="p-4 bg-surface-sunken rounded-lg">
+              <div key={review.id} className="p-4 bg-cream rounded-card">
                 <div className="flex items-center justify-between mb-2">
                   <div className="min-w-0">
-                    <div className="text-[color:var(--color-ink)] font-medium">{review.name}</div>
+                    <div className="text-ink font-medium">{review.name}</div>
                     <div className="text-ink-subtle text-sm">{review.role}</div>
                   </div>
                   <div className="flex items-center gap-3 flex-shrink-0">
-                    <div className="flex">{[...Array(review.rating)].map((_,i) => <span key={i} className="text-yellow-400">★</span>)}</div>
+                    <div className="flex">{[...Array(review.rating)].map((_,i) => <span key={i} className="text-brand-400">★</span>)}</div>
                     <button onClick={() => handleDelete(review.id)} className="px-3 py-1 rounded border border-line-strong bg-surface text-sm text-ink-muted transition-colors duration-200 hover:border-brand-500 hover:text-brand-700">Delete</button>
                   </div>
                 </div>
@@ -817,7 +833,7 @@ function HomepageManager() {
     <div className="space-y-8">
       {HOMEPAGE_SECTION_GROUPS.map((group) => (
         <div key={group.title} className="bg-surface rounded-card p-6 border border-line">
-          <h2 className="text-xl font-bold text-[color:var(--color-ink)] mb-2">{group.title}</h2>
+          <h2 className="text-xl font-bold text-ink mb-2">{group.title}</h2>
           <p className="text-ink-muted text-sm mb-6">{isSlideshowSection(group.sections[0]?.key || '') ? 'Upload multiple images for the slideshow' : 'Select a slot below to upload an image'}</p>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -832,13 +848,13 @@ function HomepageManager() {
                     isSelected ? 'border-brand-500 ring-2 ring-brand-500/20' : 'border-line'
                   }`}
                 >
-                  <h3 className="text-sm font-medium text-[color:var(--color-ink)] mb-3">{section.label}</h3>
+                  <h3 className="text-sm font-medium text-ink mb-3">{section.label}</h3>
                   
                   {sectionImages.length > 0 ? (
                     <div className="space-y-2 mb-3">
                       {sectionImages.map((img, idx) => (
                         <div key={img.id} className="relative">
-                          <Image src={img.imageUrl} alt={`${section.label} ${idx + 1}`} fill sizes="(min-width: 1024px) 20vw, 50vw" className="h-24 object-cover rounded-lg" />
+                          <Image src={img.imageUrl} alt={`${section.label} ${idx + 1}`} fill sizes="(min-width: 1024px) 20vw, 50vw" className="h-24 object-cover rounded-card" />
                           <button
                             onClick={() => handleDelete(img.id)}
                             aria-label={`Delete ${section.label} ${idx + 1}`}
@@ -847,7 +863,7 @@ function HomepageManager() {
                         </div>
                       ))}
                     </div>
-                  ) : ( <div className="w-full h-24 bg-surface-sunken rounded-lg mb-3 flex items-center justify-center text-ink-subtle text-sm">No image</div> )}
+                  ) : ( <div className="w-full h-24 bg-cream rounded-card mb-3 flex items-center justify-center text-ink-subtle text-sm">No image</div> )}
 
                   <button
                     onClick={() => { setSelectedSection(section.key); setNotice(null); }}
@@ -869,7 +885,7 @@ function HomepageManager() {
       ))}
 
       <div className="bg-surface rounded-card p-6 border border-line">
-        <h2 className="text-lg font-bold text-[color:var(--color-ink)]">
+        <h2 className="text-lg font-bold text-ink">
           Upload to &ldquo;{selected?.label ?? selectedSection}&rdquo;
         </h2>
         <p className="mt-1 text-sm text-ink-subtle">

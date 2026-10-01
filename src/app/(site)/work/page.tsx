@@ -63,7 +63,7 @@ export default function Work() {
           {loading ? (
             <p className="py-20 text-center text-ink-muted">Loading projects…</p>
           ) : projects.length === 0 ? (
-            <div className="mx-auto max-w-xl rounded-card border border-dashed border-line-strong bg-surface-sunken px-8 py-16 text-center">
+            <div className="mx-auto max-w-xl rounded-card border border-dashed border-line-strong bg-surface px-8 py-16 text-center">
               <FolderOpen className="mx-auto size-8 text-ink-subtle" aria-hidden="true" />
               <h2 className="mt-6 text-title text-ink">No case studies published yet</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-muted">
@@ -79,7 +79,7 @@ export default function Work() {
             <div className="grid gap-x-8 gap-y-14 md:grid-cols-2">
               {projects.map((project) => (
                 <article key={project.id}>
-                  <div className="relative aspect-16/10 overflow-hidden rounded-card border border-line bg-surface-sunken transition-colors duration-200 hover:border-line-strong">
+                  <div className="relative aspect-16/10 overflow-hidden rounded-card border border-line bg-surface transition-colors duration-200 hover:border-line-strong">
                     {project.image ? (
                       <Image
                         src={project.image}

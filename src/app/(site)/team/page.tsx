@@ -55,8 +55,8 @@ export default function Team() {
         <section className="relative overflow-hidden">
           <div className="relative mx-auto flex min-h-[50vh] max-w-7xl items-center px-6 py-20 sm:px-8 lg:px-12">
             <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="max-w-4xl">
-              <p className="mb-4 text-sm font-semibold uppercase tracking-[0.35em] text-[color:var(--color-brand-500)]">Our Team</p>
-              <h1 className="text-display text-ink">Meet the<span className="text-[color:var(--color-brand-500)]"> Experts</span></h1>
+              <p className="tp-label mb-4 text-brand-600">Our Team</p>
+              <h1 className="text-display text-ink">Meet the<span className="text-brand-500"> Experts</span></h1>
               <p className="mt-6 max-w-3xl text-lg text-ink-muted sm:text-xl">The talented people behind The Polity, dedicated to your success.</p>
             </motion.div>
           </div>
@@ -72,10 +72,10 @@ export default function Team() {
                       {member.image ? <Image src={member.image} alt={member.name} fill sizes="10rem" className="rounded-full object-cover" /> : <span className="text-4xl font-bold text-ink-subtle">{member.name[0]}</span>}
                     </div>
                     <h3 className="text-xl font-bold text-center mb-2">{member.name}</h3>
-                    <p className="text-[color:var(--color-brand-500)] text-sm text-center mb-4">{member.role}</p>
+                    <p className="text-brand-500 text-sm text-center mb-4">{member.role}</p>
                     <p className="text-ink-muted text-sm text-center leading-relaxed">{member.bio}</p>
                     <div className="flex justify-center gap-4 mt-6">
-                      <Link href="mailto:hello@thepolityservices.com" className="p-2 rounded-full bg-surface-sunken border border-line text-ink-muted hover:bg-[color:var(--color-brand-500)] hover:border-[color:var(--color-brand-500)] hover:text-white transition-all"><Mail className="w-5 h-5" /></Link>
+                      <Link href="mailto:hello@thepolityservices.com" className="p-2 rounded-full bg-surface border border-line text-ink-muted hover:bg-[color:var(--color-brand-500)] hover:border-[color:var(--color-brand-500)] hover:text-white transition-all"><Mail className="w-5 h-5" /></Link>
                     </div>
                   </motion.div>
                 ))}

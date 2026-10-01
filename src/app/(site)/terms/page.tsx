@@ -14,11 +14,11 @@ export default function Terms() {
               transition={{ duration: 0.7 }}
               className="max-w-4xl"
             >
-              <p className="mb-4 text-sm font-semibold uppercase tracking-[0.35em] text-[color:var(--color-brand-500)]">
+              <p className="tp-label mb-4 text-brand-600">
                 Legal
               </p>
               <h1 className="text-display text-ink text-ink">
-                Terms<span className="text-[color:var(--color-brand-500)]"> of Service</span>
+                Terms<span className="text-brand-500"> of Service</span>
               </h1>
               <p className="mt-6 max-w-3xl text-lg text-ink-muted sm:text-xl">
                 The Polity Media – Terms of Service (2025)
@@ -27,7 +27,7 @@ export default function Terms() {
           </div>
         </section>
 
-        <section className="px-6 py-16 sm:px-8 lg:px-12 bg-surface-sunken">
+        <section className="px-6 py-16 sm:px-8 lg:px-12 bg-surface">
           <div className="mx-auto max-w-4xl">
             <motion.div
               initial={{ opacity: 0, y: 20 }}

@@ -109,7 +109,7 @@ export default function ServiceDetail() {
         
           <div className="mx-auto max-w-7xl px-6 py-24">
             <h1 className="text-display text-ink">Service Not Found</h1>
-            <Link href="/services" className="mt-4 inline-flex items-center gap-2 text-[color:var(--color-brand-500)]">
+            <Link href="/services" className="mt-4 inline-flex items-center gap-2 text-brand-500">
               <ArrowLeft className="h-4 w-4" /> Back to Services
             </Link>
           </div>
@@ -137,11 +137,11 @@ export default function ServiceDetail() {
               transition={{ duration: 0.7 }}
               className="max-w-4xl"
             >
-              <p className="mb-4 text-sm font-semibold uppercase tracking-[0.35em] text-[color:var(--color-brand-500)]">
+              <p className="tp-label mb-4 text-brand-600">
                 Service
               </p>
               <div className="flex items-center gap-4 mb-4">
-                <Icon className="h-10 w-10 text-[color:var(--color-brand-500)]" />
+                <Icon className="h-10 w-10 text-brand-500" />
                 <h1 className="text-display text-ink">{service.title}</h1>
               </div>
               <p className="mt-4 text-xl text-ink-muted max-w-2xl">{service.description}</p>
@@ -169,9 +169,9 @@ export default function ServiceDetail() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.05 }}
-                  className="flex items-start gap-4 rounded-card border border-line bg-surface-sunken p-6"
+                  className="flex items-start gap-4 rounded-card border border-line bg-surface p-6"
                 >
-                  <CheckCircle2 className="h-6 w-6 flex-shrink-0 text-[color:var(--color-brand-500)]" />
+                  <CheckCircle2 className="h-6 w-6 flex-shrink-0 text-brand-500" />
                   <span className="text-ink">{feature}</span>
                 </motion.div>
               ))}
@@ -179,7 +179,7 @@ export default function ServiceDetail() {
           </div>
         </section>
 
-        <section className="bg-surface-sunken px-6 py-24 sm:px-8 lg:px-12">
+        <section className="bg-surface px-6 py-24 sm:px-8 lg:px-12">
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
@@ -191,7 +191,7 @@ export default function ServiceDetail() {
               ['Execution', 'We deliver with visible progress, structured communication, and steady momentum.'],
               ['Growth', 'We leave teams with clearer systems, stronger positioning, and reusable foundations.'],
             ].map(([title, copy]) => (
-              <div key={title} className="rounded-card border border-line bg-surface-sunken p-8">
+              <div key={title} className="rounded-card border border-line bg-surface p-8">
                 <h3 className="mb-3 text-2xl font-bold">{title}</h3>
                 <p className="leading-relaxed text-ink-muted">{copy}</p>
               </div>

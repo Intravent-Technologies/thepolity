@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { AlertCircle, CheckCircle2, Loader2, Upload } from 'lucide-react';
 import {
@@ -203,7 +204,14 @@ export default function UploadField({
               {isVideoPreview ? (
                 <video src={showPreview} muted playsInline className="size-full object-cover" />
               ) : (
-                <img src={showPreview} alt="" className="size-full object-cover" />
+                <Image
+                  src={showPreview}
+                  alt=""
+                  fill
+                  unoptimized
+                  sizes="80px"
+                  className="object-cover"
+                />
               )}
             </div>
 

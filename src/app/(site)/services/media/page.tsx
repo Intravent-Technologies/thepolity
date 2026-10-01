@@ -24,12 +24,12 @@ export default function Media() {
               transition={{ duration: 0.7 }}
               className="max-w-4xl"
             >
-              <p className="mb-4 text-sm font-semibold uppercase tracking-[0.35em] text-[color:var(--color-brand-500)]">
+              <p className="tp-label mb-4 text-brand-600">
                 Media
               </p>
               <h1 className="text-display text-ink">
                 Capturing moments,
-                <span className="text-[color:var(--color-brand-500)]"> creating memories.</span>
+                <span className="text-brand-500"> creating memories.</span>
               </h1>
               <p className="mt-6 max-w-3xl text-lg text-ink-muted sm:text-xl">
                 Professional photography, events coverage, and visual storytelling.
@@ -50,12 +50,12 @@ export default function Media() {
                   transition={{ delay: index * 0.08 }}
                   className="group rounded-card border border-line bg-surface p-8 transition-[border-color] duration-200 hover:border-brand-500/40"
                 >
-                  <service.icon className="w-12 h-12 text-[color:var(--color-brand-500)] mb-4" />
+                  <service.icon className="w-12 h-12 text-brand-500 mb-4" />
                   <h2 className="text-headline text-ink mb-4">{service.title}</h2>
                   <p className="mb-6 text-ink-muted">{service.description}</p>
                   <Link
                     href={`/services/media/${service.slug}`}
-                    className="inline-flex items-center gap-2 text-sm font-medium text-[color:var(--color-brand-500)] hover:underline"
+                    className="inline-flex items-center gap-2 text-sm font-medium text-brand-500 hover:underline"
                   >
                     Learn more <ArrowRight className="h-4 w-4" />
                   </Link>

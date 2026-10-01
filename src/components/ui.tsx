@@ -30,19 +30,21 @@ export function Container({
 export function Section({
   children,
   className = "",
-  tone = "surface",
+  tone = "cream",
   id,
 }: {
   children: ReactNode;
   className?: string;
-  tone?: "surface" | "sunken" | "muted" | "navy";
+  tone?: "cream" | "surface" | "sunken" | "muted" | "navy" | "navy-deep";
   id?: string;
 }) {
   const tones = {
-    surface: "bg-surface",
-    sunken: "bg-surface-sunken",
-    muted: "bg-surface-muted",
+    cream: "bg-cream text-ink",
+    surface: "bg-surface text-ink",
+    sunken: "bg-surface-sunken text-ink",
+    muted: "bg-surface-muted text-ink",
     navy: "bg-navy-500 text-ink-inverse",
+    "navy-deep": "bg-navy-700 text-ink-inverse",
   } as const;
 
   return (
@@ -53,9 +55,10 @@ export function Section({
 }
 
 /* ==========================================================================
-   Typography
+   Category labels
    ========================================================================== */
 
+/* Small tracked label: eyebrows, table headers, nav, metadata. */
 export function Eyebrow({
   children,
   className = "",
@@ -64,8 +67,23 @@ export function Eyebrow({
   className?: string;
 }) {
   return (
+    <p className={`tp-label text-brand-600 ${className}`}>{children}</p>
+  );
+}
+
+/* Large uppercase label: the primary marker of a major section. */
+export function CategoryLabel({
+  children,
+  invert = false,
+  className = "",
+}: {
+  children: ReactNode;
+  invert?: boolean;
+  className?: string;
+}) {
+  return (
     <p
-      className={`text-xs font-semibold uppercase tracking-[0.18em] text-brand-600 ${className}`}
+      className={`tp-category ${invert ? "text-ink-inverse" : "text-ink"} ${className}`}
     >
       {children}
     </p>
@@ -74,6 +92,7 @@ export function Eyebrow({
 
 export function SectionHeading({
   eyebrow,
+  category,
   title,
   lede,
   align = "left",
@@ -81,7 +100,8 @@ export function SectionHeading({
   className = "",
 }: {
   eyebrow?: string;
-  title: ReactNode;
+  category?: string;
+  title?: ReactNode;
   lede?: ReactNode;
   align?: "left" | "center";
   invert?: boolean;
@@ -93,19 +113,22 @@ export function SectionHeading({
     <div
       className={`${centered ? "mx-auto max-w-2xl text-center" : "max-w-2xl"} ${className}`}
     >
+      {category ? <CategoryLabel invert={invert}>{category}</CategoryLabel> : null}
       {eyebrow ? (
         <Eyebrow className={invert ? "text-brand-300" : undefined}>{eyebrow}</Eyebrow>
       ) : null}
-      <h2
-        className={`mt-4 text-headline ${
-          invert ? "text-ink-inverse" : "text-ink"
-        }`}
-      >
-        {title}
-      </h2>
+      {title ? (
+        <h2
+          className={`mt-5 text-headline ${
+            invert ? "text-ink-inverse" : "text-ink"
+          }`}
+        >
+          {title}
+        </h2>
+      ) : null}
       {lede ? (
         <p
-          className={`mt-5 text-lg leading-relaxed ${
+          className={`mt-6 text-lg leading-relaxed ${
             invert ? "text-ink-inverse/70" : "text-ink-muted"
           }`}
         >
@@ -127,11 +150,11 @@ const base =
   "inline-flex items-center justify-center gap-2 rounded-full font-medium whitespace-nowrap transition-[background-color,color,border-color,transform] duration-200 ease-[cubic-bezier(0.22,1,0.36,1)] active:translate-y-px disabled:pointer-events-none disabled:opacity-50";
 
 const variants: Record<ButtonVariant, string> = {
-  primary: "bg-brand-500 text-white hover:bg-brand-600",
+  primary: "bg-brand-500 text-navy-700 hover:bg-brand-600 hover:text-white",
   secondary:
-    "bg-surface text-ink border border-line-strong hover:border-brand-500 hover:text-brand-600",
+    "bg-transparent text-ink border border-line-strong hover:border-brand-500 hover:text-brand-600",
   ghost: "text-ink hover:text-brand-600",
-  inverse: "bg-ink-inverse text-navy-500 hover:bg-surface",
+  inverse: "bg-ink-inverse text-navy-700 hover:bg-brand-500 hover:text-navy-700",
 };
 
 const sizes: Record<ButtonSize, string> = {
@@ -189,7 +212,7 @@ export function Card({
 }) {
   return (
     <Tag
-      className={`rounded-card border border-line bg-surface p-6 transition-[border-color,box-shadow] duration-200 hover:border-line-strong hover:shadow-[0_1px_2px_rgba(17,17,16,0.04),0_12px_28px_-18px_rgba(17,17,16,0.18)] ${className}`}
+      className={`rounded-card border border-line bg-surface p-6 transition-[border-color,box-shadow] duration-200 hover:border-line-strong hover:shadow-[0_1px_2px_rgba(20,18,14,0.04),0_12px_28px_-18px_rgba(20,18,14,0.22)] ${className}`}
     >
       {children}
     </Tag>
@@ -205,10 +228,100 @@ export function Badge({
 }) {
   return (
     <span
-      className={`inline-flex items-center rounded-full bg-brand-50 px-3 py-1 text-xs font-medium text-brand-700 ${className}`}
+      className={`inline-flex items-center rounded-full bg-brand-100 px-3 py-1 text-xs font-semibold text-brand-800 ${className}`}
     >
       {children}
     </span>
+  );
+}
+
+/* A bordered panel that reads as a group of related content. */
+export function Panel({
+  children,
+  className = "",
+  invert = false,
+}: {
+  children: ReactNode;
+  className?: string;
+  invert?: boolean;
+}) {
+  return (
+    <div
+      className={`rounded-card border p-8 sm:p-10 ${
+        invert
+          ? "border-ink-inverse/15 bg-navy-400/40"
+          : "border-line bg-surface"
+      } ${className}`}
+    >
+      {children}
+    </div>
+  );
+}
+
+/* ==========================================================================
+   Numbered list — used for principles, process steps, service points
+   ========================================================================== */
+
+export function NumberedRow({
+  index,
+  title,
+  children,
+  className = "",
+}: {
+  index: number | string;
+  title: string;
+  children?: ReactNode;
+  className?: string;
+}) {
+  return (
+    <li className={`tp-rule-top flex gap-5 pt-6 ${className}`}>
+      <span className="tp-label shrink-0 pt-1 text-brand-600 tabular">
+        {typeof index === "number" ? String(index).padStart(2, "0") : index}
+      </span>
+      <div>
+        <h3 className="text-lg font-semibold text-ink">{title}</h3>
+        {children ? (
+          <p className="mt-2 text-[0.95rem] leading-relaxed text-ink-muted">
+            {children}
+          </p>
+        ) : null}
+      </div>
+    </li>
+  );
+}
+
+/* ==========================================================================
+   Marquee — a continuously scrolling strip of items. The caller renders
+   the children twice; the track translates -50%, so the loop is seamless.
+   ========================================================================== */
+
+export function Marquee({
+  children,
+  durationSeconds = 34,
+  className = "",
+  itemClassName = "",
+}: {
+  children: ReactNode;
+  durationSeconds?: number;
+  className?: string;
+  itemClassName?: string;
+}) {
+  return (
+    <div
+      className={`group relative overflow-hidden ${className}`}
+      style={
+        { "--tp-marquee-duration": `${durationSeconds}s` } as React.CSSProperties
+      }
+    >
+      <div className="tp-marquee-track">
+        <div className={`flex shrink-0 items-center ${itemClassName}`}>{children}</div>
+        {/* The duplicate exists only to fill the loop. Hiding it keeps
+            assistive tech from announcing every item twice. */}
+        <div className={`flex shrink-0 items-center ${itemClassName}`} aria-hidden="true">
+          {children}
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -266,20 +379,25 @@ export function Textarea({
 
 export function PageHeader({
   eyebrow,
+  category,
   title,
   lede,
 }: {
   eyebrow?: string;
+  category?: string;
   title: string;
   lede?: string;
 }) {
   return (
-    <div className="border-b border-line bg-surface-sunken">
+    <div className="border-b border-line bg-surface">
       <Container className="py-20 sm:py-28">
-        {eyebrow ? <Eyebrow>{eyebrow}</Eyebrow> : null}
-        <h1 className="mt-4 max-w-4xl text-display text-ink">{title}</h1>
+        {category ? <CategoryLabel>{category}</CategoryLabel> : null}
+        {eyebrow ? (
+          <Eyebrow className={category ? "mt-6" : undefined}>{eyebrow}</Eyebrow>
+        ) : null}
+        <h1 className="mt-5 max-w-4xl text-display text-ink">{title}</h1>
         {lede ? (
-          <p className="mt-6 max-w-2xl text-lg leading-relaxed text-ink-muted">{lede}</p>
+          <p className="mt-7 max-w-2xl text-lg leading-relaxed text-ink-muted">{lede}</p>
         ) : null}
       </Container>
     </div>

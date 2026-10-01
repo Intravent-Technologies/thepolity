@@ -76,7 +76,7 @@ export default function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="mt-auto border-t border-line bg-surface-sunken">
+    <footer className="mt-auto bg-navy-700 text-ink-inverse">
       <Container width="wide" className="py-16 sm:py-20">
         <div className="grid gap-12 lg:grid-cols-12">
           <div className="lg:col-span-4">
@@ -85,12 +85,11 @@ export default function Footer() {
               aria-label="The Polity — home"
               className="inline-block"
             >
-              <span className="font-display text-2xl tracking-tight">
-                <span className="text-ink">The </span>
-                <span className="text-brand-500">Polity</span>
+              <span className="font-display text-2xl tracking-tight text-ink-inverse">
+                The <span className="text-brand-500">Polity</span>.
               </span>
             </Link>
-            <p className="mt-5 max-w-sm text-[0.95rem] leading-relaxed text-ink-muted">
+            <p className="mt-5 max-w-sm text-[0.95rem] leading-relaxed text-ink-inverse/65">
               Strategy, technology and media under one roof. We help
               organisations turn ambitious plans into measurable results.
             </p>
@@ -100,7 +99,7 @@ export default function Footer() {
           </div>
 
           <nav aria-label="Company" className="lg:col-span-2">
-            <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-subtle">
+            <h2 className="tp-label text-ink-inverse/50">
               Company
             </h2>
             <ul className="mt-5 space-y-3">
@@ -108,7 +107,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-[0.95rem] text-ink-muted transition-colors duration-200 hover:text-brand-600"
+                    className="text-[0.95rem] text-ink-inverse/70 transition-colors duration-200 hover:text-brand-500"
                   >
                     {link.name}
                   </Link>
@@ -118,7 +117,7 @@ export default function Footer() {
           </nav>
 
           <nav aria-label="Resources" className="lg:col-span-2">
-            <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-subtle">
+            <h2 className="tp-label text-ink-inverse/50">
               Resources
             </h2>
             <ul className="mt-5 space-y-3">
@@ -126,7 +125,7 @@ export default function Footer() {
                 <li key={link.href}>
                   <Link
                     href={link.href}
-                    className="text-[0.95rem] text-ink-muted transition-colors duration-200 hover:text-brand-600"
+                    className="text-[0.95rem] text-ink-inverse/70 transition-colors duration-200 hover:text-brand-500"
                   >
                     {link.name}
                   </Link>
@@ -136,23 +135,23 @@ export default function Footer() {
           </nav>
 
           <div className="lg:col-span-4">
-            <h2 className="text-xs font-semibold uppercase tracking-[0.18em] text-ink-subtle">
+            <h2 className="tp-label text-ink-inverse/50">
               Get in touch
             </h2>
             <address className="mt-5 space-y-3 not-italic">
               <a
                 href={CONTACT.phoneHref}
-                className="block text-lg text-ink transition-colors duration-200 hover:text-brand-600 tabular"
+                className="block text-lg text-ink-inverse transition-colors duration-200 hover:text-brand-500 tabular"
               >
                 {CONTACT.phone}
               </a>
               <a
                 href={`mailto:${CONTACT.email}`}
-                className="block text-[0.95rem] text-ink-muted transition-colors duration-200 hover:text-brand-600"
+                className="block text-[0.95rem] text-ink-inverse/70 transition-colors duration-200 hover:text-brand-500"
               >
                 {CONTACT.email}
               </a>
-              <p className="text-[0.95rem] text-ink-subtle">{CONTACT.address}</p>
+              <p className="text-[0.95rem] text-ink-inverse/50">{CONTACT.address}</p>
             </address>
 
             <ul className="mt-6 flex gap-2.5">
@@ -163,7 +162,7 @@ export default function Footer() {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={`The Polity on ${name}`}
-                    className="flex size-10 items-center justify-center rounded-full border border-line-strong bg-surface text-ink-muted transition-[color,border-color] duration-200 hover:border-brand-500 hover:text-brand-600"
+                    className="flex size-10 items-center justify-center rounded-full border border-ink-inverse/20 bg-navy-500 text-ink-inverse/70 transition-[color,border-color] duration-200 hover:border-brand-500 hover:text-brand-500"
                   >
                     <Icon className="size-4" aria-hidden="true" />
                   </a>
@@ -174,13 +173,13 @@ export default function Footer() {
         </div>
       </Container>
 
-      <div className="border-t border-line">
+      <div className="border-t border-ink-inverse/10">
         <Container width="wide" className="py-6">
           <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
-            <p className="text-sm text-ink-subtle">
+            <p className="text-sm text-ink-inverse/50">
               © {year} The Polity. All rights reserved.
             </p>
-            <p className="text-sm text-ink-subtle">
+            <p className="text-sm text-ink-inverse/50">
               Registered in England &amp; Wales
             </p>
           </div>

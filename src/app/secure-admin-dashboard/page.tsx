@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { motion } from 'framer-motion';
+import { AlertCircle, ArrowRight, Loader2 } from 'lucide-react';
+import { Button, CategoryLabel, Eyebrow } from '@/components/ui';
 
 export default function AdminLogin() {
   const [password, setPassword] = useState('');
@@ -37,69 +39,71 @@ export default function AdminLogin() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 via-white to-white px-4">
+    <div className="flex min-h-screen items-center justify-center bg-cream px-4 py-16">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         className="w-full max-w-md"
       >
-        <motion.div
-          className="rounded-card border border-line-strong bg-surface-muted p-8 shadow-2xl backdrop-blur-xl"
-          whileHover={{ scale: 1.02 }}
-        >
-          <div className="mb-8 text-center">
-            <motion.div
-              className="mx-auto mb-4 h-16 w-16 rotate-45 rounded-card bg-gradient-to-br from-orange-400 to-orange-600"
-              animate={{ rotate: [45, 50, 45] }}
-              transition={{ duration: 2, repeat: Infinity }}
-            />
-            <h1 className="mb-2 text-3xl font-bold text-[color:var(--color-ink)]">Admin Access</h1>
-            <p className="text-ink-muted">THE POLITY Secure Dashboard</p>
+        <div className="rounded-card border border-line bg-surface p-8 sm:p-10">
+          <div className="border-b border-line pb-8">
+            <CategoryLabel className="text-2xl">
+              Admin <span className="text-brand-500">access</span>
+            </CategoryLabel>
+            <p className="mt-4 text-[0.95rem] leading-relaxed text-ink-muted">
+              Sign in to manage portfolio, gallery, blog, work, team, reviews
+              and homepage content.
+            </p>
           </div>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="mt-8 space-y-6">
             <div>
-              <label className="mb-2 block text-sm font-medium text-ink-muted">
-                Admin Password
+              <label htmlFor="admin-password" className="mb-2 block text-sm font-medium text-ink">
+                Admin password
               </label>
-              <motion.input
+              <input
+                id="admin-password"
                 type="password"
+                autoComplete="current-password"
                 value={password}
                 onChange={(e) => {
                   setPassword(e.target.value);
                   setError('');
                 }}
                 placeholder="Enter admin password"
-                className="w-full rounded-lg border border-line-strong bg-surface-sunken px-4 py-3 text-[color:var(--color-ink)] placeholder-gray-500 transition focus:border-transparent focus:outline-none focus:ring-2 focus:ring-orange-500"
-                whileFocus={{ scale: 1.02 }}
+                className="h-12 w-full rounded-card border border-line-strong bg-cream px-4 text-[0.95rem] text-ink placeholder:text-ink-subtle transition-[border-color,box-shadow] duration-200 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/25"
               />
             </div>
 
-            {error && (
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                className="rounded-lg border border-red-500/50 bg-red-500/20 p-4"
+            {error ? (
+              <div
+                role="alert"
+                className="flex items-start gap-2.5 rounded-card border border-red-500/40 bg-red-500/10 p-4"
               >
-                <p className="text-sm text-red-300">{error}</p>
-              </motion.div>
-            )}
+                <AlertCircle className="mt-0.5 size-4 shrink-0 text-red-600" aria-hidden="true" />
+                <p className="text-sm text-red-700">{error}</p>
+              </div>
+            ) : null}
 
-            <motion.button
-              type="submit"
-              disabled={loading}
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="w-full rounded-lg bg-gradient-to-r from-orange-500 to-orange-600 px-4 py-3 font-semibold text-white transition hover:from-orange-600 hover:to-orange-700 disabled:opacity-50"
-            >
-              {loading ? 'Verifying...' : 'Access Dashboard'}
-            </motion.button>
+            <Button type="submit" size="lg" disabled={loading} className="w-full">
+              {loading ? (
+                <>
+                  <Loader2 className="size-4 animate-spin" aria-hidden="true" />
+                  Verifying…
+                </>
+              ) : (
+                <>
+                  Access dashboard
+                  <ArrowRight className="size-4" aria-hidden="true" />
+                </>
+              )}
+            </Button>
           </form>
 
-          <p className="mt-6 text-center text-xs text-ink-subtle">
-            Authorized administrators can upload portfolio items, gallery images, and gallery videos.
+          <p className="mt-8 border-t border-line pt-6 text-center">
+            <Eyebrow>Authorized administrators only</Eyebrow>
           </p>
-        </motion.div>
+        </div>
       </motion.div>
     </div>
   );

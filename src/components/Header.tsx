@@ -29,6 +29,7 @@ function Wordmark({ className = "" }: { className?: string }) {
     <span className={`font-display text-xl tracking-tight ${className}`}>
       <span className="text-ink">The </span>
       <span className="text-brand-500">Polity</span>
+      <span className="text-brand-500">.</span>
     </span>
   );
 }
@@ -93,8 +94,8 @@ export default function Header() {
 
   return (
     <header
-      className={`sticky top-0 z-50 border-b border-line bg-surface/90 backdrop-blur-md transition-shadow duration-300 ${
-        scrolled ? "shadow-[0_1px_0_rgba(17,17,16,0.04),0_8px_24px_-20px_rgba(17,17,16,0.4)]" : ""
+      className={`sticky top-0 z-50 border-b border-line bg-cream/90 backdrop-blur-md transition-shadow duration-300 ${
+        scrolled ? "shadow-[0_1px_0_rgba(20,18,14,0.04),0_8px_24px_-20px_rgba(20,18,14,0.4)]" : ""
       }`}
     >
       <a
@@ -156,15 +157,15 @@ export default function Header() {
               </button>
 
               {servicesOpen ? (
-                <div className="absolute left-1/2 top-full z-50 mt-3 w-72 -translate-x-1/2 rounded-card border border-line bg-surface p-2 shadow-[0_24px_48px_-24px_rgba(17,17,16,0.28)]">
+                <div className="absolute left-1/2 top-full z-50 mt-3 w-72 -translate-x-1/2 rounded-card border border-line bg-surface p-2 shadow-[0_24px_48px_-24px_rgba(20,18,14,0.3)]">
                   {SERVICES.map((service) => (
                     <Link
                       key={service.href}
                       href={service.href}
                       className={`block rounded-lg px-3.5 py-2.5 text-sm transition-colors duration-150 ${
                         isActive(service.href)
-                          ? "bg-brand-50 text-brand-700"
-                          : "text-ink-muted hover:bg-surface-sunken hover:text-ink"
+                          ? "bg-brand-100 text-brand-800"
+                          : "text-ink-muted hover:bg-cream hover:text-ink"
                       }`}
                     >
                       {service.name}
@@ -222,7 +223,7 @@ export default function Header() {
       {mobileOpen ? (
         <div
           id="mobile-nav"
-          className="max-h-[calc(100dvh-4.5rem)] overflow-y-auto border-t border-line bg-surface lg:hidden"
+          className="max-h-[calc(100dvh-4.5rem)] overflow-y-auto border-t border-line bg-cream lg:hidden"
         >
           <Container className="py-6">
             <nav aria-label="Mobile" className="flex flex-col">

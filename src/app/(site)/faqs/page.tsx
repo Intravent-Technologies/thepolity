@@ -25,8 +25,8 @@ export default function FAQs() {
         <section className="relative overflow-hidden">
           <div className="relative mx-auto flex min-h-[40vh] max-w-7xl items-center px-6 py-24 sm:px-8 lg:px-12">
             <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="max-w-4xl">
-              <p className="mb-4 text-sm font-semibold uppercase tracking-[0.35em] text-[color:var(--color-brand-500)]">FAQ</p>
-              <h1 className="text-display text-ink">Frequently asked<span className="text-[color:var(--color-brand-500)]"> questions.</span></h1>
+              <p className="tp-label mb-4 text-brand-600">FAQ</p>
+              <h1 className="text-display text-ink">Frequently asked<span className="text-brand-500"> questions.</span></h1>
               <p className="mt-6 max-w-3xl text-lg text-ink-muted sm:text-xl">Everything you need to know about working with The Polity.</p>
             </motion.div>
           </div>
@@ -36,10 +36,10 @@ export default function FAQs() {
           <div className="mx-auto max-w-4xl">
             <div className="space-y-4">
               {faqs.map((faq, index) => (
-                <motion.div key={faq.question} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: index * 0.05 }} className="rounded-card border border-line bg-surface-sunken">
+                <motion.div key={faq.question} initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: index * 0.05 }} className="rounded-card border border-line bg-surface">
                   <button onClick={() => setOpenIndex(openIndex === index ? null : index)} className="flex w-full items-center justify-between p-6 text-left">
                     <span className="text-lg font-medium pr-4">{faq.question}</span>
-                    {openIndex === index ? <Minus className="h-5 w-5 flex-shrink-0 text-[color:var(--color-brand-500)]" /> : <Plus className="h-5 w-5 flex-shrink-0 text-[color:var(--color-brand-500)]" />}
+                    {openIndex === index ? <Minus className="h-5 w-5 flex-shrink-0 text-brand-500" /> : <Plus className="h-5 w-5 flex-shrink-0 text-brand-500" />}
                   </button>
                   <AnimatePresence>
                     {openIndex === index && (

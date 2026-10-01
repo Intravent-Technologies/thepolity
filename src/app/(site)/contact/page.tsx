@@ -46,12 +46,12 @@ export default function Contact() {
               transition={{ duration: 0.7 }}
               className="max-w-4xl"
             >
-              <p className="mb-4 text-sm font-semibold uppercase tracking-[0.35em] text-[color:var(--color-brand-500)]">
+              <p className="tp-label mb-4 text-brand-600">
                 Contact
               </p>
               <h1 className="text-display text-ink">
                 Let&apos;s talk about what your
-                <span className="text-[color:var(--color-brand-500)]"> next move requires.</span>
+                <span className="text-brand-500"> next move requires.</span>
               </h1>
               <p className="mt-6 max-w-3xl text-lg text-ink-muted sm:text-xl">
                 Ready to transform your business? Let&apos;s discuss how we can help you achieve your goals.
@@ -66,7 +66,7 @@ export default function Contact() {
               initial={{ opacity: 0, y: 24 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
-              className="rounded-card border border-line bg-surface-sunken p-8"
+              className="rounded-card border border-line bg-surface p-8"
             >
               <h2 className="text-headline text-ink">Reach us directly</h2>
               <p className="mt-4 text-ink-muted">
@@ -75,12 +75,12 @@ export default function Contact() {
 
               <div className="mt-10 space-y-6">
                 {contactInfo.map((info) => (
-                  <div key={info.label} className="flex gap-4 rounded-card border border-line bg-surface-sunken p-5">
+                  <div key={info.label} className="flex gap-4 rounded-card border border-line bg-surface p-5">
                     <div className="flex h-12 w-12 items-center justify-center rounded-card bg-[color:var(--color-brand-500)]">
                       <info.icon className="h-5 w-5 text-[color:var(--color-ink)]" />
                     </div>
                     <div>
-                      <p className="text-sm font-medium uppercase tracking-[0.2em] text-ink-subtle">
+                      <p className="tp-label text-ink-subtle">
                         {info.label}
                       </p>
                       <p className="mt-1 text-lg text-[color:var(--color-ink)]">{info.value}</p>
@@ -116,7 +116,7 @@ export default function Contact() {
                       onChange={handleChange}
                       required
                       placeholder="Your name"
-                      className="w-full rounded-card border border-line bg-surface-sunken px-5 py-4 text-[color:var(--color-ink)] placeholder:text-ink-subtle focus:border-[color:var(--color-brand-500)] focus:outline-none"
+                      className="w-full rounded-card border border-line bg-surface px-5 py-4 text-[color:var(--color-ink)] placeholder:text-ink-subtle focus:border-[color:var(--color-brand-500)] focus:outline-none"
                     />
                   </Field>
                   <Field label="Email">
@@ -127,7 +127,7 @@ export default function Contact() {
                       onChange={handleChange}
                       required
                       placeholder="your@email.com"
-                      className="w-full rounded-card border border-line bg-surface-sunken px-5 py-4 text-[color:var(--color-ink)] placeholder:text-ink-subtle focus:border-[color:var(--color-brand-500)] focus:outline-none"
+                      className="w-full rounded-card border border-line bg-surface px-5 py-4 text-[color:var(--color-ink)] placeholder:text-ink-subtle focus:border-[color:var(--color-brand-500)] focus:outline-none"
                     />
                   </Field>
                 </div>
@@ -139,7 +139,7 @@ export default function Contact() {
                       value={formData.phone}
                       onChange={handleChange}
                       placeholder="+1 (555) 123-4567"
-                      className="w-full rounded-card border border-line bg-surface-sunken px-5 py-4 text-[color:var(--color-ink)] placeholder:text-ink-subtle focus:border-[color:var(--color-brand-500)] focus:outline-none"
+                      className="w-full rounded-card border border-line bg-surface px-5 py-4 text-[color:var(--color-ink)] placeholder:text-ink-subtle focus:border-[color:var(--color-brand-500)] focus:outline-none"
                     />
                   </Field>
                   <Field label="Company">
@@ -148,7 +148,7 @@ export default function Contact() {
                       value={formData.company}
                       onChange={handleChange}
                       placeholder="Your company"
-                      className="w-full rounded-card border border-line bg-surface-sunken px-5 py-4 text-[color:var(--color-ink)] placeholder:text-ink-subtle focus:border-[color:var(--color-brand-500)] focus:outline-none"
+                      className="w-full rounded-card border border-line bg-surface px-5 py-4 text-[color:var(--color-ink)] placeholder:text-ink-subtle focus:border-[color:var(--color-brand-500)] focus:outline-none"
                     />
                   </Field>
                 </div>
@@ -161,7 +161,7 @@ export default function Contact() {
                     required
                     rows={6}
                     placeholder="Tell us how we can help..."
-                    className="w-full resize-none rounded-card border border-line bg-surface-sunken px-5 py-4 text-[color:var(--color-ink)] placeholder:text-ink-subtle focus:border-[color:var(--color-brand-500)] focus:outline-none"
+                    className="w-full resize-none rounded-card border border-line bg-surface px-5 py-4 text-[color:var(--color-ink)] placeholder:text-ink-subtle focus:border-[color:var(--color-brand-500)] focus:outline-none"
                   />
                 </Field>
 
@@ -189,7 +189,7 @@ function Field({
 }) {
   return (
     <label className="block">
-      <span className="mb-2 block text-sm font-medium uppercase tracking-[0.2em] text-ink-muted">
+      <span className="tp-label mb-2 block text-ink-muted">
         {label}
       </span>
       {children}

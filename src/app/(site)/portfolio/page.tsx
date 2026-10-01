@@ -55,12 +55,12 @@ export default function Portfolio() {
               transition={{ duration: 0.7 }}
               className="max-w-4xl"
             >
-              <p className="mb-4 text-sm font-semibold uppercase tracking-[0.35em] text-[color:var(--color-brand-500)]">
+              <p className="tp-label mb-4 text-brand-600">
                 Portfolio
               </p>
               <h1 className="text-display text-ink">
                 Our work speaks for 
-                <span className="text-[color:var(--color-brand-500)]"> itself.</span>
+                <span className="text-brand-500"> itself.</span>
               </h1>
               <p className="mt-6 max-w-3xl text-lg text-ink-muted sm:text-xl">
                 Browse our portfolio by service category to see how we&apos;ve helped businesses transform their digital presence and achieve measurable results.
@@ -91,7 +91,7 @@ export default function Portfolio() {
             {loading ? (
               <p className="text-ink-muted">Loading portfolio...</p>
             ) : filteredItems.length === 0 ? (
-              <div className="rounded-card border border-line bg-surface-sunken p-10 text-center">
+              <div className="rounded-card border border-line bg-surface p-10 text-center">
                 <h2 className="text-headline text-ink">No projects in this category yet</h2>
                 <p className="mt-4 text-ink-muted">
                   We&apos;re constantly adding new work. Check back soon or contact us to discuss your project.
@@ -112,7 +112,7 @@ export default function Portfolio() {
                       <Image src={item.image} alt={item.title} fill sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" className="object-cover" />
                     </div>
                     <div className="p-8">
-                      <p className="mb-3 text-sm font-semibold text-[color:var(--color-brand-500)]">{item.category}</p>
+                      <p className="mb-3 text-sm font-semibold text-brand-500">{item.category}</p>
                       <h2 className="text-headline text-ink mb-4">{item.title}</h2>
                       <p className="leading-relaxed text-ink-muted">{item.description || 'Delivering exceptional results through strategic planning and execution.'}</p>
                     </div>

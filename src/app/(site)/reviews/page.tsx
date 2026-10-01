@@ -95,7 +95,7 @@ export default function Reviews() {
           {loading ? (
             <p className="py-20 text-center text-ink-muted">Loading reviews…</p>
           ) : reviews.length === 0 ? (
-            <div className="mx-auto max-w-xl rounded-card border border-dashed border-line-strong bg-surface-sunken px-8 py-16 text-center">
+            <div className="mx-auto max-w-xl rounded-card border border-dashed border-line-strong bg-surface px-8 py-16 text-center">
               <Quote className="mx-auto size-8 text-ink-subtle" aria-hidden="true" />
               <h2 className="mt-6 text-title text-ink">No reviews published yet</h2>
               <p className="mt-3 text-[0.95rem] leading-relaxed text-ink-muted">

@@ -23,12 +23,12 @@ export default function ProjectManagement() {
               transition={{ duration: 0.7 }}
               className="max-w-4xl"
             >
-              <p className="mb-4 text-sm font-semibold uppercase tracking-[0.35em] text-[color:var(--color-brand-500)]">
+              <p className="tp-label mb-4 text-brand-600">
                 Project Management
               </p>
               <h1 className="text-display text-ink">
                 Projects delivered
-                <span className="text-[color:var(--color-brand-500)]"> on time.</span>
+                <span className="text-brand-500"> on time.</span>
               </h1>
               <p className="mt-6 max-w-3xl text-lg text-ink-muted sm:text-xl">
                 Clear project structure that keeps stakeholders aligned and delivery on track.
@@ -47,9 +47,9 @@ export default function ProjectManagement() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.08 }}
-                  className="rounded-card border border-line bg-surface-sunken p-8"
+                  className="rounded-card border border-line bg-surface p-8"
                 >
-                  <feature.icon className="w-10 h-10 text-[color:var(--color-brand-500)] mb-4" />
+                  <feature.icon className="w-10 h-10 text-brand-500 mb-4" />
                   <h3 className="text-xl font-bold mb-2">{feature.title}</h3>
                   <p className="text-ink-muted">{feature.description}</p>
                 </motion.div>

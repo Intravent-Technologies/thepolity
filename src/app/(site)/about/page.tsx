@@ -48,12 +48,12 @@ export default function About() {
               transition={{ duration: 0.7 }}
               className="max-w-4xl"
             >
-              <p className="mb-4 text-sm font-semibold uppercase tracking-[0.35em] text-[color:var(--color-brand-500)]">
+              <p className="tp-label mb-4 text-brand-600">
                 About The Polity
               </p>
               <h1 className="text-display text-ink">
                 Our story is built on
-                <span className="text-[color:var(--color-brand-500)]"> strategy, trust, and execution.</span>
+                <span className="text-brand-500"> strategy, trust, and execution.</span>
               </h1>
               <p className="mt-6 max-w-3xl text-lg text-ink-muted sm:text-xl">
                 We help ambitious teams turn complex goals into practical plans, stronger brands, and
@@ -86,7 +86,7 @@ export default function About() {
                 viewport={{ once: true }}
                 className="rounded-card border border-line bg-surface p-8 lg:p-10"
               >
-                <p className="mb-4 text-sm font-semibold uppercase tracking-[0.3em] text-[color:var(--color-brand-500)]">
+                <p className="tp-label mb-4 text-brand-600">
                   {item.eyebrow}
                 </p>
                 <h2 className="text-headline text-ink mb-5">{item.title}</h2>
@@ -96,7 +96,7 @@ export default function About() {
           </div>
         </section>
 
-        <section className="bg-surface-sunken px-6 py-24 sm:px-8 lg:px-12">
+        <section className="bg-surface px-6 py-24 sm:px-8 lg:px-12">
           <div className="mx-auto max-w-7xl">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -104,7 +104,7 @@ export default function About() {
               viewport={{ once: true }}
               className="mb-14 max-w-3xl"
             >
-              <p className="mb-4 text-sm font-semibold uppercase tracking-[0.35em] text-[color:var(--color-brand-500)]">
+              <p className="tp-label mb-4 text-brand-600">
                 Core Values
               </p>
               <h2 className="text-headline text-ink">What guides our work</h2>
@@ -124,7 +124,7 @@ export default function About() {
                   transition={{ delay: index * 0.08 }}
                   className="rounded-card border border-line bg-surface p-8"
                 >
-                  <p className="mb-4 text-sm font-semibold text-[color:var(--color-brand-500)]">0{index + 1}</p>
+                  <p className="mb-4 text-sm font-semibold text-brand-500">0{index + 1}</p>
                   <h3 className="mb-3 text-2xl font-bold">{value.title}</h3>
                   <p className="leading-relaxed text-ink-muted">{value.description}</p>
                 </motion.article>
@@ -138,10 +138,10 @@ export default function About() {
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
-            className="mx-auto grid max-w-6xl gap-10 rounded-card border border-line bg-surface-sunken p-8 lg:grid-cols-[1.1fr_0.9fr] lg:p-12"
+            className="mx-auto grid max-w-6xl gap-10 rounded-card border border-line bg-surface p-8 lg:grid-cols-[1.1fr_0.9fr] lg:p-12"
           >
             <div>
-              <p className="mb-4 text-sm font-semibold uppercase tracking-[0.35em] text-[color:var(--color-brand-500)]">
+              <p className="tp-label mb-4 text-brand-600">
                 Leadership
               </p>
               <h2 className="text-headline text-ink">Guided by visionary leadership</h2>
@@ -153,8 +153,8 @@ export default function About() {
               </p>
             </div>
 
-            <div className="rounded-card border border-line bg-surface-sunken p-8">
-              <p className="text-sm font-semibold uppercase tracking-[0.3em] text-[color:var(--color-brand-500)]">
+            <div className="rounded-card border border-line bg-surface p-8">
+              <p className="tp-label text-brand-600">
                 Temidayo Ololade Awotula
               </p>
               <h3 className="mt-3 text-3xl font-bold">Chief Executive Officer & Founder</h3>

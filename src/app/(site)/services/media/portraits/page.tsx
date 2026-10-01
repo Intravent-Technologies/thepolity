@@ -48,8 +48,8 @@ export default function Portraits() {
         <section className="relative overflow-hidden">
           <div className="relative mx-auto flex min-h-[60vh] max-w-7xl items-center px-6 py-24 sm:px-8 lg:px-12">
             <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="max-w-4xl">
-              <p className="mb-4 text-sm font-semibold uppercase tracking-[0.35em] text-[color:var(--color-brand-500)]">Media</p>
-              <h1 className="text-display text-ink"><span className="text-[color:var(--color-brand-500)]">Portraits</span></h1>
+              <p className="tp-label mb-4 text-brand-600">Media</p>
+              <h1 className="text-display text-ink"><span className="text-brand-500">Portraits</span></h1>
               <p className="mt-6 max-w-3xl text-lg text-ink-muted sm:text-xl">Professional portraits for personal or business use.</p>
             </motion.div>
           </div>
@@ -57,8 +57,8 @@ export default function Portraits() {
         <section className="px-6 py-24 sm:px-8 lg:px-12">
           <div className="mx-auto max-w-7xl">
             <div className="grid gap-8 md:grid-cols-2">
-              <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="rounded-card border border-line bg-surface-sunken p-8">
-                <User className="w-16 h-16 text-[color:var(--color-brand-500)] mb-6" />
+              <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="rounded-card border border-line bg-surface p-8">
+                <User className="w-16 h-16 text-brand-500 mb-6" />
                 <h2 className="text-headline text-ink mb-4">Professional Portraits</h2>
                 <p className="text-ink-muted mb-6">We create professional portraits for LinkedIn, business cards, and personal use.</p>
                 <ul className="space-y-3 text-ink-muted">
@@ -92,7 +92,7 @@ export default function Portraits() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
-                  className="group relative overflow-hidden rounded-card border border-line bg-surface-sunken"
+                  className="group relative overflow-hidden rounded-card border border-line bg-surface"
                 >
                   {images[portrait.key] ? (
                     <Image
@@ -103,12 +103,12 @@ export default function Portraits() {
                       className="object-cover"
                     />
                   ) : (
-                    <div className="flex aspect-[4/3] items-center justify-center bg-surface-sunken">
+                    <div className="flex aspect-[4/3] items-center justify-center bg-surface">
                       <Icon className="size-10 text-brand-500/50" aria-hidden="true" />
                     </div>
                   )}
                   <div className="p-6">
-                    <h3 className="text-xl font-bold mb-2 group-hover:text-[color:var(--color-brand-500)] transition-colors">{portrait.title}</h3>
+                    <h3 className="text-xl font-bold mb-2 group-hover:text-brand-500 transition-colors">{portrait.title}</h3>
                     <p className="text-ink-muted text-sm">{portrait.desc}</p>
                   </div>
                 </motion.div>

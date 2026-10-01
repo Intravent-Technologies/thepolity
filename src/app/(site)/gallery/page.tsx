@@ -45,12 +45,12 @@ export default function Gallery() {
               transition={{ duration: 0.7 }}
               className="max-w-4xl"
             >
-              <p className="mb-4 text-sm font-semibold uppercase tracking-[0.35em] text-[color:var(--color-brand-500)]">
+              <p className="tp-label mb-4 text-brand-600">
                 Gallery
               </p>
               <h1 className="text-display text-ink">
                 Visual stories from our
-                <span className="text-[color:var(--color-brand-500)]"> recent projects.</span>
+                <span className="text-brand-500"> recent projects.</span>
               </h1>
               <p className="mt-6 max-w-3xl text-lg text-ink-muted sm:text-xl">
                 Explore our gallery to see the quality of our work across photography, events, and creative media services.
@@ -64,7 +64,7 @@ export default function Gallery() {
             {loading ? (
               <p className="text-ink-muted">Loading gallery...</p>
             ) : items.length === 0 ? (
-              <div className="rounded-card border border-line bg-surface-sunken p-10 text-center">
+              <div className="rounded-card border border-line bg-surface p-10 text-center">
                 <h2 className="text-headline text-ink">No gallery items yet</h2>
                 <p className="mt-4 text-ink-muted">
                   We&apos;re adding new content regularly. Contact us to see examples of our work.
@@ -94,7 +94,7 @@ export default function Gallery() {
                       )}
                     </div>
                     <div className="p-6">
-                      <p className="mb-3 text-sm font-semibold uppercase tracking-[0.2em] text-[color:var(--color-brand-500)]">
+                      <p className="tp-label mb-3 text-brand-600">
                         {item.type}
                       </p>
                       <h2 className="text-headline text-ink">{item.title}</h2>

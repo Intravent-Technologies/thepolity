@@ -48,8 +48,8 @@ export default function Visuals() {
         <section className="relative overflow-hidden">
           <div className="relative mx-auto flex min-h-[60vh] max-w-7xl items-center px-6 py-24 sm:px-8 lg:px-12">
             <motion.div initial={{ opacity: 0, y: 24 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.7 }} className="max-w-4xl">
-              <p className="mb-4 text-sm font-semibold uppercase tracking-[0.35em] text-[color:var(--color-brand-500)]">Media</p>
-              <h1 className="text-display text-ink"><span className="text-[color:var(--color-brand-500)]">Visuals</span></h1>
+              <p className="tp-label mb-4 text-brand-600">Media</p>
+              <h1 className="text-display text-ink"><span className="text-brand-500">Visuals</span></h1>
               <p className="mt-6 max-w-3xl text-lg text-ink-muted sm:text-xl">Visual content that tells your story.</p>
             </motion.div>
           </div>
@@ -57,8 +57,8 @@ export default function Visuals() {
         <section className="px-6 py-24 sm:px-8 lg:px-12">
           <div className="mx-auto max-w-7xl">
             <div className="grid gap-8 md:grid-cols-2">
-              <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="rounded-card border border-line bg-surface-sunken p-8">
-                <ImageIcon className="w-16 h-16 text-[color:var(--color-brand-500)] mb-6" aria-hidden="true" />
+              <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="rounded-card border border-line bg-surface p-8">
+                <ImageIcon className="w-16 h-16 text-brand-500 mb-6" aria-hidden="true" />
                 <h2 className="text-headline text-ink mb-4">Visual Content</h2>
                 <p className="text-ink-muted mb-6">We create stunning visual content for your brand.</p>
                 <ul className="space-y-3 text-ink-muted">
@@ -92,7 +92,7 @@ export default function Visuals() {
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: index * 0.1 }}
-                  className="group relative overflow-hidden rounded-card border border-line bg-surface-sunken"
+                  className="group relative overflow-hidden rounded-card border border-line bg-surface"
                 >
                   {images[visual.key] ? (
                     <Image
@@ -103,12 +103,12 @@ export default function Visuals() {
                       className="object-cover"
                     />
                   ) : (
-                    <div className="flex aspect-[4/3] items-center justify-center bg-surface-sunken">
+                    <div className="flex aspect-[4/3] items-center justify-center bg-surface">
                       <Icon className="size-10 text-brand-500/50" aria-hidden="true" />
                     </div>
                   )}
                   <div className="p-6">
-                    <h3 className="text-xl font-bold mb-2 group-hover:text-[color:var(--color-brand-500)] transition-colors">{visual.title}</h3>
+                    <h3 className="text-xl font-bold mb-2 group-hover:text-brand-500 transition-colors">{visual.title}</h3>
                     <p className="text-ink-muted text-sm">{visual.desc}</p>
                   </div>
                 </motion.div>
