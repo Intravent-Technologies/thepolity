@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import UploadField from '@/components/UploadField';
 
 interface PortfolioItem {
   id: string;
@@ -161,7 +162,6 @@ function PortfolioManager() {
   const [description, setDescription] = useState('');
   const [category, setCategory] = useState('Project');
   const [image, setImage] = useState('');
-  const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -176,24 +176,6 @@ function PortfolioManager() {
     finally { setLoading(false); }
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('type', 'portfolio');
-    try {
-      const response = await fetch('/api/upload', { method: 'POST', credentials: 'include', body: formData });
-      const data = await response.json();
-      if (data.url) setImage(data.url);
-      else alert(data.error === 'Unauthorized'
-        ? 'Your admin session expired. Please log out and log back in.'
-        : data.error || 'Upload failed');
-    } catch (error) { console.error(error); alert('Upload failed'); }
-    finally { setUploading(false); }
-  };
-
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !description || !image) { alert('Fill all fields'); return; }
@@ -204,7 +186,6 @@ function PortfolioManager() {
       if (data.error) { alert(data.error); return; }
       setItems([data, ...items]);
       setTitle(''); setDescription(''); setCategory('Project'); setImage('');
-      alert('Added!');
     } catch { alert('Failed'); }
     finally { setSaving(false); }
   };
@@ -228,16 +209,8 @@ function PortfolioManager() {
           </select>
         </div>
         <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} placeholder="Description" className="w-full px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)] placeholder:text-ink-subtle" />
-        <div>
-          <label className="inline-flex items-center gap-2 px-4 py-2 bg-surface-sunken border border-line rounded-lg text-ink-muted text-sm cursor-pointer hover:bg-surface-muted hover:text-ink transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-            Choose image
-            <input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploading} className="hidden" />
-          </label>
-          {uploading && <span className="text-ink-subtle ml-4">Uploading...</span>}
-          {image && <div className="mt-2 w-20 h-20 rounded overflow-hidden"><img src={image} className="w-full h-full object-cover" /></div>}
-        </div>
-        <button type="submit" disabled={saving || uploading} className="px-6 py-3 bg-[color:var(--color-brand-500)] text-white rounded-lg font-medium hover:bg-[color:var(--color-brand-400)] disabled:opacity-50">{saving ? 'Saving...' : 'Add Item'}</button>
+        <UploadField type="portfolio" label="Choose image" value={image} onChange={setImage} />
+        <button type="submit" disabled={saving || !image} className="px-6 py-3 bg-[color:var(--color-brand-500)] text-white rounded-lg font-medium hover:bg-[color:var(--color-brand-400)] disabled:opacity-50">{saving ? 'Saving...' : 'Add Item'}</button>
       </form>
 
       <div className="border-t border-line mt-8 pt-8">
@@ -247,14 +220,14 @@ function PortfolioManager() {
             {items.map(item => (
               <div key={item.id} className="flex items-center justify-between p-3 bg-surface-sunken rounded-lg">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-12 h-12 rounded bg-surface-muted overflow-hidden flex-shrink-0"><img src={item.image} className="w-full h-full object-cover" /></div>
+                  <div className="w-12 h-12 rounded bg-surface-muted overflow-hidden flex-shrink-0"><img src={item.image} alt="" className="w-full h-full object-cover" /></div>
                   <div className="min-w-0">
                     <div className="text-[color:var(--color-ink)] font-medium">{item.title}</div>
                     <div className="text-ink-subtle text-sm">{item.category}</div>
                     {item.description && <div className="text-ink-subtle text-xs truncate max-w-md">{item.description}</div>}
                   </div>
                 </div>
-                <button onClick={() => handleDelete(item.id)} className="px-3 py-1 bg-red-500/20 text-red-400 rounded hover:bg-red-500/40 text-sm flex-shrink-0 ml-3">Delete</button>
+                <button onClick={() => handleDelete(item.id)} className="px-3 py-1 ml-3 flex-shrink-0 rounded border border-line-strong bg-surface text-sm text-ink-muted transition-colors duration-200 hover:border-brand-500 hover:text-brand-700">Delete</button>
               </div>
             ))}
           </div>
@@ -268,11 +241,15 @@ function GalleryManager() {
   const [items, setItems] = useState<GalleryItem[]>([]);
   const [title, setTitle] = useState('');
   const [type, setType] = useState<'image' | 'video'>('image');
-  const [file, setFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
+  const [url, setUrl] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [error, setError] = useState('');
   const [loading, setLoading] = useState(true);
 
   useEffect(() => { fetchItems(); }, []);
+
+  // Switching between image and video invalidates a file of the other kind.
+  useEffect(() => { setUrl(''); }, [type]);
 
   const fetchItems = async () => {
     try {
@@ -285,23 +262,18 @@ function GalleryManager() {
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !file) { alert('Fill all fields'); return; }
-    setUploading(true);
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('type', 'gallery');
+    if (!title || !url) { setError('A title and an uploaded file are both required.'); return; }
+
+    setSaving(true);
+    setError('');
     try {
-      const uploadRes = await fetch('/api/upload', { method: 'POST', body: formData });
-      const uploadData = await uploadRes.json();
-      if (!uploadData.url) { alert(uploadData.error || 'Upload failed'); setUploading(false); return; }
-      const res = await fetch('/api/gallery', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title, type, url: uploadData.url }) });
+      const res = await fetch('/api/gallery', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title, type, url }) });
       const newItem = await res.json();
-      if (newItem.error) { alert(newItem.error); setUploading(false); return; }
+      if (newItem.error) { setError(newItem.error); return; }
       setItems([newItem, ...items]);
-      setTitle(''); setFile(null);
-      alert('Added!');
-    } catch { alert('Failed'); }
-    finally { setUploading(false); }
+      setTitle(''); setUrl('');
+    } catch { setError('Could not save that item. Check your connection and retry.'); }
+    finally { setSaving(false); }
   };
 
   const handleDelete = async (id: string) => {
@@ -322,15 +294,15 @@ function GalleryManager() {
             <option value="image">Image</option><option value="video">Video</option>
           </select>
         </div>
-        <div>
-          <label className="inline-flex items-center gap-2 px-4 py-2 bg-surface-sunken border border-line rounded-lg text-ink-muted text-sm cursor-pointer hover:bg-surface-muted hover:text-ink transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-            Choose {type === 'image' ? 'image' : 'video'}
-            <input type="file" accept={type === 'image' ? 'image/*' : 'video/*'} onChange={e => setFile(e.target.files?.[0] || null)} disabled={uploading} className="hidden" />
-          </label>
-          {uploading && <span className="text-ink-subtle ml-4">Uploading...</span>}
-        </div>
-        <button type="submit" disabled={uploading} className="px-6 py-3 bg-[color:var(--color-brand-500)] text-white rounded-lg font-medium hover:bg-[color:var(--color-brand-400)] disabled:opacity-50">{uploading ? 'Uploading...' : 'Add Item'}</button>
+        <UploadField
+          type="gallery"
+          kind={type}
+          label={`Choose ${type}`}
+          value={url}
+          onChange={setUrl}
+        />
+        {error ? <p role="alert" className="text-sm text-brand-700">{error}</p> : null}
+        <button type="submit" disabled={saving || !url} className="px-6 py-3 bg-[color:var(--color-brand-500)] text-white rounded-lg font-medium hover:bg-[color:var(--color-brand-400)] disabled:opacity-50">{saving ? 'Saving...' : 'Add Item'}</button>
       </form>
 
       <div className="border-t border-line mt-8 pt-8">
@@ -348,7 +320,7 @@ function GalleryManager() {
                   <p className="text-[color:var(--color-ink)] text-xs font-medium truncate">{item.title}</p>
                   <p className="text-ink-subtle text-xs capitalize">{item.type}</p>
                 </div>
-                <button onClick={() => handleDelete(item.id)} className="absolute top-2 right-2 px-2 py-1 bg-red-500 text-[color:var(--color-ink)] text-xs rounded hover:bg-red-600">Delete</button>
+                <button onClick={() => handleDelete(item.id)} className="absolute top-2 right-2 px-2 py-1 rounded bg-ink/80 text-xs text-ink-inverse transition-colors duration-200 hover:bg-ink">Delete</button>
               </div>
             ))}
           </div>
@@ -365,7 +337,6 @@ function BlogManager() {
   const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
   const [excerpt, setExcerpt] = useState('');
   const [image, setImage] = useState('');
-  const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -380,22 +351,6 @@ function BlogManager() {
     finally { setLoading(false); }
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('type', 'portfolio');
-    try {
-      const response = await fetch('/api/upload', { method: 'POST', body: formData });
-      const data = await response.json();
-      if (data.url) setImage(data.url);
-      else alert(data.error || 'Upload failed');
-    } catch { alert('Upload failed'); }
-    finally { setUploading(false); }
-  };
-
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !excerpt) { alert('Fill all fields'); return; }
@@ -406,7 +361,6 @@ function BlogManager() {
       if (data.error) { alert(data.error); return; }
       setPosts([data, ...posts]);
       setTitle(''); setCategory('Strategy'); setExcerpt(''); setImage('');
-      alert('Added!');
     } catch { alert('Failed'); }
     finally { setSaving(false); }
   };
@@ -433,16 +387,8 @@ function BlogManager() {
           <input type="date" value={date} onChange={e => setDate(e.target.value)} className="px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)]" />
         </div>
         <textarea value={excerpt} onChange={e => setExcerpt(e.target.value)} rows={3} placeholder="Excerpt" className="w-full px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)] placeholder:text-ink-subtle" />
-        <div>
-          <label className="inline-flex items-center gap-2 px-4 py-2 bg-surface-sunken border border-line rounded-lg text-ink-muted text-sm cursor-pointer hover:bg-surface-muted hover:text-ink transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-            Choose image
-            <input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploading} className="hidden" />
-          </label>
-          {uploading && <span className="text-ink-subtle ml-4">Uploading...</span>}
-          {image && <div className="mt-2 w-20 h-20 rounded overflow-hidden"><img src={image} className="w-full h-full object-cover" /></div>}
-        </div>
-        <button type="submit" disabled={saving || uploading} className="px-6 py-3 bg-[color:var(--color-brand-500)] text-white rounded-lg font-medium hover:bg-[color:var(--color-brand-400)] disabled:opacity-50">{saving ? 'Saving...' : 'Add Post'}</button>
+        <UploadField type="portfolio" label="Choose image" value={image} onChange={setImage} />
+        <button type="submit" disabled={saving} className="px-6 py-3 bg-[color:var(--color-brand-500)] text-white rounded-lg font-medium hover:bg-[color:var(--color-brand-400)] disabled:opacity-50">{saving ? 'Saving...' : 'Add Post'}</button>
       </form>
 
       <div className="border-t border-line mt-8 pt-8">
@@ -452,14 +398,14 @@ function BlogManager() {
             {posts.map(post => (
               <div key={post.id} className="flex items-center justify-between p-3 bg-surface-sunken rounded-lg">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-12 h-12 rounded bg-surface-muted overflow-hidden flex-shrink-0">{post.image && <img src={post.image} className="w-full h-full object-cover" />}</div>
+                  <div className="w-12 h-12 rounded bg-surface-muted overflow-hidden flex-shrink-0">{post.image && <img src={post.image} alt="" className="w-full h-full object-cover" />}</div>
                   <div className="min-w-0">
                     <div className="text-[color:var(--color-ink)] font-medium">{post.title}</div>
                     <div className="text-ink-subtle text-sm">{post.category} | {post.date}</div>
                     {post.excerpt && <div className="text-ink-subtle text-xs truncate max-w-md">{post.excerpt}</div>}
                   </div>
                 </div>
-                <button onClick={() => handleDelete(post.id)} className="px-3 py-1 bg-red-500/20 text-red-400 rounded hover:bg-red-500/40 text-sm flex-shrink-0 ml-3">Delete</button>
+                <button onClick={() => handleDelete(post.id)} className="px-3 py-1 ml-3 flex-shrink-0 rounded border border-line-strong bg-surface text-sm text-ink-muted transition-colors duration-200 hover:border-brand-500 hover:text-brand-700">Delete</button>
               </div>
             ))}
           </div>
@@ -476,7 +422,6 @@ function WorkManager() {
   const [client, setClient] = useState('');
   const [description, setDescription] = useState('');
   const [image, setImage] = useState('');
-  const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -491,22 +436,6 @@ function WorkManager() {
     finally { setLoading(false); }
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('type', 'portfolio');
-    try {
-      const response = await fetch('/api/upload', { method: 'POST', body: formData });
-      const data = await response.json();
-      if (data.url) setImage(data.url);
-      else alert(data.error || 'Upload failed');
-    } catch { alert('Upload failed'); }
-    finally { setUploading(false); }
-  };
-
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title || !description) { alert('Fill all fields'); return; }
@@ -517,7 +446,6 @@ function WorkManager() {
       if (data.error) { alert(data.error); return; }
       setProjects([data, ...projects]);
       setTitle(''); setCategory('Web Development'); setClient(''); setDescription(''); setImage('');
-      alert('Added!');
     } catch { alert('Failed'); }
     finally { setSaving(false); }
   };
@@ -544,16 +472,8 @@ function WorkManager() {
           <input type="text" value={client} onChange={e => setClient(e.target.value)} placeholder="Client name" className="px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)] placeholder:text-ink-subtle" />
         </div>
         <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} placeholder="Description" className="w-full px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)] placeholder:text-ink-subtle" />
-        <div>
-          <label className="inline-flex items-center gap-2 px-4 py-2 bg-surface-sunken border border-line rounded-lg text-ink-muted text-sm cursor-pointer hover:bg-surface-muted hover:text-ink transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-            Choose image
-            <input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploading} className="hidden" />
-          </label>
-          {uploading && <span className="text-ink-subtle ml-4">Uploading...</span>}
-          {image && <div className="mt-2 w-20 h-20 rounded overflow-hidden"><img src={image} className="w-full h-full object-cover" /></div>}
-        </div>
-        <button type="submit" disabled={saving || uploading} className="px-6 py-3 bg-[color:var(--color-brand-500)] text-white rounded-lg font-medium hover:bg-[color:var(--color-brand-400)] disabled:opacity-50">{saving ? 'Saving...' : 'Add Project'}</button>
+        <UploadField type="portfolio" label="Choose image" value={image} onChange={setImage} />
+        <button type="submit" disabled={saving} className="px-6 py-3 bg-[color:var(--color-brand-500)] text-white rounded-lg font-medium hover:bg-[color:var(--color-brand-400)] disabled:opacity-50">{saving ? 'Saving...' : 'Add Project'}</button>
       </form>
 
       <div className="border-t border-line mt-8 pt-8">
@@ -563,14 +483,14 @@ function WorkManager() {
             {projects.map(project => (
               <div key={project.id} className="flex items-center justify-between p-3 bg-surface-sunken rounded-lg">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-12 h-12 rounded bg-surface-muted overflow-hidden flex-shrink-0">{project.image && <img src={project.image} className="w-full h-full object-cover" />}</div>
+                  <div className="w-12 h-12 rounded bg-surface-muted overflow-hidden flex-shrink-0">{project.image && <img src={project.image} alt="" className="w-full h-full object-cover" />}</div>
                   <div className="min-w-0">
                     <div className="text-[color:var(--color-ink)] font-medium">{project.title}</div>
                     <div className="text-ink-subtle text-sm">{project.category} | {project.client}</div>
                     {project.description && <div className="text-ink-subtle text-xs truncate max-w-md">{project.description}</div>}
                   </div>
                 </div>
-                <button onClick={() => handleDelete(project.id)} className="px-3 py-1 bg-red-500/20 text-red-400 rounded hover:bg-red-500/40 text-sm flex-shrink-0 ml-3">Delete</button>
+                <button onClick={() => handleDelete(project.id)} className="px-3 py-1 ml-3 flex-shrink-0 rounded border border-line-strong bg-surface text-sm text-ink-muted transition-colors duration-200 hover:border-brand-500 hover:text-brand-700">Delete</button>
               </div>
             ))}
           </div>
@@ -586,7 +506,6 @@ function TeamManager() {
   const [role, setRole] = useState('');
   const [bio, setBio] = useState('');
   const [image, setImage] = useState('');
-  const [uploading, setUploading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -601,22 +520,6 @@ function TeamManager() {
     finally { setLoading(false); }
   };
 
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    setUploading(true);
-    const formData = new FormData();
-    formData.append('file', file);
-    formData.append('type', 'portfolio');
-    try {
-      const response = await fetch('/api/upload', { method: 'POST', body: formData });
-      const data = await response.json();
-      if (data.url) setImage(data.url);
-      else alert(data.error || 'Upload failed');
-    } catch { alert('Upload failed'); }
-    finally { setUploading(false); }
-  };
-
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!name || !role || !bio) { alert('Fill all fields'); return; }
@@ -627,7 +530,6 @@ function TeamManager() {
       if (data.error) { alert(data.error); return; }
       setMembers([data, ...members]);
       setName(''); setRole(''); setBio(''); setImage('');
-      alert('Added!');
     } catch { alert('Failed'); }
     finally { setSaving(false); }
   };
@@ -654,16 +556,8 @@ function TeamManager() {
           </select>
         </div>
         <textarea value={bio} onChange={e => setBio(e.target.value)} rows={3} placeholder="Bio" className="w-full px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)] placeholder:text-ink-subtle" />
-        <div>
-          <label className="inline-flex items-center gap-2 px-4 py-2 bg-surface-sunken border border-line rounded-lg text-ink-muted text-sm cursor-pointer hover:bg-surface-muted hover:text-ink transition-colors">
-            <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-            Choose image
-            <input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploading} className="hidden" />
-          </label>
-          {uploading && <span className="text-ink-subtle ml-4">Uploading...</span>}
-          {image && <div className="mt-2 w-20 h-20 rounded-full overflow-hidden"><img src={image} className="w-full h-full object-cover" /></div>}
-        </div>
-        <button type="submit" disabled={saving || uploading} className="px-6 py-3 bg-[color:var(--color-brand-500)] text-white rounded-lg font-medium hover:bg-[color:var(--color-brand-400)] disabled:opacity-50">{saving ? 'Saving...' : 'Add Member'}</button>
+        <UploadField type="portfolio" label="Choose image" round value={image} onChange={setImage} />
+        <button type="submit" disabled={saving} className="px-6 py-3 bg-[color:var(--color-brand-500)] text-white rounded-lg font-medium hover:bg-[color:var(--color-brand-400)] disabled:opacity-50">{saving ? 'Saving...' : 'Add Member'}</button>
       </form>
 
       <div className="border-t border-line mt-8 pt-8">
@@ -674,7 +568,7 @@ function TeamManager() {
               <div key={member.id} className="flex items-center justify-between p-3 bg-surface-sunken rounded-lg">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="w-10 h-10 rounded-full bg-surface-muted flex-shrink-0 overflow-hidden">
-                    {member.image ? <img src={member.image} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-[color:var(--color-ink)] font-bold">{member.name[0]}</div>}
+                    {member.image ? <img src={member.image} alt={member.name} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-[color:var(--color-ink)] font-bold">{member.name[0]}</div>}
                   </div>
                   <div className="min-w-0">
                     <div className="text-[color:var(--color-ink)] font-medium">{member.name}</div>
@@ -682,7 +576,7 @@ function TeamManager() {
                     {member.bio && <div className="text-ink-subtle text-xs truncate max-w-md">{member.bio}</div>}
                   </div>
                 </div>
-                <button onClick={() => handleDelete(member.id)} className="px-3 py-1 bg-red-500/20 text-red-400 rounded hover:bg-red-500/40 text-sm flex-shrink-0 ml-3">Delete</button>
+                <button onClick={() => handleDelete(member.id)} className="px-3 py-1 ml-3 flex-shrink-0 rounded border border-line-strong bg-surface text-sm text-ink-muted transition-colors duration-200 hover:border-brand-500 hover:text-brand-700">Delete</button>
               </div>
             ))}
           </div>
@@ -766,7 +660,7 @@ function ReviewsManager() {
                   </div>
                   <div className="flex items-center gap-3 flex-shrink-0">
                     <div className="flex">{[...Array(review.rating)].map((_,i) => <span key={i} className="text-yellow-400">★</span>)}</div>
-                    <button onClick={() => handleDelete(review.id)} className="px-3 py-1 bg-red-500/20 text-red-400 rounded hover:bg-red-500/40 text-sm">Delete</button>
+                    <button onClick={() => handleDelete(review.id)} className="px-3 py-1 rounded border border-line-strong bg-surface text-sm text-ink-muted transition-colors duration-200 hover:border-brand-500 hover:text-brand-700">Delete</button>
                   </div>
                 </div>
                 <p className="text-ink-muted text-sm">&ldquo;{review.content}&rdquo;</p>
@@ -888,11 +782,7 @@ const allSections = HOMEPAGE_SECTION_GROUPS.flatMap(g => g.sections);
 function HomepageManager() {
   const [images, setImages] = useState<HomepageImage[]>([]);
   const [selectedSection, setSelectedSection] = useState(allSections[0].key);
-  const [file, setFile] = useState<File | null>(null);
-  const [uploading, setUploading] = useState(false);
-  const [message, setMessage] = useState('');
-
-  useEffect(() => { loadImages(); }, []);
+  const [notice, setNotice] = useState<{ tone: 'ok' | 'bad'; text: string } | null>(null);
 
   const loadImages = async () => {
     try {
@@ -902,40 +792,45 @@ function HomepageManager() {
     } catch (e) { console.error('Failed to load images:', e); setImages([]); }
   };
 
-  const handleUpload = async () => {
-    if (!file) { setMessage('Please select an image first'); return; }
-    setUploading(true); setMessage('');
-    try {
-      const formData = new FormData();
-      formData.append('file', file);
-      formData.append('type', 'homepage');
-      formData.append('section', selectedSection);
-      formData.append('multi', String(selectedSection.includes('_slideshow')));
-      const res = await fetch('/api/upload', { method: 'POST', body: formData });
-      const data = await res.json();
-      if (res.ok && data.url) { setMessage('Image uploaded successfully!'); setFile(null); loadImages(); } 
-      else { setMessage(data.error || 'Upload failed'); }
-    } catch (e) { setMessage('Upload failed: ' + (e instanceof Error ? e.message : 'Unknown error')); } 
-    finally { setUploading(false); }
+  // Fetching on mount: the state update lands in the promise continuation, not
+  // synchronously in the effect body.
+  // eslint-disable-next-line react-hooks/set-state-in-effect
+  useEffect(() => { loadImages(); }, []);
+
+  const handleDelete = async (id: string) => {
+    const res = await fetch(`/api/homepage-images?id=${id}`, { method: 'DELETE' });
+    if (res.ok) {
+      await loadImages();
+      setNotice({ tone: 'ok', text: 'Image removed.' });
+    } else {
+      setNotice({ tone: 'bad', text: 'Could not delete that image.' });
+    }
   };
 
   const getImagesForSection = (section: string) => images.filter(img => img.section === section);
   const isSlideshowSection = (key: string) => key.includes('_slideshow');
+  const selected = allSections.find(s => s.key === selectedSection);
+  const selectedIsSlideshow = isSlideshowSection(selectedSection);
 
   return (
     <div className="space-y-8">
       {HOMEPAGE_SECTION_GROUPS.map((group) => (
         <div key={group.title} className="bg-surface rounded-card p-6 border border-line">
           <h2 className="text-xl font-bold text-[color:var(--color-ink)] mb-2">{group.title}</h2>
-          <p className="text-ink-muted text-sm mb-6">{isSlideshowSection(group.sections[0]?.key || '') ? 'Upload multiple images for the slideshow' : 'Click a section below to upload an image'}</p>
+          <p className="text-ink-muted text-sm mb-6">{isSlideshowSection(group.sections[0]?.key || '') ? 'Upload multiple images for the slideshow' : 'Select a slot below to upload an image'}</p>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {group.sections.map((section) => {
               const sectionImages = getImagesForSection(section.key);
-              const isSlideshow = isSlideshowSection(section.key);
+              const isSelected = selectedSection === section.key;
               
               return (
-                <div key={section.key} className="bg-surface rounded-card p-4 border border-line">
+                <div
+                  key={section.key}
+                  className={`bg-surface rounded-card p-4 border transition-colors duration-200 ${
+                    isSelected ? 'border-brand-500 ring-2 ring-brand-500/20' : 'border-line'
+                  }`}
+                >
                   <h3 className="text-sm font-medium text-[color:var(--color-ink)] mb-3">{section.label}</h3>
                   
                   {sectionImages.length > 0 ? (
@@ -943,31 +838,74 @@ function HomepageManager() {
                       {sectionImages.map((img, idx) => (
                         <div key={img.id} className="relative">
                           <img src={img.imageUrl} alt={`${section.label} ${idx + 1}`} className="w-full h-24 object-cover rounded-lg" />
-                          <button onClick={async () => { await fetch(`/api/homepage-images?id=${img.id}`, { method: 'DELETE' }); loadImages(); }} className="absolute top-1 right-1 bg-red-500 text-[color:var(--color-ink)] text-xs px-2 py-1 rounded">Delete</button>
+                          <button
+                            onClick={() => handleDelete(img.id)}
+                            aria-label={`Delete ${section.label} ${idx + 1}`}
+                            className="absolute top-1 right-1 inline-flex items-center gap-1 bg-ink/80 px-2 py-1 text-xs text-ink-inverse rounded hover:bg-ink"
+                          >
+                            Delete
+                          </button>
                         </div>
                       ))}
                     </div>
                   ) : ( <div className="w-full h-24 bg-surface-sunken rounded-lg mb-3 flex items-center justify-center text-ink-subtle text-sm">No image</div> )}
-                  
-                  {selectedSection === section.key && ( 
-                    <div className="mt-2">
-                      <label className="inline-flex items-center gap-2 px-3 py-1.5 bg-surface-sunken border border-line rounded-lg text-ink-muted text-xs cursor-pointer hover:bg-surface-muted hover:text-ink transition-colors mb-2">
-                        <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
-                        Choose image
-                        <input type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] || null)} className="hidden" />
-                      </label>
-                      {file && (<button onClick={handleUpload} disabled={uploading} className="w-full bg-[color:var(--color-brand-500)] text-white text-sm py-2 rounded-lg font-medium disabled:opacity-50">{uploading ? 'Uploading...' : 'Upload'}</button>)}
-                    </div> 
+
+                  <button
+                    onClick={() => { setSelectedSection(section.key); setNotice(null); }}
+                    aria-pressed={isSelected}
+                    className={`text-xs font-medium transition-colors duration-200 hover:text-brand-700 ${
+                      isSelected ? 'text-brand-600' : 'text-brand-500 hover:underline'
+                    }`}
+                  >
+                    {isSelected ? 'Selected — uploading here' : 'Select to upload'}
+                  </button>
+                  {isSlideshowSection(section.key) && sectionImages.length > 0 && (
+                    <span className="text-xs text-ink-subtle ml-2">({sectionImages.length} images)</span>
                   )}
-                  <button onClick={() => setSelectedSection(section.key)} className="text-xs text-[color:var(--color-brand-500)] hover:underline">{selectedSection === section.key ? '✓ Selected' : 'Select to upload'}</button>
-                  {isSlideshow && sectionImages.length > 0 && <span className="text-xs text-green-400 ml-2">({sectionImages.length} images)</span>}
                 </div>
               );
             })}
           </div>
         </div>
       ))}
-      {message && (<div className={`mt-4 p-3 rounded-lg text-sm ${message.includes('success') ? 'bg-green-500/20 text-green-400' : 'bg-red-500/20 text-red-400'}`}>{message}</div>)}
+
+      <div className="bg-surface rounded-card p-6 border border-line">
+        <h2 className="text-lg font-bold text-[color:var(--color-ink)]">
+          Upload to &ldquo;{selected?.label ?? selectedSection}&rdquo;
+        </h2>
+        <p className="mt-1 text-sm text-ink-subtle">
+          {selectedIsSlideshow
+            ? 'Each upload is added to this slideshow. Repeat as many times as you need.'
+            : 'This slot holds one image. Uploading again replaces it.'}
+        </p>
+
+        <UploadField
+          key={selectedSection}
+          type="homepage"
+          section={selectedSection}
+          multi={selectedIsSlideshow}
+          label="Choose image"
+          value=""
+          onChange={async () => {
+            await loadImages();
+            setNotice({ tone: 'ok', text: 'Image uploaded.' });
+          }}
+          className="mt-5"
+        />
+      </div>
+
+      {notice ? (
+        <p
+          role="status"
+          className={`rounded-card border p-3 text-sm ${
+            notice.tone === 'ok'
+              ? 'border-brand-200 bg-brand-50 text-brand-700'
+              : 'border-brand-300 bg-brand-50 text-brand-700'
+          }`}
+        >
+          {notice.text}
+        </p>
+      ) : null}
     </div>
   );
 }
