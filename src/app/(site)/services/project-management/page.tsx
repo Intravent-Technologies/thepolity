@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { ArrowRight, CheckCircle, Clock, Users, BarChart3, FileCheck } from 'lucide-react';
+import { ArrowRight, Clock, Users, BarChart3, FileCheck } from 'lucide-react';
 
 const features = [
   { icon: Clock, title: 'Timeline Management', description: 'We keep your projects on schedule and within timeline.' },

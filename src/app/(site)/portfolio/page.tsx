@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
@@ -107,8 +108,8 @@ export default function Portfolio() {
                     transition={{ delay: index * 0.08 }}
                     className="overflow-hidden rounded-card border border-line bg-surface"
                   >
-                    <div className="h-64 bg-ink">
-                      <img src={item.image} alt={item.title} className="h-full w-full object-cover" />
+                    <div className="relative h-64 bg-ink">
+                      <Image src={item.image} alt={item.title} fill sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" className="object-cover" />
                     </div>
                     <div className="p-8">
                       <p className="mb-3 text-sm font-semibold text-[color:var(--color-brand-500)]">{item.category}</p>

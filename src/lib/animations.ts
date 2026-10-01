@@ -1,5 +1,3 @@
-import { motion } from 'framer-motion';
-
 // Reusable animation variants
 export const fadeInUp = {
   initial: { opacity: 0, y: 20 },

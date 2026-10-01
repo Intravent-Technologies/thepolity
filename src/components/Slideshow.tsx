@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
+import Image from 'next/image';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 
@@ -35,15 +36,21 @@ export default function Slideshow({ sectionKey, title }: SlideshowProps) {
   const nextSlide = () => setCurrentIndex((prev) => (prev + 1) % images.length);
   const prevSlide = () => setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
 
+  // The keydown handler reads `images.length`, so it lives inside the effect
+  // rather than depending on callbacks that would need their own dep list.
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'ArrowRight') nextSlide();
-      if (e.key === 'ArrowLeft') prevSlide();
+      if (e.key === 'ArrowRight') {
+        setCurrentIndex((prev) => (prev + 1) % images.length);
+      }
+      if (e.key === 'ArrowLeft') {
+        setCurrentIndex((prev) => (prev - 1 + images.length) % images.length);
+      }
       if (e.key === 'Escape') setIsOpen(false);
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, []);
+  }, [images.length]);
 
   if (images.length === 0) {
     return (
@@ -73,10 +80,12 @@ export default function Slideshow({ sectionKey, title }: SlideshowProps) {
               className="aspect-[16/9] rounded-card overflow-hidden cursor-pointer"
               onClick={() => setIsOpen(true)}
             >
-              <img 
-                src={images[currentIndex]} 
-                alt={`Slide ${currentIndex + 1}`} 
-                className="w-full h-full object-cover"
+              <Image
+                src={images[currentIndex]}
+                alt={`Slide ${currentIndex + 1}`}
+                fill
+                sizes="(min-width: 1280px) 1280px, 100vw"
+                className="object-cover"
               />
             </motion.div>
 
@@ -131,10 +140,12 @@ export default function Slideshow({ sectionKey, title }: SlideshowProps) {
                 <X className="w-6 h-6" />
               </button>
               
-              <img 
-                src={images[currentIndex]} 
-                alt={`Slide ${currentIndex + 1}`} 
-                className="max-w-full max-h-full object-contain"
+              <Image
+                src={images[currentIndex]}
+                alt={`Slide ${currentIndex + 1}`}
+                fill
+                sizes="100vw"
+                className="object-contain"
                 onClick={(e) => e.stopPropagation()}
               />
             </motion.div>

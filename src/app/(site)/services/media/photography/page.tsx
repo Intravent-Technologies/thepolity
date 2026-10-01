@@ -1,9 +1,10 @@
 'use client';
 
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { ArrowRight, Camera, Calendar, Map, User, Image } from 'lucide-react';
+import { ArrowRight, Camera, Calendar, Map, User, Image as ImageIcon } from 'lucide-react';
 
 interface HomepageImages {
   [key: string]: string;
@@ -14,7 +15,7 @@ const serviceData = {
   events: { icon: Calendar, title: 'Events', description: 'Full event coverage with professional results.' },
   'photo-tourism': { icon: Map, title: 'Photo Tourism', description: 'Capture your journey in stunning visuals.' },
   portraits: { icon: User, title: 'Portraits', description: 'Professional portraits for personal or business use.' },
-  visuals: { icon: Image, title: 'Visuals', description: 'Visual content that tells your story.' },
+  visuals: { icon: ImageIcon, title: 'Visuals', description: 'Visual content that tells your story.' },
 };
 
 const defaultImages = {
@@ -148,7 +149,13 @@ export default function Photography({ params }: { params: { slug: string } }) {
                   className="group relative overflow-hidden rounded-card border border-line bg-surface-sunken"
                 >
                   {images[img.key] ? (
-                    <img src={images[img.key]} alt={img.title} className="w-full aspect-[4/3] object-cover" />
+                    <Image
+                      src={images[img.key]}
+                      alt={img.title}
+                      fill
+                      sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                      className="object-cover"
+                    />
                   ) : (
                     <div className="flex aspect-[4/3] items-center justify-center bg-surface-sunken">
                       <Camera className="size-10 text-brand-500/50" aria-hidden="true" />

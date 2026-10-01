@@ -24,7 +24,8 @@ try {
   if (!fs.existsSync(UPLOADS_DIR)) {
     fs.mkdirSync(UPLOADS_DIR, { recursive: true });
   }
-} catch (e) {
+} catch {
+  // Read-only filesystem (typical on serverless). Callers fall back to Supabase.
   DATA_DIR = '';
   UPLOADS_DIR = '';
 }
@@ -540,8 +541,15 @@ async function deleteUploadedAsset(assetUrl?: string): Promise<void> {
     return;
   }
 
-  const normalizedPath = assetUrl.replace(/^\/+/, '').split('/').join(path.sep);
-  const fullPath = path.join(process.cwd(), 'public', normalizedPath);
+  // Resolve against UPLOADS_DIR and confine the unlink to that directory so a
+  // crafted assetUrl cannot traverse out via "../" segments.
+  const relativePath = assetUrl.slice('/uploads/'.length);
+  const uploadsRoot = path.resolve(UPLOADS_DIR);
+  const fullPath = path.resolve(uploadsRoot, relativePath);
+
+  if (!fullPath.startsWith(uploadsRoot + path.sep)) {
+    return;
+  }
 
   if (fs.existsSync(fullPath)) {
     fs.unlinkSync(fullPath);

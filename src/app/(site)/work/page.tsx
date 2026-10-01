@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { FolderOpen } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import {
@@ -78,14 +79,14 @@ export default function Work() {
             <div className="grid gap-x-8 gap-y-14 md:grid-cols-2">
               {projects.map((project) => (
                 <article key={project.id}>
-                  <div className="overflow-hidden rounded-card border border-line bg-surface-sunken transition-colors duration-200 hover:border-line-strong">
+                  <div className="relative aspect-16/10 overflow-hidden rounded-card border border-line bg-surface-sunken transition-colors duration-200 hover:border-line-strong">
                     {project.image ? (
-                      <img
+                      <Image
                         src={project.image}
                         alt={project.title}
-                        loading="lazy"
-                        decoding="async"
-                        className="aspect-16/10 w-full object-cover"
+                        fill
+                        sizes="(min-width: 768px) 50vw, 100vw"
+                        className="object-cover"
                       />
                     ) : (
                       <div className="flex aspect-16/10 w-full items-center justify-center">

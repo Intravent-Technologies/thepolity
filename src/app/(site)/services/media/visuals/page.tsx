@@ -1,9 +1,10 @@
 'use client';
 
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
-import { ArrowRight, Clapperboard, Image, Package, Palette, Share2 } from 'lucide-react';
+import { ArrowRight, Clapperboard, Image as ImageIcon, Package, Palette, Share2 } from 'lucide-react';
 
 interface HomepageImages {
   [key: string]: string;
@@ -57,7 +58,7 @@ export default function Visuals() {
           <div className="mx-auto max-w-7xl">
             <div className="grid gap-8 md:grid-cols-2">
               <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} className="rounded-card border border-line bg-surface-sunken p-8">
-                <Image className="w-16 h-16 text-[color:var(--color-brand-500)] mb-6" />
+                <ImageIcon className="w-16 h-16 text-[color:var(--color-brand-500)] mb-6" aria-hidden="true" />
                 <h2 className="text-headline text-ink mb-4">Visual Content</h2>
                 <p className="text-ink-muted mb-6">We create stunning visual content for your brand.</p>
                 <ul className="space-y-3 text-ink-muted">
@@ -94,7 +95,13 @@ export default function Visuals() {
                   className="group relative overflow-hidden rounded-card border border-line bg-surface-sunken"
                 >
                   {images[visual.key] ? (
-                    <img src={images[visual.key]} alt={visual.title} className="w-full aspect-[4/3] object-cover" />
+                    <Image
+                      src={images[visual.key]}
+                      alt={visual.title}
+                      fill
+                      sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                      className="object-cover"
+                    />
                   ) : (
                     <div className="flex aspect-[4/3] items-center justify-center bg-surface-sunken">
                       <Icon className="size-10 text-brand-500/50" aria-hidden="true" />

@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
@@ -235,7 +236,7 @@ function PortfolioManager() {
             <input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploading} className="hidden" />
           </label>
           {uploading && <span className="text-ink-subtle ml-4">Uploading...</span>}
-          {image && <div className="mt-2 w-20 h-20 rounded overflow-hidden"><img src={image} className="w-full h-full object-cover" /></div>}
+          {image && <div className="relative mt-2 w-20 h-20 rounded overflow-hidden"><Image src={image} alt="" fill sizes="5rem" className="object-cover" /></div>}
         </div>
         <button type="submit" disabled={saving || uploading} className="px-6 py-3 bg-[color:var(--color-brand-500)] text-white rounded-lg font-medium hover:bg-[color:var(--color-brand-400)] disabled:opacity-50">{saving ? 'Saving...' : 'Add Item'}</button>
       </form>
@@ -247,7 +248,7 @@ function PortfolioManager() {
             {items.map(item => (
               <div key={item.id} className="flex items-center justify-between p-3 bg-surface-sunken rounded-lg">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-12 h-12 rounded bg-surface-muted overflow-hidden flex-shrink-0"><img src={item.image} className="w-full h-full object-cover" /></div>
+                  <div className="relative w-12 h-12 rounded bg-surface-muted overflow-hidden flex-shrink-0"><Image src={item.image} alt="" fill sizes="3rem" className="object-cover" /></div>
                   <div className="min-w-0">
                     <div className="text-[color:var(--color-ink)] font-medium">{item.title}</div>
                     <div className="text-ink-subtle text-sm">{item.category}</div>
@@ -340,7 +341,7 @@ function GalleryManager() {
             {items.map(item => (
               <div key={item.id} className="relative rounded-lg overflow-hidden bg-surface-sunken">
                 {item.type === 'image' ? (
-                  <img src={item.url} alt={item.title} className="w-full h-32 object-cover" />
+                  <Image src={item.url} alt={item.title} fill sizes="(min-width: 768px) 25vw, 50vw" className="h-32 object-cover" />
                 ) : (
                   <video src={item.url} controls className="w-full h-32 object-cover" />
                 )}
@@ -440,7 +441,7 @@ function BlogManager() {
             <input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploading} className="hidden" />
           </label>
           {uploading && <span className="text-ink-subtle ml-4">Uploading...</span>}
-          {image && <div className="mt-2 w-20 h-20 rounded overflow-hidden"><img src={image} className="w-full h-full object-cover" /></div>}
+          {image && <div className="relative mt-2 w-20 h-20 rounded overflow-hidden"><Image src={image} alt="" fill sizes="5rem" className="object-cover" /></div>}
         </div>
         <button type="submit" disabled={saving || uploading} className="px-6 py-3 bg-[color:var(--color-brand-500)] text-white rounded-lg font-medium hover:bg-[color:var(--color-brand-400)] disabled:opacity-50">{saving ? 'Saving...' : 'Add Post'}</button>
       </form>
@@ -452,7 +453,7 @@ function BlogManager() {
             {posts.map(post => (
               <div key={post.id} className="flex items-center justify-between p-3 bg-surface-sunken rounded-lg">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-12 h-12 rounded bg-surface-muted overflow-hidden flex-shrink-0">{post.image && <img src={post.image} className="w-full h-full object-cover" />}</div>
+                  <div className="relative w-12 h-12 rounded bg-surface-muted overflow-hidden flex-shrink-0">{post.image && <Image src={post.image} alt="" fill sizes="3rem" className="object-cover" />}</div>
                   <div className="min-w-0">
                     <div className="text-[color:var(--color-ink)] font-medium">{post.title}</div>
                     <div className="text-ink-subtle text-sm">{post.category} | {post.date}</div>
@@ -551,7 +552,7 @@ function WorkManager() {
             <input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploading} className="hidden" />
           </label>
           {uploading && <span className="text-ink-subtle ml-4">Uploading...</span>}
-          {image && <div className="mt-2 w-20 h-20 rounded overflow-hidden"><img src={image} className="w-full h-full object-cover" /></div>}
+          {image && <div className="relative mt-2 w-20 h-20 rounded overflow-hidden"><Image src={image} alt="" fill sizes="5rem" className="object-cover" /></div>}
         </div>
         <button type="submit" disabled={saving || uploading} className="px-6 py-3 bg-[color:var(--color-brand-500)] text-white rounded-lg font-medium hover:bg-[color:var(--color-brand-400)] disabled:opacity-50">{saving ? 'Saving...' : 'Add Project'}</button>
       </form>
@@ -563,7 +564,7 @@ function WorkManager() {
             {projects.map(project => (
               <div key={project.id} className="flex items-center justify-between p-3 bg-surface-sunken rounded-lg">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-12 h-12 rounded bg-surface-muted overflow-hidden flex-shrink-0">{project.image && <img src={project.image} className="w-full h-full object-cover" />}</div>
+                  <div className="relative w-12 h-12 rounded bg-surface-muted overflow-hidden flex-shrink-0">{project.image && <Image src={project.image} alt="" fill sizes="3rem" className="object-cover" />}</div>
                   <div className="min-w-0">
                     <div className="text-[color:var(--color-ink)] font-medium">{project.title}</div>
                     <div className="text-ink-subtle text-sm">{project.category} | {project.client}</div>
@@ -661,7 +662,7 @@ function TeamManager() {
             <input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploading} className="hidden" />
           </label>
           {uploading && <span className="text-ink-subtle ml-4">Uploading...</span>}
-          {image && <div className="mt-2 w-20 h-20 rounded-full overflow-hidden"><img src={image} className="w-full h-full object-cover" /></div>}
+          {image && <div className="relative mt-2 w-20 h-20 rounded-full overflow-hidden"><Image src={image} alt="" fill sizes="5rem" className="object-cover" /></div>}
         </div>
         <button type="submit" disabled={saving || uploading} className="px-6 py-3 bg-[color:var(--color-brand-500)] text-white rounded-lg font-medium hover:bg-[color:var(--color-brand-400)] disabled:opacity-50">{saving ? 'Saving...' : 'Add Member'}</button>
       </form>
@@ -673,8 +674,8 @@ function TeamManager() {
             {members.map(member => (
               <div key={member.id} className="flex items-center justify-between p-3 bg-surface-sunken rounded-lg">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-full bg-surface-muted flex-shrink-0 overflow-hidden">
-                    {member.image ? <img src={member.image} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-[color:var(--color-ink)] font-bold">{member.name[0]}</div>}
+                  <div className="relative w-10 h-10 rounded-full bg-surface-muted flex-shrink-0 overflow-hidden">
+                    {member.image ? <Image src={member.image} alt="" fill sizes="3rem" className="object-cover" /> : <div className="w-full h-full flex items-center justify-center text-[color:var(--color-ink)] font-bold">{member.name[0]}</div>}
                   </div>
                   <div className="min-w-0">
                     <div className="text-[color:var(--color-ink)] font-medium">{member.name}</div>
@@ -942,7 +943,7 @@ function HomepageManager() {
                     <div className="space-y-2 mb-3">
                       {sectionImages.map((img, idx) => (
                         <div key={img.id} className="relative">
-                          <img src={img.imageUrl} alt={`${section.label} ${idx + 1}`} className="w-full h-24 object-cover rounded-lg" />
+                          <Image src={img.imageUrl} alt={`${section.label} ${idx + 1}`} fill sizes="(min-width: 1024px) 20vw, 50vw" className="h-24 object-cover rounded-lg" />
                           <button onClick={async () => { await fetch(`/api/homepage-images?id=${img.id}`, { method: 'DELETE' }); loadImages(); }} className="absolute top-1 right-1 bg-red-500 text-[color:var(--color-ink)] text-xs px-2 py-1 rounded">Delete</button>
                         </div>
                       ))}

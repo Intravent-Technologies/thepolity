@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
@@ -94,7 +95,13 @@ export default function Portraits() {
                   className="group relative overflow-hidden rounded-card border border-line bg-surface-sunken"
                 >
                   {images[portrait.key] ? (
-                    <img src={images[portrait.key]} alt={portrait.title} className="w-full aspect-[4/3] object-cover" />
+                    <Image
+                      src={images[portrait.key]}
+                      alt={portrait.title}
+                      fill
+                      sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                      className="object-cover"
+                    />
                   ) : (
                     <div className="flex aspect-[4/3] items-center justify-center bg-surface-sunken">
                       <Icon className="size-10 text-brand-500/50" aria-hidden="true" />

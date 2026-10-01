@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { ArrowRight, Mail } from 'lucide-react';
 import Link from 'next/link';
@@ -13,29 +14,40 @@ interface TeamMember {
   image: string;
 }
 
+const defaultMembers: TeamMember[] = [
+  { id: '1', name: 'Sarah Mitchell', role: 'CEO & Founder', bio: 'Leading strategic direction with 15+ years...', image: '' },
+  { id: '2', name: 'James Chen', role: 'Head of Technology', bio: 'Driving innovation through technology...', image: '' },
+  { id: '3', name: 'Emily Rodriguez', role: 'Creative Director', bio: 'Crafting compelling brand stories...', image: '' },
+  { id: '4', name: 'Michael Thompson', role: 'Head of Operations', bio: 'Ensuring seamless project delivery...', image: '' },
+  { id: '5', name: 'Lisa Anderson', role: 'Strategy Lead', bio: 'Developing data-driven strategies...', image: '' },
+  { id: '6', name: 'David Park', role: 'Head of Media', bio: 'Creating impactful media campaigns...', image: '' },
+];
+
 export default function Team() {
   const [members, setMembers] = useState<TeamMember[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => { fetchMembers(); }, []);
+  useEffect(() => {
+    let cancelled = false;
 
-  const fetchMembers = async () => {
-    try {
-      const response = await fetch('/api/team');
-      const data = await response.json();
-      setMembers(data.length > 0 ? data : defaultMembers);
-    } catch (error) { setMembers(defaultMembers); }
-    finally { setLoading(false); }
-  };
+    (async () => {
+      try {
+        const response = await fetch('/api/team');
+        const data = await response.json();
+        if (!cancelled) {
+          setMembers(data.length > 0 ? data : defaultMembers);
+        }
+      } catch {
+        if (!cancelled) setMembers(defaultMembers);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
 
-  const defaultMembers: TeamMember[] = [
-    { id: '1', name: 'Sarah Mitchell', role: 'CEO & Founder', bio: 'Leading strategic direction with 15+ years...', image: '' },
-    { id: '2', name: 'James Chen', role: 'Head of Technology', bio: 'Driving innovation through technology...', image: '' },
-    { id: '3', name: 'Emily Rodriguez', role: 'Creative Director', bio: 'Crafting compelling brand stories...', image: '' },
-    { id: '4', name: 'Michael Thompson', role: 'Head of Operations', bio: 'Ensuring seamless project delivery...', image: '' },
-    { id: '5', name: 'Lisa Anderson', role: 'Strategy Lead', bio: 'Developing data-driven strategies...', image: '' },
-    { id: '6', name: 'David Park', role: 'Head of Media', bio: 'Creating impactful media campaigns...', image: '' },
-  ];
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   return (
     <>
@@ -56,8 +68,8 @@ export default function Team() {
               <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
                 {members.map((member, index) => (
                   <motion.div key={member.id} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: index * 0.08 }} className="group rounded-card border border-line bg-surface p-8 transition-[border-color] duration-200 hover:border-brand-500/40">
-                    <div className="h-40 w-40 mx-auto mb-6 rounded-full bg-surface-muted border border-line flex items-center justify-center">
-                      {member.image ? <img src={member.image} alt={member.name} className="w-full h-full rounded-full object-cover" /> : <span className="text-4xl font-bold text-ink-subtle">{member.name[0]}</span>}
+                    <div className="relative h-40 w-40 mx-auto mb-6 rounded-full bg-surface-muted border border-line flex items-center justify-center overflow-hidden">
+                      {member.image ? <Image src={member.image} alt={member.name} fill sizes="10rem" className="rounded-full object-cover" /> : <span className="text-4xl font-bold text-ink-subtle">{member.name[0]}</span>}
                     </div>
                     <h3 className="text-xl font-bold text-center mb-2">{member.name}</h3>
                     <p className="text-[color:var(--color-brand-500)] text-sm text-center mb-4">{member.role}</p>
