@@ -193,20 +193,51 @@ export async function getHomepageImages(): Promise<HomepageImage[]> {
   return (data as HomepageImageRow[]).map(toHomepageImage);
 }
 
-export async function saveHomepageImage(section: string, imageUrl: string): Promise<void> {
+/**
+ * Persist a homepage image.
+ *
+ * Single-image sections keep exactly one row per section, so a new upload
+ * replaces the previous one. Slideshow sections hold an ordered set, so each
+ * upload inserts a new row with its own id instead of overwriting the first.
+ */
+export async function saveHomepageImage(
+  section: string,
+  imageUrl: string,
+  { multi = false }: { multi?: boolean } = {}
+): Promise<void> {
   if (!isSupabaseConfigured()) {
     const items = readLocalJson<HomepageImage>(homepageImagesFilePath());
-    const next = items.filter((item) => item.section !== section);
-    next.unshift({ id: section, section, imageUrl });
-    writeLocalJson(homepageImagesFilePath(), next);
+    const id = multi ? `${section}:${crypto.randomUUID()}` : section;
+    const kept = multi ? items : items.filter((item) => item.section !== section);
+    writeLocalJson(homepageImagesFilePath(), [
+      { id, section, imageUrl },
+      ...kept,
+    ]);
     return;
   }
 
   const supabase = getSupabaseAdminClient();
+
+  if (multi) {
+    const { error } = await supabase
+      .from('homepage_images')
+      .insert({
+        id: `${section}:${crypto.randomUUID()}`,
+        section,
+        image_url: imageUrl,
+        updated_at: new Date().toISOString(),
+      });
+    if (error) {
+      throw error;
+    }
+    return;
+  }
+
   const { data: existing, error: lookupError } = await supabase
     .from('homepage_images')
     .select('id')
     .eq('section', section)
+    .limit(1)
     .maybeSingle();
 
   if (lookupError) {
@@ -217,7 +248,7 @@ export async function saveHomepageImage(section: string, imageUrl: string): Prom
     const { error } = await supabase
       .from('homepage_images')
       .update({ image_url: imageUrl, updated_at: new Date().toISOString() })
-      .eq('section', section);
+      .eq('id', existing.id);
     if (error) {
       throw error;
     }

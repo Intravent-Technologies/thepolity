@@ -87,6 +87,7 @@ const schemas = {
   'homepage-images': (b: Record<string, unknown>) => ({
     section: requireText(b.section, 'section', SHORT),
     imageUrl: requireImageUrl(b.imageUrl, 'imageUrl'),
+    multi: b.multi === true || b.multi === 'true',
   }),
 } as const;
 

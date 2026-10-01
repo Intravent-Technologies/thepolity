@@ -1,195 +1,284 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import Link from 'next/link';
-import { Menu, X, ChevronDown } from 'lucide-react';
+import { useEffect, useRef, useState } from "react";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { ChevronDown, Menu, X } from "lucide-react";
+import { ButtonLink, Container } from "./ui";
 
-const navLinks = [
-  { name: 'Home', href: '/' },
-  { name: 'About Us', href: '/about' },
-  { name: 'Services', href: '/services', hasDropdown: true },
-  { name: 'Portfolio', href: '/portfolio' },
-  { name: 'Gallery', href: '/gallery' },
-  { name: 'Contact Us', href: '/contact' },
-  { name: 'Reviews', href: '/reviews' },
+const SERVICES = [
+  { name: "IT Consultancy", href: "/services/it-consultancy" },
+  { name: "Project Management", href: "/services/project-management" },
+  { name: "Photography", href: "/services/media/photography" },
+  { name: "Event Coverage", href: "/services/media/events" },
+  { name: "Photo Tourism", href: "/services/media/photo-tourism" },
+  { name: "Portraits", href: "/services/media/portraits" },
+  { name: "Visuals & Graphics", href: "/services/media/visuals" },
 ];
 
-const services = [
-  { name: 'IT Consultancy', href: '/services/it-consultancy', subItems: [] },
-  { name: 'Media', href: '/services/media', hasSubMenu: true, subItems: [
-    { name: 'Photography', href: '/services/media/photography' },
-    { name: 'Events', href: '/services/media/events' },
-    { name: 'Photo Tourism', href: '/services/media/photo-tourism' },
-    { name: 'Portraits', href: '/services/media/portraits' },
-    { name: 'Visuals', href: '/services/media/visuals' },
-  ]},
-  { name: 'Project Management', href: '/services/project-management', subItems: [] },
+const NAV = [
+  { name: "About", href: "/about" },
+  { name: "Portfolio", href: "/portfolio" },
+  { name: "Gallery", href: "/gallery" },
+  { name: "Reviews", href: "/reviews" },
+  { name: "Contact", href: "/contact" },
 ];
 
-
+function Wordmark({ className = "" }: { className?: string }) {
+  return (
+    <span className={`font-display text-xl tracking-tight ${className}`}>
+      <span className="text-ink">The </span>
+      <span className="text-brand-500">Polity</span>
+    </span>
+  );
+}
 
 export default function Header() {
-  const [isScrolled, setIsScrolled] = useState(false);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const pathname = usePathname();
   const [servicesOpen, setServicesOpen] = useState(false);
-  const [hoveredService, setHoveredService] = useState<string | null>(null);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const servicesRef = useRef<HTMLDivElement>(null);
+
+  // Close everything on navigation. Adjusting during render avoids the
+  // cascading extra render an effect would cause.
+  const [lastPathname, setLastPathname] = useState(pathname);
+  if (lastPathname !== pathname) {
+    setLastPathname(pathname);
+    setServicesOpen(false);
+    setMobileOpen(false);
+  }
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
+
+  // Escape closes, and a click outside dismisses the services panel.
+  useEffect(() => {
+    if (!servicesOpen && !mobileOpen) return;
+
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setServicesOpen(false);
+        setMobileOpen(false);
+      }
+    };
+    const onClick = (e: MouseEvent) => {
+      if (servicesRef.current && !servicesRef.current.contains(e.target as Node)) {
+        setServicesOpen(false);
+      }
+    };
+
+    document.addEventListener("keydown", onKey);
+    document.addEventListener("mousedown", onClick);
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.removeEventListener("mousedown", onClick);
+    };
+  }, [servicesOpen, mobileOpen]);
+
+  // Stop the page scrolling behind the mobile panel.
+  useEffect(() => {
+    document.body.style.overflow = mobileOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
+
+  const isActive = (href: string) =>
+    href === "/" ? pathname === "/" : pathname.startsWith(href);
 
   return (
     <header
-      className={`fixed top-0 left-0 right-0 z-50 transition-all duration-300 ${
-        isScrolled
-          ? 'bg-white/95 backdrop-blur-md border-b border-black/10'
-          : 'bg-transparent'
+      className={`sticky top-0 z-50 border-b border-line bg-surface/90 backdrop-blur-md transition-shadow duration-300 ${
+        scrolled ? "shadow-[0_1px_0_rgba(17,17,16,0.04),0_8px_24px_-20px_rgba(17,17,16,0.4)]" : ""
       }`}
     >
-      <div className="max-w-7xl mx-auto px-6 sm:px-8 lg:px-12">
-        <div className="flex items-center justify-between h-20">
-          <Link href="/" className="flex items-center">
-            <motion.div
-              initial={{ opacity: 0, x: -20 }}
-              animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.5 }}
-            >
-              <span className="text-2xl font-bold tracking-tight">
-                <span className="text-[#0a0a0a]">THE</span>
-                <span className="text-[#FF6B35]"> POLITY</span>
-              </span>
-            </motion.div>
+      <a
+        href="#main"
+        className="sr-only-focusable absolute left-4 top-4 z-50 rounded-full bg-ink px-4 py-2 text-sm font-medium text-ink-inverse"
+      >
+        Skip to content
+      </a>
+
+      <Container width="wide">
+        <div className="flex h-18 items-center justify-between gap-6">
+          <Link href="/" aria-label="The Polity — home" className="shrink-0">
+            <Wordmark />
           </Link>
 
-          <nav className="hidden md:flex items-center gap-8">
-            {navLinks.map((link, index) => (
-              <motion.div
-                key={link.name}
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
-                className="relative"
-                onMouseEnter={() => link.hasDropdown && setServicesOpen(true)}
-                onMouseLeave={() => link.hasDropdown && setServicesOpen(false)}
-              >
-                <Link
-                  href={link.href}
-                  className="text-sm font-medium text-black/80 hover:text-[#0a0a0a] transition-colors duration-200 relative group flex items-center gap-1"
-                >
-                  {link.name}
-                  {link.hasDropdown && <ChevronDown className="w-4 h-4" />}
-                  <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-[#FF6B35] transition-all duration-300 group-hover:w-full" />
-                </Link>
+          <nav aria-label="Primary" className="hidden items-center gap-1 lg:flex">
+            <Link
+              href="/"
+              aria-current={isActive("/") ? "page" : undefined}
+              className={`rounded-full px-3.5 py-2 text-sm transition-colors duration-200 ${
+                isActive("/")
+                  ? "text-brand-600"
+                  : "text-ink-muted hover:text-ink"
+              }`}
+            >
+              Home
+            </Link>
 
-                {link.hasDropdown && (
-                  <AnimatePresence>
-                    {servicesOpen && (
-                      <motion.div
-                        initial={{ opacity: 0, y: 10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        exit={{ opacity: 0, y: 10 }}
-                        className="absolute top-full left-0 mt-2 w-56 bg-white border border-black/10 rounded-xl shadow-2xl overflow-hidden"
-                      >
-                        {services.map((service) => (
-                          <div
-                            key={service.name}
-                            className="relative"
-                            onMouseEnter={() => setHoveredService(service.name)}
-                            onMouseLeave={() => setHoveredService(null)}
-                          >
-                            <Link
-                              href={service.href}
-                              className="flex items-center justify-between px-4 py-3 text-sm text-black/70 hover:text-[#0a0a0a] hover:bg-black/5 transition-colors"
-                            >
-                              {service.name}
-                              {service.hasSubMenu && <ChevronDown className="w-3 h-3 -rotate-90" />}
-                            </Link>
-                            
-                            {service.hasSubMenu && service.subItems && service.subItems.length > 0 && hoveredService === service.name && (
-                              <motion.div
-                                initial={{ opacity: 0, x: 10 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                className="absolute top-0 left-full ml-1 w-48 bg-white border border-black/10 rounded-xl shadow-2xl overflow-hidden"
-                              >
-                                {service.subItems.map((media) => (
-                                  <Link
-                                    key={media.name}
-                                    href={media.href}
-                                    className="block px-4 py-3 text-sm text-black/70 hover:text-[#0a0a0a] hover:bg-black/5 transition-colors"
-                                  >
-                                    {media.name}
-                                  </Link>
-                                ))}
-                              </motion.div>
-                            )}
-                          </div>
-                        ))}
-                      </motion.div>
-                    )}
-                  </AnimatePresence>
-                )}
-              </motion.div>
+            <Link
+              href="/about"
+              aria-current={isActive("/about") ? "page" : undefined}
+              className={`rounded-full px-3.5 py-2 text-sm transition-colors duration-200 ${
+                isActive("/about")
+                  ? "text-brand-600"
+                  : "text-ink-muted hover:text-ink"
+              }`}
+            >
+              About
+            </Link>
+
+            <div ref={servicesRef} className="relative">
+              <button
+                type="button"
+                onClick={() => setServicesOpen((v) => !v)}
+                aria-expanded={servicesOpen}
+                aria-haspopup="true"
+                className={`flex items-center gap-1 rounded-full px-3.5 py-2 text-sm transition-colors duration-200 ${
+                  isActive("/services")
+                    ? "text-brand-600"
+                    : "text-ink-muted hover:text-ink"
+                }`}
+              >
+                Services
+                <ChevronDown
+                  className={`size-3.5 transition-transform duration-200 ${
+                    servicesOpen ? "rotate-180" : ""
+                  }`}
+                />
+              </button>
+
+              {servicesOpen ? (
+                <div className="absolute left-1/2 top-full z-50 mt-3 w-72 -translate-x-1/2 rounded-card border border-line bg-surface p-2 shadow-[0_24px_48px_-24px_rgba(17,17,16,0.28)]">
+                  {SERVICES.map((service) => (
+                    <Link
+                      key={service.href}
+                      href={service.href}
+                      className={`block rounded-lg px-3.5 py-2.5 text-sm transition-colors duration-150 ${
+                        isActive(service.href)
+                          ? "bg-brand-50 text-brand-700"
+                          : "text-ink-muted hover:bg-surface-sunken hover:text-ink"
+                      }`}
+                    >
+                      {service.name}
+                    </Link>
+                  ))}
+                  <Link
+                    href="/services"
+                    className="mt-1 block border-t border-line px-3.5 py-2.5 pt-3 text-sm font-medium text-brand-600 transition-colors duration-150 hover:text-brand-700"
+                  >
+                    All services →
+                  </Link>
+                </div>
+              ) : null}
+            </div>
+
+            {NAV.filter((l) => l.href !== "/about").map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                aria-current={isActive(link.href) ? "page" : undefined}
+                className={`rounded-full px-3.5 py-2 text-sm transition-colors duration-200 ${
+                  isActive(link.href)
+                    ? "text-brand-600"
+                    : "text-ink-muted hover:text-ink"
+                }`}
+              >
+                {link.name}
+              </Link>
             ))}
           </nav>
 
-          <motion.div
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            transition={{ duration: 0.5 }}
-            className="hidden md:block"
-          >
-            <Link
+          <div className="flex items-center gap-2">
+            <ButtonLink
               href="/contact"
-              className="inline-flex items-center px-6 py-2.5 rounded-full bg-[#FF6B35] text-white text-sm font-medium hover:bg-[#FF9F66] transition-colors duration-200"
+              size="sm"
+              className="hidden sm:inline-flex"
             >
               Free consultation
-            </Link>
-          </motion.div>
+            </ButtonLink>
 
-          <button
-            onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-            className="md:hidden p-2 text-[#0a0a0a]"
-          >
-            {isMobileMenuOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
-          </button>
+            <button
+              type="button"
+              onClick={() => setMobileOpen((v) => !v)}
+              aria-expanded={mobileOpen}
+              aria-controls="mobile-nav"
+              aria-label={mobileOpen ? "Close menu" : "Open menu"}
+              className="flex size-10 items-center justify-center rounded-full border border-line-strong text-ink transition-colors duration-200 hover:border-brand-500 hover:text-brand-600 lg:hidden"
+            >
+              {mobileOpen ? <X className="size-5" /> : <Menu className="size-5" />}
+            </button>
+          </div>
         </div>
-      </div>
+      </Container>
 
-      <AnimatePresence>
-        {isMobileMenuOpen && (
-          <motion.div
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: 'auto' }}
-            exit={{ opacity: 0, height: 0 }}
-            className="md:hidden bg-white border-t border-black/10"
-          >
-            <nav className="flex flex-col px-6 py-4 gap-4">
-              {navLinks.map((link) => (
+      {mobileOpen ? (
+        <div
+          id="mobile-nav"
+          className="max-h-[calc(100dvh-4.5rem)] overflow-y-auto border-t border-line bg-surface lg:hidden"
+        >
+          <Container className="py-6">
+            <nav aria-label="Mobile" className="flex flex-col">
+              {[{ name: "Home", href: "/" }, { name: "About", href: "/about" }].map(
+                (link) => (
+                  <Link
+                    key={link.href}
+                    href={link.href}
+                    className="border-b border-line py-3.5 text-lg text-ink"
+                  >
+                    {link.name}
+                  </Link>
+                )
+              )}
+
+              <details className="group border-b border-line">
+                <summary className="flex cursor-pointer list-none items-center justify-between py-3.5 text-lg text-ink">
+                  Services
+                  <ChevronDown className="size-5 text-ink-subtle transition-transform duration-200 group-open:rotate-180" />
+                </summary>
+                <div className="pb-3">
+                  {SERVICES.map((service) => (
+                    <Link
+                      key={service.href}
+                      href={service.href}
+                      className="block py-2.5 pl-4 text-base text-ink-muted"
+                    >
+                      {service.name}
+                    </Link>
+                  ))}
+                  <Link
+                    href="/services"
+                    className="block py-2.5 pl-4 text-base font-medium text-brand-600"
+                  >
+                    All services
+                  </Link>
+                </div>
+              </details>
+
+              {NAV.filter((l) => l.href !== "/about").map((link) => (
                 <Link
-                  key={link.name}
+                  key={link.href}
                   href={link.href}
-                  onClick={() => setIsMobileMenuOpen(false)}
-                  className="text-black/80 hover:text-[#0a0a0a] py-2 transition-colors"
+                  className="border-b border-line py-3.5 text-lg text-ink"
                 >
                   {link.name}
                 </Link>
               ))}
-              <Link
-                href="/contact"
-                onClick={() => setIsMobileMenuOpen(false)}
-                className="inline-flex items-center justify-center px-6 py-2.5 rounded-full bg-[#FF6B35] text-white text-sm font-medium mt-2"
-              >
-                Free consultation
-              </Link>
             </nav>
-          </motion.div>
-        )}
-      </AnimatePresence>
+
+            <ButtonLink href="/contact" className="mt-6 w-full">
+              Free consultation
+            </ButtonLink>
+          </Container>
+        </div>
+      ) : null}
     </header>
   );
 }

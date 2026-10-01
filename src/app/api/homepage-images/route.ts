@@ -30,12 +30,12 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const { section, imageUrl } = parseContentBody(
+    const { section, imageUrl, multi } = parseContentBody(
       'homepage-images',
       await readJsonBody(request)
-    ) as { section: string; imageUrl: string };
+    ) as { section: string; imageUrl: string; multi: boolean };
 
-    await saveHomepageImage(section, imageUrl);
+    await saveHomepageImage(section, imageUrl, { multi });
     return NextResponse.json({ success: true });
   } catch (error) {
     return toErrorResponse(error, 'Failed to save homepage image');

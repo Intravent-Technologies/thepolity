@@ -1,101 +1,230 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #0a0a0a;
-  --accent: #FF6B35;
-  --accent-light: #FF9F66;
-  --navy: #001F3F;
-  --gray-dark: #f5f5f5;
-  --gray-medium: #eeeeee;
-  --gray-light: #666666;
+/* ==========================================================================
+   THE POLITY — Design System
+   Direction: refined editorial.
+   Rules: one brand orange, a warm neutral ink/surface scale, hairline
+   borders, a deliberate type scale, and motion only where it earns its place.
+   ========================================================================== */
+
+@theme {
+  /* ---- Brand: orange. One hue, one scale. No second orange. ---- */
+  --color-brand-50: #fff5f0;
+  --color-brand-100: #ffe8dd;
+  --color-brand-200: #ffcdb5;
+  --color-brand-300: #ffa77f;
+  --color-brand-400: #ff9f66;
+  --color-brand-500: #ff6b35;
+  --color-brand-600: #e8521a;
+  --color-brand-700: #c2410f;
+  --color-brand-800: #9a3412;
+  --color-brand-900: #7c2d12;
+
+  /* ---- Brand: navy ---- */
+  --color-navy-500: #001f3f;
+  --color-navy-600: #052a52;
+  --color-navy-700: #0a3866;
+
+  /* ---- Ink: warm neutrals, never pure black ---- */
+  --color-ink: #111110;
+  --color-ink-muted: #57534e;
+  --color-ink-subtle: #8b857d;
+  --color-ink-inverse: #faf9f7;
+
+  /* ---- Surface ---- */
+  --color-surface: #ffffff;
+  --color-surface-sunken: #f9f8f6;
+  --color-surface-muted: #f1efeb;
+
+  /* ---- Hairlines ---- */
+  --color-line: #e5e2dc;
+  --color-line-strong: #d3cfc7;
+
+  /* ---- Type ---- */
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+  --font-display: var(--font-newsreader), ui-serif, Georgia, serif;
+
+  --text-display: clamp(2.5rem, 1.4rem + 4.2vw, 4.25rem);
+  --text-display--line-height: 1.04;
+  --text-display--letter-spacing: -0.032em;
+
+  --text-headline: clamp(2rem, 1.3rem + 2.6vw, 3rem);
+  --text-headline--line-height: 1.12;
+  --text-headline--letter-spacing: -0.022em;
+
+  --text-title: clamp(1.375rem, 1.2rem + 0.7vw, 1.75rem);
+  --text-title--line-height: 1.22;
+  --text-title--letter-spacing: -0.014em;
+
+  /* ---- Radii: restrained. Cards are 10px, pills stay pills. ---- */
+  --radius-card: 0.625rem;
+
+  /* ---- Motion ---- */
+  --ease-out-quint: cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --color-accent: var(--accent);
-  --color-accent-light: var(--accent-light);
-  --color-navy: var(--navy);
-  --color-gray-dark: var(--gray-dark);
-  --color-gray-medium: var(--gray-medium);
-  --color-gray-light: var(--gray-light);
-  --font-sans: var(--font-inter);
-  --font-mono: var(--font-inter);
-}
+/* ==========================================================================
+   Base
+   ========================================================================== */
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: var(--font-inter), system-ui, sans-serif;
-  overflow-x: hidden;
-}
-
-/* Blob animation */
-@keyframes blob {
-  0%, 100% {
-    transform: translate(0, 0) scale(1);
+@layer base {
+  * {
+    border-color: var(--color-line);
   }
-  33% {
-    transform: translate(30px, -50px) scale(1.1);
+
+  html {
+    scroll-behavior: smooth;
+    scroll-padding-top: 6rem;
+    -webkit-text-size-adjust: 100%;
   }
-  66% {
-    transform: translate(-20px, 20px) scale(0.9);
+
+  body {
+    background-color: var(--color-surface);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
+    /* clip, not hidden: hidden would break position: sticky descendants */
+    overflow-x: clip;
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  /* Display type uses the serif and tightens up. */
+  h1,
+  h2 {
+    font-family: var(--font-display);
+    font-weight: 500;
+    text-wrap: balance;
+  }
+
+  h3,
+  h4 {
+    text-wrap: balance;
+  }
+
+  p {
+    text-wrap: pretty;
+  }
+
+  /* A single, consistent focus treatment. Keyboard users always see it. */
+  :focus-visible {
+    outline: 2px solid var(--color-brand-500);
+    outline-offset: 3px;
+    border-radius: 3px;
+  }
+
+  /* Firefox */
+  ::selection {
+    background-color: var(--color-brand-500);
+    color: #ffffff;
+  }
+
+  /* Chrome/Safari/Edge */
+  ::-moz-selection {
+    background-color: var(--color-brand-500);
+    color: #ffffff;
+  }
+
+  input,
+  textarea,
+  select,
+  button {
+    font: inherit;
+    color: inherit;
+  }
+
+  /* Chrome renders a light-blue autofill wash over our surfaces. */
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover,
+  input:-webkit-autofill:focus,
+  textarea:-webkit-autofill {
+    -webkit-text-fill-color: var(--color-ink);
+    -webkit-box-shadow: 0 0 0 1000px var(--color-surface) inset;
+    caret-color: var(--color-ink);
+  }
+
+  img,
+  video,
+  svg {
+    display: block;
+    max-width: 100%;
   }
 }
 
-.animate-blob {
-  animation: blob 7s infinite;
-}
-
-.animation-delay-2000 {
-  animation-delay: 2s;
-}
-
-.animation-delay-4000 {
-  animation-delay: 4s;
-}
-
-/* Smooth scrolling */
+/* Scrollbar. Unlayered on purpose: these are not part of the base cascade
+   and should not be overridable by component utilities. */
 html {
-  scroll-behavior: smooth;
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-line-strong) transparent;
 }
 
-/* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 10px;
+  width: 11px;
+  height: 11px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: var(--color-surface-sunken);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #f97316;
-  border-radius: 5px;
+  background: var(--color-line-strong);
+  border: 3px solid var(--color-surface-sunken);
+  border-radius: 999px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #ea580c;
+  background: var(--color-ink-subtle);
 }
 
-/* Selection color */
-::selection {
-  background-color: #f97316;
-  color: white;
+@layer utilities {
+  /* Numerals line up in tables and stat rows. */
+  .tabular {
+    font-variant-numeric: tabular-nums;
+  }
+
+  /* Hides content visually but keeps it for assistive tech. */
+  .sr-only-focusable:not(:focus):not(:focus-within) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
 }
 
-/* Smooth transitions */
-* {
-  @apply transition-colors duration-200;
+/* ==========================================================================
+   Motion — opt in, and never against a user's stated preference
+   ========================================================================== */
+
+@keyframes tp-fade-rise {
+  from {
+    opacity: 0;
+    transform: translateY(0.75rem);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
 }
 
-/* Gradient text */
-.gradient-text {
-  @apply bg-gradient-to-r from-orange-400 to-orange-600 bg-clip-text text-transparent;
+.animate-fade-rise {
+  animation: tp-fade-rise 0.6s var(--ease-out-quint) both;
 }
 
-/* Glow effect */
-.glow {
-  box-shadow: 0 0 20px rgba(249, 115, 22, 0.3);
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

@@ -47,6 +47,7 @@ export async function POST(request: NextRequest) {
   const file = formData.get('file');
   const type = formData.get('type');
   const section = formData.get('section');
+  const multi = formData.get('multi') === 'true';
 
   if (!(file instanceof File) || file.size === 0) {
     return NextResponse.json({ error: 'No file provided' }, { status: 400 });
@@ -101,7 +102,7 @@ export async function POST(request: NextRequest) {
     });
 
     if (type === 'homepage' && typeof section === 'string' && section.length > 0) {
-      await saveHomepageImage(section, uploaded.url);
+      await saveHomepageImage(section, uploaded.url, { multi });
     }
 
     return NextResponse.json(uploaded, { status: 200 });

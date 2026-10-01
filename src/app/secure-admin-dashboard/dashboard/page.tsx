@@ -88,27 +88,27 @@ export default function AdminDashboard() {
 
   if (!isAuthenticated) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white">
-        <div className="h-12 w-12 animate-spin rounded-full border-4 border-[#FF6B35] border-t-transparent" />
+      <div className="flex min-h-screen items-center justify-center bg-surface">
+        <div className="h-12 w-12 animate-spin rounded-full border-4 border-[color:var(--color-brand-500)] border-t-transparent" />
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-surface">
       {/* Admin Header */}
-      <header className="bg-white border-b border-black/10 px-6 py-4">
+      <header className="bg-surface border-b border-line px-6 py-4">
         <div className="max-w-7xl mx-auto flex justify-between items-center">
           <div className="flex items-center gap-8">
             <Link href="/" className="text-xl font-bold">
-              <span className="text-[#0a0a0a]">THE</span>
-              <span className="text-[#FF6B35]"> POLITY</span>
-              <span className="text-black/50 text-sm ml-2">Admin</span>
+              <span className="text-[color:var(--color-ink)]">THE</span>
+              <span className="text-[color:var(--color-brand-500)]"> POLITY</span>
+              <span className="text-ink-subtle text-sm ml-2">Admin</span>
             </Link>
           </div>
           <button
             onClick={handleLogout}
-            className="text-black/60 hover:text-[#0a0a0a] text-sm"
+            className="text-ink-muted hover:text-[color:var(--color-ink)] text-sm"
           >
             Logout
           </button>
@@ -116,7 +116,7 @@ export default function AdminDashboard() {
       </header>
 
       <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <h1 className="text-3xl font-bold text-[#0a0a0a] mb-8">Admin Dashboard</h1>
+        <h1 className="text-3xl font-bold text-[color:var(--color-ink)] mb-8">Admin Dashboard</h1>
 
         {/* Tab Navigation */}
         <div className="flex flex-wrap gap-2 mb-8">
@@ -134,8 +134,8 @@ export default function AdminDashboard() {
               onClick={() => setTab(item.key as Tab)}
               className={`px-4 py-2 rounded-lg font-semibold transition text-sm ${
                 tab === item.key
-                  ? 'bg-[#FF6B35] text-white'
-                  : 'bg-black/5 text-black/70 border border-black/10 hover:bg-black/10'
+                  ? 'bg-[color:var(--color-brand-500)] text-white'
+                  : 'bg-surface-sunken text-ink-muted border border-line hover:bg-surface-muted'
               }`}
             >
               {item.label}
@@ -218,40 +218,40 @@ function PortfolioManager() {
   };
 
   return (
-    <div className="bg-white rounded-xl border border-black/10 p-6">
-      <h2 className="text-xl font-bold text-[#0a0a0a] mb-6">Add Portfolio Item</h2>
+    <div className="bg-surface rounded-card border border-line p-6">
+      <h2 className="text-xl font-bold text-[color:var(--color-ink)] mb-6">Add Portfolio Item</h2>
       <form onSubmit={handleAdd} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="Title" className="px-4 py-3 bg-black/5 border border-black/10 rounded-lg text-[#0a0a0a] placeholder:text-black/40" />
-          <select value={category} onChange={e => setCategory(e.target.value)} className="px-4 py-3 bg-black/5 border border-black/10 rounded-lg text-[#0a0a0a]">
-            <option className="bg-white">Project</option><option className="bg-white">Case Study</option><option className="bg-white">Campaign</option><option className="bg-white">Branding</option><option className="bg-white">Design</option>
+          <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="Title" className="px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)] placeholder:text-ink-subtle" />
+          <select value={category} onChange={e => setCategory(e.target.value)} className="px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)]">
+            <option className="bg-surface">Project</option><option className="bg-surface">Case Study</option><option className="bg-surface">Campaign</option><option className="bg-surface">Branding</option><option className="bg-surface">Design</option>
           </select>
         </div>
-        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} placeholder="Description" className="w-full px-4 py-3 bg-black/5 border border-black/10 rounded-lg text-[#0a0a0a] placeholder:text-black/40" />
+        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} placeholder="Description" className="w-full px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)] placeholder:text-ink-subtle" />
         <div>
-          <label className="inline-flex items-center gap-2 px-4 py-2 bg-black/5 border border-black/10 rounded-lg text-black/60 text-sm cursor-pointer hover:bg-black/10 hover:text-black/80 transition-colors">
+          <label className="inline-flex items-center gap-2 px-4 py-2 bg-surface-sunken border border-line rounded-lg text-ink-muted text-sm cursor-pointer hover:bg-surface-muted hover:text-ink transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
             Choose image
             <input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploading} className="hidden" />
           </label>
-          {uploading && <span className="text-black/40 ml-4">Uploading...</span>}
+          {uploading && <span className="text-ink-subtle ml-4">Uploading...</span>}
           {image && <div className="mt-2 w-20 h-20 rounded overflow-hidden"><img src={image} className="w-full h-full object-cover" /></div>}
         </div>
-        <button type="submit" disabled={saving || uploading} className="px-6 py-3 bg-[#FF6B35] text-white rounded-lg font-medium hover:bg-[#FF9F66] disabled:opacity-50">{saving ? 'Saving...' : 'Add Item'}</button>
+        <button type="submit" disabled={saving || uploading} className="px-6 py-3 bg-[color:var(--color-brand-500)] text-white rounded-lg font-medium hover:bg-[color:var(--color-brand-400)] disabled:opacity-50">{saving ? 'Saving...' : 'Add Item'}</button>
       </form>
 
-      <div className="border-t border-black/10 mt-8 pt-8">
-        <h3 className="text-lg font-bold text-[#0a0a0a] mb-4">Items ({items.length})</h3>
-        {loading ? <p className="text-black/40">Loading...</p> : items.length === 0 ? <p className="text-black/40">No items</p> : (
+      <div className="border-t border-line mt-8 pt-8">
+        <h3 className="text-lg font-bold text-[color:var(--color-ink)] mb-4">Items ({items.length})</h3>
+        {loading ? <p className="text-ink-subtle">Loading...</p> : items.length === 0 ? <p className="text-ink-subtle">No items</p> : (
           <div className="space-y-3">
             {items.map(item => (
-              <div key={item.id} className="flex items-center justify-between p-3 bg-black/5 rounded-lg">
+              <div key={item.id} className="flex items-center justify-between p-3 bg-surface-sunken rounded-lg">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-12 h-12 rounded bg-black/10 overflow-hidden flex-shrink-0"><img src={item.image} className="w-full h-full object-cover" /></div>
+                  <div className="w-12 h-12 rounded bg-surface-muted overflow-hidden flex-shrink-0"><img src={item.image} className="w-full h-full object-cover" /></div>
                   <div className="min-w-0">
-                    <div className="text-[#0a0a0a] font-medium">{item.title}</div>
-                    <div className="text-black/40 text-sm">{item.category}</div>
-                    {item.description && <div className="text-black/30 text-xs truncate max-w-md">{item.description}</div>}
+                    <div className="text-[color:var(--color-ink)] font-medium">{item.title}</div>
+                    <div className="text-ink-subtle text-sm">{item.category}</div>
+                    {item.description && <div className="text-ink-subtle text-xs truncate max-w-md">{item.description}</div>}
                   </div>
                 </div>
                 <button onClick={() => handleDelete(item.id)} className="px-3 py-1 bg-red-500/20 text-red-400 rounded hover:bg-red-500/40 text-sm flex-shrink-0 ml-3">Delete</button>
@@ -313,42 +313,42 @@ function GalleryManager() {
   };
 
   return (
-    <div className="bg-white rounded-xl border border-black/10 p-6">
-      <h2 className="text-xl font-bold text-[#0a0a0a] mb-6">Add Gallery Item</h2>
+    <div className="bg-surface rounded-card border border-line p-6">
+      <h2 className="text-xl font-bold text-[color:var(--color-ink)] mb-6">Add Gallery Item</h2>
       <form onSubmit={handleAdd} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="Title" className="px-4 py-3 bg-black/5 border border-black/10 rounded-lg text-[#0a0a0a] placeholder:text-black/40" />
-          <select value={type} onChange={e => setType(e.target.value as 'image' | 'video')} className="px-4 py-3 bg-black/5 border border-black/10 rounded-lg text-[#0a0a0a]">
+          <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="Title" className="px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)] placeholder:text-ink-subtle" />
+          <select value={type} onChange={e => setType(e.target.value as 'image' | 'video')} className="px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)]">
             <option value="image">Image</option><option value="video">Video</option>
           </select>
         </div>
         <div>
-          <label className="inline-flex items-center gap-2 px-4 py-2 bg-black/5 border border-black/10 rounded-lg text-black/60 text-sm cursor-pointer hover:bg-black/10 hover:text-black/80 transition-colors">
+          <label className="inline-flex items-center gap-2 px-4 py-2 bg-surface-sunken border border-line rounded-lg text-ink-muted text-sm cursor-pointer hover:bg-surface-muted hover:text-ink transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
             Choose {type === 'image' ? 'image' : 'video'}
             <input type="file" accept={type === 'image' ? 'image/*' : 'video/*'} onChange={e => setFile(e.target.files?.[0] || null)} disabled={uploading} className="hidden" />
           </label>
-          {uploading && <span className="text-black/40 ml-4">Uploading...</span>}
+          {uploading && <span className="text-ink-subtle ml-4">Uploading...</span>}
         </div>
-        <button type="submit" disabled={uploading} className="px-6 py-3 bg-[#FF6B35] text-white rounded-lg font-medium hover:bg-[#FF9F66] disabled:opacity-50">{uploading ? 'Uploading...' : 'Add Item'}</button>
+        <button type="submit" disabled={uploading} className="px-6 py-3 bg-[color:var(--color-brand-500)] text-white rounded-lg font-medium hover:bg-[color:var(--color-brand-400)] disabled:opacity-50">{uploading ? 'Uploading...' : 'Add Item'}</button>
       </form>
 
-      <div className="border-t border-black/10 mt-8 pt-8">
-        <h3 className="text-lg font-bold text-[#0a0a0a] mb-4">Items ({items.length})</h3>
-        {loading ? <p className="text-black/40">Loading...</p> : items.length === 0 ? <p className="text-black/40">No items</p> : (
+      <div className="border-t border-line mt-8 pt-8">
+        <h3 className="text-lg font-bold text-[color:var(--color-ink)] mb-4">Items ({items.length})</h3>
+        {loading ? <p className="text-ink-subtle">Loading...</p> : items.length === 0 ? <p className="text-ink-subtle">No items</p> : (
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {items.map(item => (
-              <div key={item.id} className="relative rounded-lg overflow-hidden bg-black/5">
+              <div key={item.id} className="relative rounded-lg overflow-hidden bg-surface-sunken">
                 {item.type === 'image' ? (
                   <img src={item.url} alt={item.title} className="w-full h-32 object-cover" />
                 ) : (
                   <video src={item.url} controls className="w-full h-32 object-cover" />
                 )}
                 <div className="p-2">
-                  <p className="text-[#0a0a0a] text-xs font-medium truncate">{item.title}</p>
-                  <p className="text-black/40 text-xs capitalize">{item.type}</p>
+                  <p className="text-[color:var(--color-ink)] text-xs font-medium truncate">{item.title}</p>
+                  <p className="text-ink-subtle text-xs capitalize">{item.type}</p>
                 </div>
-                <button onClick={() => handleDelete(item.id)} className="absolute top-2 right-2 px-2 py-1 bg-red-500 text-[#0a0a0a] text-xs rounded hover:bg-red-600">Delete</button>
+                <button onClick={() => handleDelete(item.id)} className="absolute top-2 right-2 px-2 py-1 bg-red-500 text-[color:var(--color-ink)] text-xs rounded hover:bg-red-600">Delete</button>
               </div>
             ))}
           </div>
@@ -422,41 +422,41 @@ function BlogManager() {
   const categories = ['Strategy', 'Technology', 'Branding', 'Analytics', 'Management', 'Media'];
 
   return (
-    <div className="bg-white rounded-xl border border-black/10 p-6">
-      <h2 className="text-xl font-bold text-[#0a0a0a] mb-6">Add Blog Post</h2>
+    <div className="bg-surface rounded-card border border-line p-6">
+      <h2 className="text-xl font-bold text-[color:var(--color-ink)] mb-6">Add Blog Post</h2>
       <form onSubmit={handleAdd} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="Title" className="px-4 py-3 bg-black/5 border border-black/10 rounded-lg text-[#0a0a0a] placeholder:text-black/40" />
-          <select value={category} onChange={e => setCategory(e.target.value)} className="px-4 py-3 bg-black/5 border border-black/10 rounded-lg text-[#0a0a0a]">
-            {categories.map(c => <option key={c} value={c} className="bg-white">{c}</option>)}
+          <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="Title" className="px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)] placeholder:text-ink-subtle" />
+          <select value={category} onChange={e => setCategory(e.target.value)} className="px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)]">
+            {categories.map(c => <option key={c} value={c} className="bg-surface">{c}</option>)}
           </select>
-          <input type="date" value={date} onChange={e => setDate(e.target.value)} className="px-4 py-3 bg-black/5 border border-black/10 rounded-lg text-[#0a0a0a]" />
+          <input type="date" value={date} onChange={e => setDate(e.target.value)} className="px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)]" />
         </div>
-        <textarea value={excerpt} onChange={e => setExcerpt(e.target.value)} rows={3} placeholder="Excerpt" className="w-full px-4 py-3 bg-black/5 border border-black/10 rounded-lg text-[#0a0a0a] placeholder:text-black/40" />
+        <textarea value={excerpt} onChange={e => setExcerpt(e.target.value)} rows={3} placeholder="Excerpt" className="w-full px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)] placeholder:text-ink-subtle" />
         <div>
-          <label className="inline-flex items-center gap-2 px-4 py-2 bg-black/5 border border-black/10 rounded-lg text-black/60 text-sm cursor-pointer hover:bg-black/10 hover:text-black/80 transition-colors">
+          <label className="inline-flex items-center gap-2 px-4 py-2 bg-surface-sunken border border-line rounded-lg text-ink-muted text-sm cursor-pointer hover:bg-surface-muted hover:text-ink transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
             Choose image
             <input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploading} className="hidden" />
           </label>
-          {uploading && <span className="text-black/40 ml-4">Uploading...</span>}
+          {uploading && <span className="text-ink-subtle ml-4">Uploading...</span>}
           {image && <div className="mt-2 w-20 h-20 rounded overflow-hidden"><img src={image} className="w-full h-full object-cover" /></div>}
         </div>
-        <button type="submit" disabled={saving || uploading} className="px-6 py-3 bg-[#FF6B35] text-white rounded-lg font-medium hover:bg-[#FF9F66] disabled:opacity-50">{saving ? 'Saving...' : 'Add Post'}</button>
+        <button type="submit" disabled={saving || uploading} className="px-6 py-3 bg-[color:var(--color-brand-500)] text-white rounded-lg font-medium hover:bg-[color:var(--color-brand-400)] disabled:opacity-50">{saving ? 'Saving...' : 'Add Post'}</button>
       </form>
 
-      <div className="border-t border-black/10 mt-8 pt-8">
-        <h3 className="text-lg font-bold text-[#0a0a0a] mb-4">Posts ({posts.length})</h3>
-        {loading ? <p className="text-black/40">Loading...</p> : posts.length === 0 ? <p className="text-black/40">No posts</p> : (
+      <div className="border-t border-line mt-8 pt-8">
+        <h3 className="text-lg font-bold text-[color:var(--color-ink)] mb-4">Posts ({posts.length})</h3>
+        {loading ? <p className="text-ink-subtle">Loading...</p> : posts.length === 0 ? <p className="text-ink-subtle">No posts</p> : (
           <div className="space-y-3">
             {posts.map(post => (
-              <div key={post.id} className="flex items-center justify-between p-3 bg-black/5 rounded-lg">
+              <div key={post.id} className="flex items-center justify-between p-3 bg-surface-sunken rounded-lg">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-12 h-12 rounded bg-black/10 overflow-hidden flex-shrink-0">{post.image && <img src={post.image} className="w-full h-full object-cover" />}</div>
+                  <div className="w-12 h-12 rounded bg-surface-muted overflow-hidden flex-shrink-0">{post.image && <img src={post.image} className="w-full h-full object-cover" />}</div>
                   <div className="min-w-0">
-                    <div className="text-[#0a0a0a] font-medium">{post.title}</div>
-                    <div className="text-black/40 text-sm">{post.category} | {post.date}</div>
-                    {post.excerpt && <div className="text-black/30 text-xs truncate max-w-md">{post.excerpt}</div>}
+                    <div className="text-[color:var(--color-ink)] font-medium">{post.title}</div>
+                    <div className="text-ink-subtle text-sm">{post.category} | {post.date}</div>
+                    {post.excerpt && <div className="text-ink-subtle text-xs truncate max-w-md">{post.excerpt}</div>}
                   </div>
                 </div>
                 <button onClick={() => handleDelete(post.id)} className="px-3 py-1 bg-red-500/20 text-red-400 rounded hover:bg-red-500/40 text-sm flex-shrink-0 ml-3">Delete</button>
@@ -533,41 +533,41 @@ function WorkManager() {
   const categories = ['Web Development', 'Branding', 'IT Consultancy', 'Media', 'Project Management', 'Strategy'];
 
   return (
-    <div className="bg-white rounded-xl border border-black/10 p-6">
-      <h2 className="text-xl font-bold text-[#0a0a0a] mb-6">Add Work Project</h2>
+    <div className="bg-surface rounded-card border border-line p-6">
+      <h2 className="text-xl font-bold text-[color:var(--color-ink)] mb-6">Add Work Project</h2>
       <form onSubmit={handleAdd} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="Title" className="px-4 py-3 bg-black/5 border border-black/10 rounded-lg text-[#0a0a0a] placeholder:text-black/40" />
-          <select value={category} onChange={e => setCategory(e.target.value)} className="px-4 py-3 bg-black/5 border border-black/10 rounded-lg text-[#0a0a0a]">
-            {categories.map(c => <option key={c} value={c} className="bg-white">{c}</option>)}
+          <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="Title" className="px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)] placeholder:text-ink-subtle" />
+          <select value={category} onChange={e => setCategory(e.target.value)} className="px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)]">
+            {categories.map(c => <option key={c} value={c} className="bg-surface">{c}</option>)}
           </select>
-          <input type="text" value={client} onChange={e => setClient(e.target.value)} placeholder="Client name" className="px-4 py-3 bg-black/5 border border-black/10 rounded-lg text-[#0a0a0a] placeholder:text-black/40" />
+          <input type="text" value={client} onChange={e => setClient(e.target.value)} placeholder="Client name" className="px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)] placeholder:text-ink-subtle" />
         </div>
-        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} placeholder="Description" className="w-full px-4 py-3 bg-black/5 border border-black/10 rounded-lg text-[#0a0a0a] placeholder:text-black/40" />
+        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} placeholder="Description" className="w-full px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)] placeholder:text-ink-subtle" />
         <div>
-          <label className="inline-flex items-center gap-2 px-4 py-2 bg-black/5 border border-black/10 rounded-lg text-black/60 text-sm cursor-pointer hover:bg-black/10 hover:text-black/80 transition-colors">
+          <label className="inline-flex items-center gap-2 px-4 py-2 bg-surface-sunken border border-line rounded-lg text-ink-muted text-sm cursor-pointer hover:bg-surface-muted hover:text-ink transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
             Choose image
             <input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploading} className="hidden" />
           </label>
-          {uploading && <span className="text-black/40 ml-4">Uploading...</span>}
+          {uploading && <span className="text-ink-subtle ml-4">Uploading...</span>}
           {image && <div className="mt-2 w-20 h-20 rounded overflow-hidden"><img src={image} className="w-full h-full object-cover" /></div>}
         </div>
-        <button type="submit" disabled={saving || uploading} className="px-6 py-3 bg-[#FF6B35] text-white rounded-lg font-medium hover:bg-[#FF9F66] disabled:opacity-50">{saving ? 'Saving...' : 'Add Project'}</button>
+        <button type="submit" disabled={saving || uploading} className="px-6 py-3 bg-[color:var(--color-brand-500)] text-white rounded-lg font-medium hover:bg-[color:var(--color-brand-400)] disabled:opacity-50">{saving ? 'Saving...' : 'Add Project'}</button>
       </form>
 
-      <div className="border-t border-black/10 mt-8 pt-8">
-        <h3 className="text-lg font-bold text-[#0a0a0a] mb-4">Projects ({projects.length})</h3>
-        {loading ? <p className="text-black/40">Loading...</p> : projects.length === 0 ? <p className="text-black/40">No projects</p> : (
+      <div className="border-t border-line mt-8 pt-8">
+        <h3 className="text-lg font-bold text-[color:var(--color-ink)] mb-4">Projects ({projects.length})</h3>
+        {loading ? <p className="text-ink-subtle">Loading...</p> : projects.length === 0 ? <p className="text-ink-subtle">No projects</p> : (
           <div className="space-y-3">
             {projects.map(project => (
-              <div key={project.id} className="flex items-center justify-between p-3 bg-black/5 rounded-lg">
+              <div key={project.id} className="flex items-center justify-between p-3 bg-surface-sunken rounded-lg">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-12 h-12 rounded bg-black/10 overflow-hidden flex-shrink-0">{project.image && <img src={project.image} className="w-full h-full object-cover" />}</div>
+                  <div className="w-12 h-12 rounded bg-surface-muted overflow-hidden flex-shrink-0">{project.image && <img src={project.image} className="w-full h-full object-cover" />}</div>
                   <div className="min-w-0">
-                    <div className="text-[#0a0a0a] font-medium">{project.title}</div>
-                    <div className="text-black/40 text-sm">{project.category} | {project.client}</div>
-                    {project.description && <div className="text-black/30 text-xs truncate max-w-md">{project.description}</div>}
+                    <div className="text-[color:var(--color-ink)] font-medium">{project.title}</div>
+                    <div className="text-ink-subtle text-sm">{project.category} | {project.client}</div>
+                    {project.description && <div className="text-ink-subtle text-xs truncate max-w-md">{project.description}</div>}
                   </div>
                 </div>
                 <button onClick={() => handleDelete(project.id)} className="px-3 py-1 bg-red-500/20 text-red-400 rounded hover:bg-red-500/40 text-sm flex-shrink-0 ml-3">Delete</button>
@@ -643,43 +643,43 @@ function TeamManager() {
   const roles = ['CEO & Founder', 'Head of Technology', 'Creative Director', 'Head of Operations', 'Strategy Lead', 'Head of Media'];
 
   return (
-    <div className="bg-white rounded-xl border border-black/10 p-6">
-      <h2 className="text-xl font-bold text-[#0a0a0a] mb-6">Add Team Member</h2>
+    <div className="bg-surface rounded-card border border-line p-6">
+      <h2 className="text-xl font-bold text-[color:var(--color-ink)] mb-6">Add Team Member</h2>
       <form onSubmit={handleAdd} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Name" className="px-4 py-3 bg-black/5 border border-black/10 rounded-lg text-[#0a0a0a] placeholder:text-black/40" />
-          <select value={role} onChange={e => setRole(e.target.value)} className="px-4 py-3 bg-black/5 border border-black/10 rounded-lg text-[#0a0a0a]">
-            <option value="" className="bg-white">Select role</option>
-            {roles.map(r => <option key={r} value={r} className="bg-white">{r}</option>)}
+          <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Name" className="px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)] placeholder:text-ink-subtle" />
+          <select value={role} onChange={e => setRole(e.target.value)} className="px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)]">
+            <option value="" className="bg-surface">Select role</option>
+            {roles.map(r => <option key={r} value={r} className="bg-surface">{r}</option>)}
           </select>
         </div>
-        <textarea value={bio} onChange={e => setBio(e.target.value)} rows={3} placeholder="Bio" className="w-full px-4 py-3 bg-black/5 border border-black/10 rounded-lg text-[#0a0a0a] placeholder:text-black/40" />
+        <textarea value={bio} onChange={e => setBio(e.target.value)} rows={3} placeholder="Bio" className="w-full px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)] placeholder:text-ink-subtle" />
         <div>
-          <label className="inline-flex items-center gap-2 px-4 py-2 bg-black/5 border border-black/10 rounded-lg text-black/60 text-sm cursor-pointer hover:bg-black/10 hover:text-black/80 transition-colors">
+          <label className="inline-flex items-center gap-2 px-4 py-2 bg-surface-sunken border border-line rounded-lg text-ink-muted text-sm cursor-pointer hover:bg-surface-muted hover:text-ink transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
             Choose image
             <input type="file" accept="image/*" onChange={handleImageUpload} disabled={uploading} className="hidden" />
           </label>
-          {uploading && <span className="text-black/40 ml-4">Uploading...</span>}
+          {uploading && <span className="text-ink-subtle ml-4">Uploading...</span>}
           {image && <div className="mt-2 w-20 h-20 rounded-full overflow-hidden"><img src={image} className="w-full h-full object-cover" /></div>}
         </div>
-        <button type="submit" disabled={saving || uploading} className="px-6 py-3 bg-[#FF6B35] text-white rounded-lg font-medium hover:bg-[#FF9F66] disabled:opacity-50">{saving ? 'Saving...' : 'Add Member'}</button>
+        <button type="submit" disabled={saving || uploading} className="px-6 py-3 bg-[color:var(--color-brand-500)] text-white rounded-lg font-medium hover:bg-[color:var(--color-brand-400)] disabled:opacity-50">{saving ? 'Saving...' : 'Add Member'}</button>
       </form>
 
-      <div className="border-t border-black/10 mt-8 pt-8">
-        <h3 className="text-lg font-bold text-[#0a0a0a] mb-4">Members ({members.length})</h3>
-        {loading ? <p className="text-black/40">Loading...</p> : members.length === 0 ? <p className="text-black/40">No members</p> : (
+      <div className="border-t border-line mt-8 pt-8">
+        <h3 className="text-lg font-bold text-[color:var(--color-ink)] mb-4">Members ({members.length})</h3>
+        {loading ? <p className="text-ink-subtle">Loading...</p> : members.length === 0 ? <p className="text-ink-subtle">No members</p> : (
           <div className="space-y-3">
             {members.map(member => (
-              <div key={member.id} className="flex items-center justify-between p-3 bg-black/5 rounded-lg">
+              <div key={member.id} className="flex items-center justify-between p-3 bg-surface-sunken rounded-lg">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-full bg-black/10 flex-shrink-0 overflow-hidden">
-                    {member.image ? <img src={member.image} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-[#0a0a0a] font-bold">{member.name[0]}</div>}
+                  <div className="w-10 h-10 rounded-full bg-surface-muted flex-shrink-0 overflow-hidden">
+                    {member.image ? <img src={member.image} className="w-full h-full object-cover" /> : <div className="w-full h-full flex items-center justify-center text-[color:var(--color-ink)] font-bold">{member.name[0]}</div>}
                   </div>
                   <div className="min-w-0">
-                    <div className="text-[#0a0a0a] font-medium">{member.name}</div>
-                    <div className="text-black/40 text-sm">{member.role}</div>
-                    {member.bio && <div className="text-black/30 text-xs truncate max-w-md">{member.bio}</div>}
+                    <div className="text-[color:var(--color-ink)] font-medium">{member.name}</div>
+                    <div className="text-ink-subtle text-sm">{member.role}</div>
+                    {member.bio && <div className="text-ink-subtle text-xs truncate max-w-md">{member.bio}</div>}
                   </div>
                 </div>
                 <button onClick={() => handleDelete(member.id)} className="px-3 py-1 bg-red-500/20 text-red-400 rounded hover:bg-red-500/40 text-sm flex-shrink-0 ml-3">Delete</button>
@@ -736,40 +736,40 @@ function ReviewsManager() {
   };
 
   return (
-    <div className="bg-white rounded-xl border border-black/10 p-6">
-      <h2 className="text-xl font-bold text-[#0a0a0a] mb-6">Add Review</h2>
+    <div className="bg-surface rounded-card border border-line p-6">
+      <h2 className="text-xl font-bold text-[color:var(--color-ink)] mb-6">Add Review</h2>
       <form onSubmit={handleAdd} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Name" className="px-4 py-3 bg-black/5 border border-black/10 rounded-lg text-[#0a0a0a] placeholder:text-black/40" />
-          <input type="text" value={role} onChange={e => setRole(e.target.value)} placeholder="Role (e.g. CEO, Company)" className="px-4 py-3 bg-black/5 border border-black/10 rounded-lg text-[#0a0a0a] placeholder:text-black/40" />
+          <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Name" className="px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)] placeholder:text-ink-subtle" />
+          <input type="text" value={role} onChange={e => setRole(e.target.value)} placeholder="Role (e.g. CEO, Company)" className="px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)] placeholder:text-ink-subtle" />
         </div>
         <div>
-          <label className="block text-black/60 text-sm mb-2">Rating</label>
-          <select value={rating} onChange={e => setRating(parseInt(e.target.value))} className="px-4 py-3 bg-black/5 border border-black/10 rounded-lg text-[#0a0a0a]">
-            {[1,2,3,4,5].map(r => <option key={r} value={r} className="bg-white">{r} Star{r > 1 ? 's' : ''}</option>)}
+          <label className="block text-ink-muted text-sm mb-2">Rating</label>
+          <select value={rating} onChange={e => setRating(parseInt(e.target.value))} className="px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)]">
+            {[1,2,3,4,5].map(r => <option key={r} value={r} className="bg-surface">{r} Star{r > 1 ? 's' : ''}</option>)}
           </select>
         </div>
-        <textarea value={content} onChange={e => setContent(e.target.value)} rows={4} placeholder="Review content" className="w-full px-4 py-3 bg-black/5 border border-black/10 rounded-lg text-[#0a0a0a] placeholder:text-black/40" />
-        <button type="submit" disabled={saving} className="px-6 py-3 bg-[#FF6B35] text-white rounded-lg font-medium hover:bg-[#FF9F66] disabled:opacity-50">{saving ? 'Saving...' : 'Add Review'}</button>
+        <textarea value={content} onChange={e => setContent(e.target.value)} rows={4} placeholder="Review content" className="w-full px-4 py-3 bg-surface-sunken border border-line rounded-lg text-[color:var(--color-ink)] placeholder:text-ink-subtle" />
+        <button type="submit" disabled={saving} className="px-6 py-3 bg-[color:var(--color-brand-500)] text-white rounded-lg font-medium hover:bg-[color:var(--color-brand-400)] disabled:opacity-50">{saving ? 'Saving...' : 'Add Review'}</button>
       </form>
 
-      <div className="border-t border-black/10 mt-8 pt-8">
-        <h3 className="text-lg font-bold text-[#0a0a0a] mb-4">Reviews ({reviews.length})</h3>
-        {loading ? <p className="text-black/40">Loading...</p> : reviews.length === 0 ? <p className="text-black/40">No reviews</p> : (
+      <div className="border-t border-line mt-8 pt-8">
+        <h3 className="text-lg font-bold text-[color:var(--color-ink)] mb-4">Reviews ({reviews.length})</h3>
+        {loading ? <p className="text-ink-subtle">Loading...</p> : reviews.length === 0 ? <p className="text-ink-subtle">No reviews</p> : (
           <div className="space-y-3">
             {reviews.map(review => (
-              <div key={review.id} className="p-4 bg-black/5 rounded-lg">
+              <div key={review.id} className="p-4 bg-surface-sunken rounded-lg">
                 <div className="flex items-center justify-between mb-2">
                   <div className="min-w-0">
-                    <div className="text-[#0a0a0a] font-medium">{review.name}</div>
-                    <div className="text-black/40 text-sm">{review.role}</div>
+                    <div className="text-[color:var(--color-ink)] font-medium">{review.name}</div>
+                    <div className="text-ink-subtle text-sm">{review.role}</div>
                   </div>
                   <div className="flex items-center gap-3 flex-shrink-0">
                     <div className="flex">{[...Array(review.rating)].map((_,i) => <span key={i} className="text-yellow-400">★</span>)}</div>
                     <button onClick={() => handleDelete(review.id)} className="px-3 py-1 bg-red-500/20 text-red-400 rounded hover:bg-red-500/40 text-sm">Delete</button>
                   </div>
                 </div>
-                <p className="text-black/60 text-sm">&ldquo;{review.content}&rdquo;</p>
+                <p className="text-ink-muted text-sm">&ldquo;{review.content}&rdquo;</p>
               </div>
             ))}
           </div>
@@ -787,7 +787,7 @@ interface HomepageImage {
 
 const HOMEPAGE_SECTION_GROUPS = [
   {
-    title: '🎯 Hero Section (Right Side Cards)',
+    title: 'Hero Section (Right Side Cards)',
     sections: [
       { key: 'hero-visual-1', label: 'Card 1: Media' },
       { key: 'hero-visual-2', label: 'Card 2: IT Solutions' },
@@ -796,7 +796,7 @@ const HOMEPAGE_SECTION_GROUPS = [
     ]
   },
   {
-    title: '💻 Our Expert Services (Homepage)',
+    title: 'Our Expert Services (Homepage)',
     sections: [
       { key: 'service-it', label: 'IT Consultancy' },
       { key: 'service-media', label: 'Media' },
@@ -804,7 +804,7 @@ const HOMEPAGE_SECTION_GROUPS = [
     ]
   },
   {
-    title: '📝 Creative Edge (Blog Posts)',
+    title: 'Creative Edge (Blog Posts)',
     sections: [
       { key: 'blog-1', label: 'Blog Post 1' },
       { key: 'blog-2', label: 'Blog Post 2' },
@@ -812,49 +812,49 @@ const HOMEPAGE_SECTION_GROUPS = [
     ]
   },
   {
-    title: '🎉 Events - Slideshow Images',
+    title: 'Events — Slideshow Images',
     sections: [
       { key: 'events-slideshow', label: 'All Events Images (for slideshow)' },
     ]
   },
   {
-    title: '📷 Photography - Slideshow Images',
+    title: 'Photography — Slideshow Images',
     sections: [
       { key: 'photography_slideshow', label: 'All Photography Images (for slideshow)' },
     ]
   },
   {
-    title: '👤 Portraits - Slideshow Images',
+    title: 'Portraits — Slideshow Images',
     sections: [
       { key: 'portraits_slideshow', label: 'All Portraits Images (for slideshow)' },
     ]
   },
   {
-    title: '🏔️ Photo Tourism - Slideshow Images',
+    title: 'Photo Tourism — Slideshow Images',
     sections: [
       { key: 'photo-tourism_slideshow', label: 'All Photo Tourism Images (for slideshow)' },
     ]
   },
   {
-    title: '🎨 Visuals - Slideshow Images',
+    title: 'Visuals — Slideshow Images',
     sections: [
       { key: 'visuals_slideshow', label: 'All Visuals Images (for slideshow)' },
     ]
   },
   {
-    title: '📧 Newsletter Section',
+    title: 'Newsletter Section',
     sections: [
       { key: 'newsletter-bg', label: 'Newsletter Background' },
     ]
   },
   {
-    title: '👔 About Us Page',
+    title: 'About Us Page',
     sections: [
       { key: 'about-ceo', label: 'CEO Photo' },
     ]
   },
   {
-    title: '💼 Portfolio Page',
+    title: 'Portfolio Page',
     sections: [
       { key: 'portfolio-1', label: 'Work 1' },
       { key: 'portfolio-2', label: 'Work 2' },
@@ -865,7 +865,7 @@ const HOMEPAGE_SECTION_GROUPS = [
     ]
   },
   {
-    title: '🖼️ Gallery Page',
+    title: 'Gallery Page',
     sections: [
       { key: 'gallery-1', label: 'Image 1' },
       { key: 'gallery-2', label: 'Image 2' },
@@ -910,6 +910,7 @@ function HomepageManager() {
       formData.append('file', file);
       formData.append('type', 'homepage');
       formData.append('section', selectedSection);
+      formData.append('multi', String(selectedSection.includes('_slideshow')));
       const res = await fetch('/api/upload', { method: 'POST', body: formData });
       const data = await res.json();
       if (res.ok && data.url) { setMessage('Image uploaded successfully!'); setFile(null); loadImages(); } 
@@ -924,9 +925,9 @@ function HomepageManager() {
   return (
     <div className="space-y-8">
       {HOMEPAGE_SECTION_GROUPS.map((group) => (
-        <div key={group.title} className="bg-white rounded-2xl p-6 border border-black/10">
-          <h2 className="text-xl font-bold text-[#0a0a0a] mb-2">{group.title}</h2>
-          <p className="text-black/60 text-sm mb-6">{isSlideshowSection(group.sections[0]?.key || '') ? 'Upload multiple images for the slideshow' : 'Click a section below to upload an image'}</p>
+        <div key={group.title} className="bg-surface rounded-card p-6 border border-line">
+          <h2 className="text-xl font-bold text-[color:var(--color-ink)] mb-2">{group.title}</h2>
+          <p className="text-ink-muted text-sm mb-6">{isSlideshowSection(group.sections[0]?.key || '') ? 'Upload multiple images for the slideshow' : 'Click a section below to upload an image'}</p>
           
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
             {group.sections.map((section) => {
@@ -934,31 +935,31 @@ function HomepageManager() {
               const isSlideshow = isSlideshowSection(section.key);
               
               return (
-                <div key={section.key} className="bg-white rounded-xl p-4 border border-black/10">
-                  <h3 className="text-sm font-medium text-[#0a0a0a] mb-3">{section.label}</h3>
+                <div key={section.key} className="bg-surface rounded-card p-4 border border-line">
+                  <h3 className="text-sm font-medium text-[color:var(--color-ink)] mb-3">{section.label}</h3>
                   
                   {sectionImages.length > 0 ? (
                     <div className="space-y-2 mb-3">
                       {sectionImages.map((img, idx) => (
                         <div key={img.id} className="relative">
                           <img src={img.imageUrl} alt={`${section.label} ${idx + 1}`} className="w-full h-24 object-cover rounded-lg" />
-                          <button onClick={async () => { await fetch(`/api/homepage-images?id=${img.id}`, { method: 'DELETE' }); loadImages(); }} className="absolute top-1 right-1 bg-red-500 text-[#0a0a0a] text-xs px-2 py-1 rounded">Delete</button>
+                          <button onClick={async () => { await fetch(`/api/homepage-images?id=${img.id}`, { method: 'DELETE' }); loadImages(); }} className="absolute top-1 right-1 bg-red-500 text-[color:var(--color-ink)] text-xs px-2 py-1 rounded">Delete</button>
                         </div>
                       ))}
                     </div>
-                  ) : ( <div className="w-full h-24 bg-black/5 rounded-lg mb-3 flex items-center justify-center text-black/30 text-sm">No image</div> )}
+                  ) : ( <div className="w-full h-24 bg-surface-sunken rounded-lg mb-3 flex items-center justify-center text-ink-subtle text-sm">No image</div> )}
                   
                   {selectedSection === section.key && ( 
                     <div className="mt-2">
-                      <label className="inline-flex items-center gap-2 px-3 py-1.5 bg-black/5 border border-black/10 rounded-lg text-black/60 text-xs cursor-pointer hover:bg-black/10 hover:text-black/80 transition-colors mb-2">
+                      <label className="inline-flex items-center gap-2 px-3 py-1.5 bg-surface-sunken border border-line rounded-lg text-ink-muted text-xs cursor-pointer hover:bg-surface-muted hover:text-ink transition-colors mb-2">
                         <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" /></svg>
                         Choose image
                         <input type="file" accept="image/*" onChange={(e) => setFile(e.target.files?.[0] || null)} className="hidden" />
                       </label>
-                      {file && (<button onClick={handleUpload} disabled={uploading} className="w-full bg-[#FF6B35] text-white text-sm py-2 rounded-lg font-medium disabled:opacity-50">{uploading ? 'Uploading...' : 'Upload'}</button>)}
+                      {file && (<button onClick={handleUpload} disabled={uploading} className="w-full bg-[color:var(--color-brand-500)] text-white text-sm py-2 rounded-lg font-medium disabled:opacity-50">{uploading ? 'Uploading...' : 'Upload'}</button>)}
                     </div> 
                   )}
-                  <button onClick={() => setSelectedSection(section.key)} className="text-xs text-[#FF6B35] hover:underline">{selectedSection === section.key ? '✓ Selected' : 'Select to upload'}</button>
+                  <button onClick={() => setSelectedSection(section.key)} className="text-xs text-[color:var(--color-brand-500)] hover:underline">{selectedSection === section.key ? '✓ Selected' : 'Select to upload'}</button>
                   {isSlideshow && sectionImages.length > 0 && <span className="text-xs text-green-400 ml-2">({sectionImages.length} images)</span>}
                 </div>
               );

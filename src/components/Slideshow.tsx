@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, ChevronRight, X } from 'lucide-react';
-import Header from '@/components/Header';
 
 interface HomepageImage {
   id: string;
@@ -49,11 +48,10 @@ export default function Slideshow({ sectionKey, title }: SlideshowProps) {
   if (images.length === 0) {
     return (
       <>
-        <Header />
-        <main className="min-h-screen bg-white pt-20 flex items-center justify-center">
+        <main className="min-h-screen bg-surface pt-20 flex items-center justify-center">
           <div className="text-center">
-            <h1 className="text-4xl font-bold text-[#0a0a0a] mb-4">{title}</h1>
-            <p className="text-black/60">No images uploaded yet. Add images from the admin panel.</p>
+            <h1 className="text-4xl font-bold text-[color:var(--color-ink)] mb-4">{title}</h1>
+            <p className="text-ink-muted">No images uploaded yet. Add images from the admin panel.</p>
           </div>
         </main>
       </>
@@ -62,10 +60,9 @@ export default function Slideshow({ sectionKey, title }: SlideshowProps) {
 
   return (
     <>
-      <Header />
-      <main className="min-h-screen bg-white pt-20">
+      <main className="min-h-screen bg-surface pt-20">
         <div className="max-w-7xl mx-auto px-6 py-12">
-          <h1 className="text-4xl font-bold text-[#0a0a0a] mb-8 text-center">{title}</h1>
+          <h1 className="text-4xl font-bold text-[color:var(--color-ink)] mb-8 text-center">{title}</h1>
           
           <div className="relative">
             <motion.div
@@ -73,7 +70,7 @@ export default function Slideshow({ sectionKey, title }: SlideshowProps) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="aspect-[16/9] rounded-2xl overflow-hidden cursor-pointer"
+              className="aspect-[16/9] rounded-card overflow-hidden cursor-pointer"
               onClick={() => setIsOpen(true)}
             >
               <img 
@@ -87,13 +84,13 @@ export default function Slideshow({ sectionKey, title }: SlideshowProps) {
               <>
                 <button 
                   onClick={prevSlide}
-                  className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white transition-colors"
+                  className="absolute left-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-ink/50 hover:bg-ink/70 rounded-full flex items-center justify-center text-white transition-colors"
                 >
                   <ChevronLeft className="w-6 h-6" />
                 </button>
                 <button 
                   onClick={nextSlide}
-                  className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-black/50 hover:bg-black/70 rounded-full flex items-center justify-center text-white transition-colors"
+                  className="absolute right-4 top-1/2 -translate-y-1/2 w-12 h-12 bg-ink/50 hover:bg-ink/70 rounded-full flex items-center justify-center text-white transition-colors"
                 >
                   <ChevronRight className="w-6 h-6" />
                 </button>
@@ -105,17 +102,17 @@ export default function Slideshow({ sectionKey, title }: SlideshowProps) {
                 <button
                   key={idx}
                   onClick={() => setCurrentIndex(idx)}
-                  className={`w-2 h-2 rounded-full transition-colors ${idx === currentIndex ? 'bg-[#FF6B35]' : 'bg-white/50'}`}
+                  className={`w-2 h-2 rounded-full transition-colors ${idx === currentIndex ? 'bg-[color:var(--color-brand-500)]' : 'bg-white/50'}`}
                 />
               ))}
             </div>
 
-            <div className="absolute top-4 right-4 bg-black/50 px-4 py-2 rounded-full text-white text-sm">
+            <div className="absolute top-4 right-4 bg-ink/50 px-4 py-2 rounded-full text-white text-sm">
               {currentIndex + 1} / {images.length}
             </div>
           </div>
 
-          <p className="text-center text-black/60 mt-6">Click image to view fullscreen • Use arrow keys to navigate</p>
+          <p className="text-center text-ink-muted mt-6">Click image to view fullscreen • Use arrow keys to navigate</p>
         </div>
 
         <AnimatePresence>
@@ -124,7 +121,7 @@ export default function Slideshow({ sectionKey, title }: SlideshowProps) {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="fixed inset-0 z-50 bg-black flex items-center justify-center"
+              className="fixed inset-0 z-50 bg-ink flex items-center justify-center"
               onClick={() => setIsOpen(false)}
             >
               <button 
