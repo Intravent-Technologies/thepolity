@@ -2,7 +2,7 @@
 
 import { motion } from 'framer-motion';
 import Link from 'next/link';
-import { ArrowRight, CheckCircle, Cpu, Shield, Cloud, Code } from 'lucide-react';
+import { ArrowRight, Cpu, Shield, Cloud, Code } from 'lucide-react';
 
 const features = [
   { icon: Cpu, title: 'Systems Planning', description: 'We help you choose the right tools and technologies for your business needs.' },

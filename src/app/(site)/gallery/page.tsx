@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { ArrowRight } from 'lucide-react';
@@ -80,9 +81,9 @@ export default function Gallery() {
                     transition={{ delay: index * 0.08 }}
                     className="overflow-hidden rounded-card border border-line bg-surface"
                   >
-                    <div className="h-72 bg-ink">
+                    <div className="relative h-72 bg-ink">
                       {item.type === 'image' ? (
-                        <img src={item.url} alt={item.title} className="h-full w-full object-cover" />
+                        <Image src={item.url} alt={item.title} fill sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" className="object-cover" />
                       ) : (
                         <video
                           src={item.url}

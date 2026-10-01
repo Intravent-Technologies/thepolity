@@ -40,6 +40,27 @@ const securityHeaders = [
 
 const nextConfig: NextConfig = {
   poweredByHeader: false,
+  images: {
+    // Admin-uploaded media can point at any https host (see requireImageUrl in
+    // src/lib/content-schema.ts), so the optimizer cannot be given a precise
+    // remotePatterns allowlist without either breaking stored URLs or opening
+    // the proxy up to arbitrary hosts. Unoptimized still gives us lazy loading,
+    // explicit sizing to avoid layout shift, and async decoding.
+    unoptimized: true,
+  },
+  turbopack: {
+    ignoreIssue: [
+      {
+        path: "**/next.config.ts",
+        // Not a real problem for this app. src/lib/storage.ts reads
+        // public/data/*.json and public/uploads/ at runtime when Supabase is
+        // not configured, so file tracing legitimately has to reach the public
+        // tree. Scoping every path to process.cwd() does not silence it, and
+        // neither does turbopackIgnore on the individual fs calls.
+        description: /whole project was traced/,
+      },
+    ],
+  },
   async headers() {
     return [{ source: "/:path*", headers: securityHeaders }];
   },

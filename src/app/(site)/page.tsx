@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useState } from 'react';
 import { ArrowRight, Check } from 'lucide-react';
@@ -209,17 +210,18 @@ export default function Home() {
                   (key, i) => (
                     <div
                       key={key}
-                      className={`overflow-hidden rounded-card border border-line bg-surface-sunken ${
+                      className={`relative aspect-4/5 overflow-hidden rounded-card border border-line bg-surface-sunken ${
                         i % 2 === 1 ? 'mt-6' : ''
                       }`}
                     >
-                      <img
+                      <Image
                         src={images[key]}
                         alt=""
                         aria-hidden="true"
-                        loading={i < 2 ? 'eager' : 'lazy'}
-                        decoding="async"
-                        className="aspect-4/5 w-full object-cover"
+                        fill
+                        priority={i < 2}
+                        sizes="(min-width: 1024px) 22vw, 46vw"
+                        className="object-cover"
                       />
                     </div>
                   )
@@ -242,14 +244,14 @@ export default function Home() {
           <div className="mt-16 grid gap-px overflow-hidden rounded-card border border-line bg-line md:grid-cols-3">
             {SERVICES.map((service, i) => (
               <article key={service.title} className="flex flex-col bg-surface p-8">
-                <div className="overflow-hidden rounded-card border border-line bg-surface-sunken">
-                  <img
+                <div className="relative aspect-16/10 overflow-hidden rounded-card border border-line bg-surface-sunken">
+                  <Image
                     src={images[service.image]}
                     alt=""
                     aria-hidden="true"
-                    loading="lazy"
-                    decoding="async"
-                    className="aspect-16/10 w-full object-cover"
+                    fill
+                    sizes="(min-width: 768px) 33vw, 100vw"
+                    className="object-cover"
                   />
                 </div>
 
@@ -423,14 +425,14 @@ export default function Home() {
             {POSTS.map((post, i) => (
               <article key={post.title} className="group">
                 <Link href="/blog" className="block">
-                  <div className="overflow-hidden rounded-card border border-line bg-surface">
-                    <img
+                  <div className="relative aspect-16/10 overflow-hidden rounded-card border border-line bg-surface">
+                    <Image
                       src={images[`blog-${i + 1}`]}
                       alt=""
                       aria-hidden="true"
-                      loading="lazy"
-                      decoding="async"
-                      className="aspect-16/10 w-full object-cover transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03]"
+                      fill
+                      sizes="(min-width: 768px) 33vw, 100vw"
+                      className="object-cover transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03]"
                     />
                   </div>
                   <div className="mt-5 flex items-center gap-3">

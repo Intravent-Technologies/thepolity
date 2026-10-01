@@ -1,8 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
-import Image from 'next/image';
-import { AlertCircle, CheckCircle2, Loader2, Upload, X } from 'lucide-react';
+import { AlertCircle, CheckCircle2, Loader2, Upload } from 'lucide-react';
 import {
   checkUploadCandidate,
   formatBytes,

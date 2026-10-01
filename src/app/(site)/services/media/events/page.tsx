@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 import { useState, useEffect } from 'react';
@@ -75,7 +76,13 @@ export default function Events() {
                   className="group relative overflow-hidden rounded-card border border-line bg-surface-sunken"
                 >
                   {images[event.key] ? (
-                    <img src={images[event.key]} alt={event.title} className="w-full aspect-[4/3] object-cover" />
+                    <Image
+                      src={images[event.key]}
+                      alt={event.title}
+                      fill
+                      sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
+                      className="object-cover"
+                    />
                   ) : (
                     <div className="flex aspect-[4/3] items-center justify-center bg-surface-sunken">
                       <Heart className="size-10 text-brand-500/50" aria-hidden="true" />

@@ -1,5 +1,6 @@
 'use client';
 
+import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { ArrowRight } from 'lucide-react';
 import Link from 'next/link';
@@ -14,35 +15,43 @@ interface BlogPost {
   image: string;
 }
 
+// Module scope, so the effect below can reference it without it becoming a
+// dependency that re-runs on every render.
+const defaultPosts: BlogPost[] = [
+  { id: '1', title: 'The Future of Digital Strategy in 2025', category: 'Strategy', date: 'April 8, 2025', excerpt: 'Explore the emerging trends...', image: '' },
+  { id: '2', title: 'Maximizing ROI with IT Solutions', category: 'Technology', date: 'April 2, 2025', excerpt: 'Learn how strategic IT...', image: '' },
+  { id: '3', title: 'Building Brands That Last', category: 'Branding', date: 'March 25, 2025', excerpt: 'Discover the principles...', image: '' },
+  { id: '4', title: 'Data-Driven Decision Making', category: 'Analytics', date: 'March 18, 2025', excerpt: 'How to leverage data...', image: '' },
+  { id: '5', title: 'The Art of Project Management', category: 'Management', date: 'March 10, 2025', excerpt: 'Best practices for...', image: '' },
+  { id: '6', title: 'Media Strategy for Modern Business', category: 'Media', date: 'March 3, 2025', excerpt: 'Crafting effective...', image: '' },
+];
+
 export default function Blog() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchPosts();
+    let cancelled = false;
+
+    (async () => {
+      try {
+        const response = await fetch('/api/blog');
+        const data = await response.json();
+        if (!cancelled) {
+          setPosts(data.length > 0 ? data : defaultPosts);
+        }
+      } catch (error) {
+        console.error('Error fetching posts:', error);
+        if (!cancelled) setPosts(defaultPosts);
+      } finally {
+        if (!cancelled) setLoading(false);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
   }, []);
-
-  const fetchPosts = async () => {
-    try {
-      const response = await fetch('/api/blog');
-      const data = await response.json();
-      setPosts(data.length > 0 ? data : defaultPosts);
-    } catch (error) {
-      console.error('Error fetching posts:', error);
-      setPosts(defaultPosts);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const defaultPosts: BlogPost[] = [
-    { id: '1', title: 'The Future of Digital Strategy in 2025', category: 'Strategy', date: 'April 8, 2025', excerpt: 'Explore the emerging trends...', image: '' },
-    { id: '2', title: 'Maximizing ROI with IT Solutions', category: 'Technology', date: 'April 2, 2025', excerpt: 'Learn how strategic IT...', image: '' },
-    { id: '3', title: 'Building Brands That Last', category: 'Branding', date: 'March 25, 2025', excerpt: 'Discover the principles...', image: '' },
-    { id: '4', title: 'Data-Driven Decision Making', category: 'Analytics', date: 'March 18, 2025', excerpt: 'How to leverage data...', image: '' },
-    { id: '5', title: 'The Art of Project Management', category: 'Management', date: 'March 10, 2025', excerpt: 'Best practices for...', image: '' },
-    { id: '6', title: 'Media Strategy for Modern Business', category: 'Media', date: 'March 3, 2025', excerpt: 'Crafting effective...', image: '' },
-  ];
 
   return (
     <>
@@ -64,7 +73,9 @@ export default function Blog() {
                 {posts.map((post, index) => (
                   <motion.article key={post.id} initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: index * 0.08 }} className="group cursor-pointer">
                     {post.image ? (
-                      <img src={post.image} alt={post.title} className="h-48 w-full object-cover rounded-card mb-6 border border-line group-hover:border-[color:var(--color-brand-500)]/50 transition-colors" />
+                      <div className="relative mb-6 h-48 overflow-hidden rounded-card border border-line transition-colors group-hover:border-[color:var(--color-brand-500)]/50">
+                        <Image src={post.image} alt={post.title} fill sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw" className="object-cover" />
+                      </div>
                     ) : (
                       <div className="h-48 bg-surface-sunken rounded-card mb-6 border border-line group-hover:border-[color:var(--color-brand-500)]/50 transition-colors" />
                     )}
