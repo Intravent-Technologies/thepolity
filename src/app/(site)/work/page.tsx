@@ -10,16 +10,7 @@ import {
   Eyebrow,
   Section,
 } from '@/components/ui';
-
-interface WorkProject {
-  id: string;
-  title: string;
-  category: string;
-  client: string;
-  description: string;
-  image: string;
-  videoUrl: string;
-}
+import type { WorkProject } from '@/lib/work-types';
 
 const ALL = 'All';
 

@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import {
   getWorkProjects,
   addWorkProject,
+  updateWorkProject,
   deleteWorkProject,
 } from '@/lib/storage';
 import { parseContentBody, type ContentEntity } from '@/lib/content-schema';
@@ -31,6 +32,24 @@ export async function POST(request: NextRequest) {
     return NextResponse.json(item, { status: 201 });
   } catch (error) {
     return toErrorResponse(error, 'Failed to create work');
+  }
+}
+
+export async function PATCH(request: NextRequest) {
+  const denied = requireAdmin(request);
+  if (denied) {
+    return denied;
+  }
+
+  try {
+    const body = parseContentBody(ENTITY, await readJsonBody(request));
+    const item = await updateWorkProject(
+      readIdParam(request),
+      body as Parameters<typeof updateWorkProject>[1]
+    );
+    return NextResponse.json(item);
+  } catch (error) {
+    return toErrorResponse(error, 'Failed to update work');
   }
 }
 

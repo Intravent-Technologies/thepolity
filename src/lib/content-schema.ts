@@ -57,6 +57,41 @@ function optionalAssetUrl(value: unknown, field: string): string {
   return requireAssetUrl(value, field);
 }
 
+/**
+ * A URL path segment used to address an album at /work/<slug>.
+ *
+ * Constrained to lowercase alphanumerics and hyphens so a slug is safe in a
+ * path, in a canonical link and in a slugified form. Uppercase input is
+ * rejected rather than silently lowered, because two titles differing only in
+ * case would otherwise collide on one URL.
+ */
+function requireSlug(value: unknown): string {
+  const slug = requireText(value, 'slug', SHORT);
+  if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(slug)) {
+    throw new ValidationError(
+      'slug must be lowercase letters, numbers and single hyphens, e.g. his-royal-majesty'
+    );
+  }
+  return slug;
+}
+
+/**
+ * An opaque Google Drive file id. Validated here so a value destined for a
+ * display URL is known to be an id and never an arbitrary string. The id is
+ * interpolated into `drivePhotoUrl()`, so it must never be able to carry a
+ * scheme, a host or a path.
+ */
+function optionalDriveFileId(value: unknown, field: string): string {
+  if (value === undefined || value === null || value === '') {
+    return '';
+  }
+  const id = requireText(value, field, SHORT);
+  if (!/^[-\w]{10,}$/.test(id)) {
+    throw new ValidationError(`${field} is not a valid Drive file id`);
+  }
+  return id;
+}
+
 const schemas = {
   blog: (b: Record<string, unknown>) => ({
     title: requireText(b.title, 'title', SHORT),
@@ -78,6 +113,22 @@ const schemas = {
     description: optionalText(b.description, LONG),
     image: optionalAssetUrl(b.image, 'image'),
     videoUrl: optionalAssetUrl(b.videoUrl, 'videoUrl'),
+  }),
+  /**
+   * An album backed by a public Google Drive folder.
+   *
+   * `driveFolderUrl` is accepted as text here and turned into a folder id by the
+   * route, which owns the Drive-specific parsing. `coverDriveFileId` is
+   * validated as an opaque id rather than a URL, because it is interpolated
+   * into the display URL at render time.
+   */
+  albums: (b: Record<string, unknown>) => ({
+    title: requireText(b.title, 'title', SHORT),
+    slug: requireSlug(b.slug),
+    category: optionalText(b.category, SHORT),
+    description: optionalText(b.description, LONG),
+    coverDriveFileId: optionalDriveFileId(b.coverDriveFileId, 'coverDriveFileId'),
+    driveFolderUrl: requireText(b.driveFolderUrl, 'driveFolderUrl', IMAGE),
   }),
   team: (b: Record<string, unknown>) => ({
     name: requireText(b.name, 'name', SHORT),

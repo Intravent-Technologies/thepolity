@@ -9,6 +9,7 @@ import UploadField from '@/components/UploadField';
 import { notify, ToastViewport } from '@/components/admin/Toast';
 import { CategoryLabel, Eyebrow } from '@/components/ui';
 import Logo from '@/components/Logo';
+import type { WorkProject } from '@/lib/work-types';
 
 interface BlogPost {
   id: string;
@@ -22,18 +23,10 @@ interface BlogPost {
 /**
  * The single showcase record, covering what used to be separate portfolio and
  * gallery items. Only `title` is required; `videoUrl` is what distinguishes a
- * media item from a case study.
+ * media item from a case study. The shape lives in `@/lib/work-types` because
+ * this dashboard copy previously drifted from the storage layer by omitting
+ * `createdAt`.
  */
-interface WorkProject {
-  id: string;
-  title: string;
-  category: string;
-  client: string;
-  description: string;
-  image: string;
-  videoUrl: string;
-}
-
 interface TeamMember {
   id: string;
   name: string;

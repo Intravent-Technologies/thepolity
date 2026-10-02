@@ -40,6 +40,25 @@ export function readIdParam(request: NextRequest): string {
   return id;
 }
 
+/**
+ * Read a dynamic route segment, such as the `[id]` in
+ * `app/api/work/albums/[id]/route.ts`.
+ *
+ * Next 16 resolves route params as a Promise, so callers must await the route
+ * context before passing the value in. Kept separate from `readIdParam` because
+ * that one reads a query string and is not tied to the dynamic-segment shape.
+ */
+export function readRouteParam(value: unknown, field = 'id'): string {
+  if (typeof value !== 'string' || !value) {
+    throw new ValidationError(`Missing ${field}`);
+  }
+  if (value.length > 200) {
+    throw new ValidationError(`Invalid ${field}`);
+  }
+
+  return value;
+}
+
 /** Map validation problems to 400 and anything unexpected to a generic 500. */
 export function toErrorResponse(error: unknown, fallback: string): NextResponse {
   if (error instanceof ValidationError) {
