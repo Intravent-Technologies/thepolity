@@ -63,11 +63,35 @@ export async function PATCH(
 
   try {
     const id = readRouteParam((await params).id);
-    const body = parseContentBody(ENTITY, await readJsonBody(request));
     const album = await getWorkAlbumById(id);
     if (!album) {
       return NextResponse.json({ error: 'Album not found' }, { status: 404 });
     }
+
+    /*
+     * PATCH means partial: an editor form that changes one caption should not
+     * have to resend the whole record, and a blank field must not silently
+     * wipe a value. The incoming body is merged over the stored album and the
+     * merged result is what gets validated, so the schema stays as strict as it
+     * is for creation.
+     */
+    const incoming = await readJsonBody(request);
+    const merged = {
+      title: 'title' in incoming ? incoming.title : album.title,
+      slug: 'slug' in incoming ? incoming.slug : album.slug,
+      category: 'category' in incoming ? incoming.category : album.category,
+      description:
+        'description' in incoming ? incoming.description : album.description,
+      coverDriveFileId:
+        'coverDriveFileId' in incoming
+          ? incoming.coverDriveFileId
+          : album.coverDriveFileId,
+      driveFolderUrl:
+        'driveFolderUrl' in incoming
+          ? incoming.driveFolderUrl
+          : album.driveFolderUrl,
+    };
+    const body = parseContentBody(ENTITY, merged);
 
     const slug = String(body.slug);
     if (slug !== album.slug) {

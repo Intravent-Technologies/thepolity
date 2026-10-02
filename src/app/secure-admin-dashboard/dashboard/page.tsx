@@ -4,12 +4,12 @@ import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Video } from 'lucide-react';
+import { Images, Video } from 'lucide-react';
 import UploadField from '@/components/UploadField';
 import { notify, ToastViewport } from '@/components/admin/Toast';
 import { CategoryLabel, Eyebrow } from '@/components/ui';
 import Logo from '@/components/Logo';
-import type { WorkProject } from '@/lib/work-types';
+import { drivePhotoUrl, type WorkAlbum, type WorkProject } from '@/lib/work-types';
 
 interface BlogPost {
   id: string;
@@ -20,13 +20,6 @@ interface BlogPost {
   image: string;
 }
 
-/**
- * The single showcase record, covering what used to be separate portfolio and
- * gallery items. Only `title` is required; `videoUrl` is what distinguishes a
- * media item from a case study. The shape lives in `@/lib/work-types` because
- * this dashboard copy previously drifted from the storage layer by omitting
- * `createdAt`.
- */
 interface TeamMember {
   id: string;
   name: string;
@@ -43,7 +36,12 @@ interface Review {
   rating: number;
 }
 
-type Tab = 'work' | 'blog' | 'team' | 'reviews' | 'homepage';
+/**
+ * Work projects and albums are separate tabs because they are built from
+ * different places: a project is uploaded here, while an album's photos live in
+ * a Google Drive folder that we only mirror the metadata for.
+ */
+type Tab = 'work' | 'albums' | 'blog' | 'team' | 'reviews' | 'homepage';
 
 export default function AdminDashboard() {
   const [tab, setTab] = useState<Tab>('work');
@@ -119,6 +117,7 @@ export default function AdminDashboard() {
         >
           {[
             { key: 'work', label: 'Work' },
+            { key: 'albums', label: 'Albums' },
             { key: 'blog', label: 'Blog' },
             { key: 'team', label: 'Team' },
             { key: 'reviews', label: 'Reviews' },
@@ -143,6 +142,7 @@ export default function AdminDashboard() {
 
         {tab === 'blog' && <BlogManager />}
         {tab === 'work' && <WorkManager />}
+        {tab === 'albums' && <AlbumManager />}
         {tab === 'team' && <TeamManager />}
         {tab === 'reviews' && <ReviewsManager />}
         {tab === 'homepage' && <HomepageManager />}
@@ -337,6 +337,303 @@ function WorkManager() {
                 <button onClick={() => handleDelete(project.id)} className="px-3 py-1 ml-3 flex-shrink-0 rounded border border-line-strong bg-surface text-sm text-ink-muted transition-colors duration-200 hover:border-brand-500 hover:text-brand-700">Delete</button>
               </div>
             ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+/** What a sync reports back, so the admin can see what actually happened. */
+interface SyncResult {
+  photos: number;
+  videosAdded: number;
+  videosReused: number;
+  videosSkipped: { name: string; reason: string }[];
+}
+
+function AlbumManager() {
+  const [albums, setAlbums] = useState<WorkAlbum[]>([]);
+  const [title, setTitle] = useState('');
+  const [category, setCategory] = useState('');
+  const [description, setDescription] = useState('');
+  const [folderUrl, setFolderUrl] = useState('');
+  const [saving, setSaving] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [syncingId, setSyncingId] = useState('');
+
+  // Per-album feedback rather than one global message, so two albums cannot
+  // overwrite each other's result while an admin works down a list.
+  const [results, setResults] = useState<Record<string, string>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  useEffect(() => {
+    fetch('/api/work/albums')
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data: WorkAlbum[]) => {
+        if (Array.isArray(data)) setAlbums(data);
+      })
+      .catch(() => setAlbums([]))
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleAdd = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!title.trim()) {
+      notify('A title is required');
+      return;
+    }
+    if (!folderUrl.trim()) {
+      notify('Paste the Google Drive folder link');
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const res = await fetch('/api/work/albums', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          title,
+          category,
+          description,
+          // The slug is derived from the title, so an admin does not have to
+          // think about URLs. The API accepts an explicit slug when a
+          // collision needs resolving.
+          slug: title
+            .trim()
+            .toLowerCase()
+            .replace(/[^a-z0-9]+/g, '-')
+            .replace(/^-|-$/g, ''),
+          driveFolderUrl: folderUrl.trim(),
+        }),
+      });
+      const data = await res.json();
+      if (data.error) {
+        notify(data.error);
+        return;
+      }
+      setAlbums([data, ...albums]);
+      setTitle('');
+      setCategory('');
+      setDescription('');
+      setFolderUrl('');
+      notify('Album added. Press Sync to pull in its photos.');
+    } catch {
+      notify('Something went wrong. Please try again.');
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleSync = async (album: WorkAlbum) => {
+    setSyncingId(album.id);
+    setErrors((current) => ({ ...current, [album.id]: '' }));
+
+    try {
+      const res = await fetch(`/api/work/albums/${album.id}/sync`, {
+        method: 'POST',
+      });
+      const data: SyncResult & { error?: string } = await res.json();
+
+      if (data.error) {
+        setErrors((current) => ({ ...current, [album.id]: data.error as string }));
+        return;
+      }
+
+      // Re-read rather than patching counts locally: the response is a summary
+      // and the album row is the server's truth.
+      const refreshed = await fetch('/api/work/albums').then((r) => r.json());
+      if (Array.isArray(refreshed)) setAlbums(refreshed);
+
+      const skipped = data.videosSkipped.length;
+      const parts = [
+        `${data.photos} photo${data.photos === 1 ? '' : 's'}`,
+        data.videosAdded > 0
+          ? `${data.videosAdded} video${data.videosAdded === 1 ? '' : 's'} mirrored`
+          : null,
+        data.videosReused > 0 ? `${data.videosReused} already mirrored` : null,
+        skipped > 0 ? `${skipped} skipped` : null,
+      ].filter(Boolean);
+
+      setResults((current) => ({ ...current, [album.id]: parts.join(' · ') }));
+    } catch {
+      setErrors((current) => ({
+        ...current,
+        [album.id]: 'Sync failed. Check the folder is shared as "Anyone with the link".',
+      }));
+    } finally {
+      setSyncingId('');
+    }
+  };
+
+  const handleDelete = async (album: WorkAlbum) => {
+    if (
+      !confirm(
+        `Delete "${album.title}"? This removes the album, its mirrored videos, and its link from /work. The Google Drive folder itself is untouched.`
+      )
+    ) {
+      return;
+    }
+    try {
+      const res = await fetch(`/api/work/albums/${album.id}`, { method: 'DELETE' });
+      const data = await res.json();
+      if (data.error) {
+        notify(data.error);
+        return;
+      }
+      setAlbums(albums.filter((item) => item.id !== album.id));
+    } catch {
+      notify('Could not delete that album.');
+    }
+  };
+
+  const inputClass =
+    'px-4 py-3 bg-cream border border-line rounded-card text-ink placeholder:text-ink-subtle';
+
+  return (
+    <div className="bg-surface rounded-card border border-line p-6">
+      <h2 className="text-xl font-bold text-ink mb-2">Add Album</h2>
+      <p className="mb-6 text-sm text-ink-muted">
+        An album is a project documented by photos in a Google Drive folder. Set
+        the folder to &ldquo;Anyone with the link&rdquo; as Viewer, paste the link,
+        then press Sync. Photos are served straight from Google; only videos are
+        copied into our storage.
+      </p>
+
+      <form onSubmit={handleAdd} className="space-y-4">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            placeholder="Title"
+            className={inputClass}
+          />
+          <input
+            type="text"
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            placeholder="Category (optional)"
+            className={inputClass}
+          />
+        </div>
+
+        <textarea
+          value={description}
+          onChange={(e) => setDescription(e.target.value)}
+          rows={3}
+          placeholder="Description (optional)"
+          className={`w-full ${inputClass}`}
+        />
+
+        <input
+          type="url"
+          value={folderUrl}
+          onChange={(e) => setFolderUrl(e.target.value)}
+          placeholder="https://drive.google.com/drive/folders/..."
+          className={`w-full ${inputClass}`}
+        />
+
+        <button
+          type="submit"
+          disabled={saving}
+          className="px-6 py-3 bg-brand-500 text-white rounded-card font-medium hover:bg-brand-600 disabled:opacity-50"
+        >
+          {saving ? 'Adding...' : 'Add Album'}
+        </button>
+      </form>
+
+      <div className="border-t border-line mt-8 pt-8">
+        <h3 className="text-lg font-bold text-ink mb-4">
+          Albums ({albums.length})
+        </h3>
+
+        {loading ? (
+          <p className="text-ink-subtle">Loading...</p>
+        ) : albums.length === 0 ? (
+          <p className="text-ink-subtle">No albums yet</p>
+        ) : (
+          <div className="space-y-3">
+            {albums.map((album) => {
+              const busy = syncingId === album.id;
+              const neverSynced = !album.lastSyncedAt;
+
+              return (
+                <div key={album.id} className="p-3 bg-cream rounded-card">
+                  <div className="flex items-center justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="relative w-12 h-12 rounded bg-surface overflow-hidden flex-shrink-0">
+                        {album.coverDriveFileId ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={drivePhotoUrl(album.coverDriveFileId, 200)}
+                            alt=""
+                            className="size-full object-cover"
+                          />
+                        ) : (
+                          <div className="flex size-full items-center justify-center text-ink-subtle">
+                            <Images size={14} aria-hidden="true" />
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="min-w-0">
+                        <div className="text-ink font-medium truncate">
+                          {album.title}
+                        </div>
+                        <div className="text-ink-subtle text-sm truncate">
+                          {album.category || 'Uncategorised'} · /work/
+                          {album.slug}
+                        </div>
+                        <div className="text-ink-subtle text-xs">
+                          {neverSynced
+                            ? 'Never synced'
+                            : `${album.photoCount} photos, ${album.videoCount} videos · synced ${new Date(
+                                album.lastSyncedAt
+                              ).toLocaleDateString()}`}
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      <Link
+                        href={`/work/${album.slug}`}
+                        className="px-3 py-1 rounded border border-line-strong bg-surface text-sm text-ink-muted transition-colors duration-200 hover:border-brand-500 hover:text-brand-700"
+                      >
+                        View
+                      </Link>
+
+                      <button
+                        type="button"
+                        onClick={() => handleSync(album)}
+                        disabled={Boolean(syncingId)}
+                        className="px-3 py-1 rounded border border-line-strong bg-surface text-sm text-ink-muted transition-colors duration-200 hover:border-brand-500 hover:text-brand-700 disabled:opacity-50"
+                      >
+                        {busy ? 'Syncing...' : neverSynced ? 'Sync' : 'Re-sync'}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={() => handleDelete(album)}
+                        disabled={Boolean(syncingId)}
+                        className="px-3 py-1 rounded border border-line-strong bg-surface text-sm text-ink-muted transition-colors duration-200 hover:border-brand-500 hover:text-brand-700 disabled:opacity-50"
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </div>
+
+                  {results[album.id] ? (
+                    <p className="mt-2 text-sm text-brand-700">{results[album.id]}</p>
+                  ) : null}
+
+                  {errors[album.id] ? (
+                    <p className="mt-2 text-sm text-brand-700">{errors[album.id]}</p>
+                  ) : null}
+                </div>
+              );
+            })}
           </div>
         )}
       </div>
