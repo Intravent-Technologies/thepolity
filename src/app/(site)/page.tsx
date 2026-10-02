@@ -208,7 +208,7 @@ export default function Home() {
                   Book a free consultation
                   <ArrowRight className="size-4" aria-hidden="true" />
                 </ButtonLink>
-                <ButtonLink href="/portfolio" size="lg" variant="secondary">
+                <ButtonLink href="/work" size="lg" variant="secondary">
                   See our work
                 </ButtonLink>
               </div>

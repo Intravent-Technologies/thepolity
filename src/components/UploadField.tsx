@@ -11,7 +11,12 @@ import {
   type AcceptedKind,
 } from '@/lib/upload-rules';
 
-export type UploadType = 'portfolio' | 'gallery' | 'homepage';
+/**
+ * Selects the storage directory the upload is filed under, not the content
+ * entity it belongs to. Blog and team images share 'work' with showcase media;
+ * 'homepage' images go to the long-standing 'gallery' directory.
+ */
+export type UploadType = 'work' | 'homepage';
 
 interface UploadFieldProps {
   type: UploadType;

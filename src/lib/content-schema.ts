@@ -26,16 +26,14 @@ function requireIsoDate(value: unknown): string {
   return text;
 }
 
-function requireGalleryType(value: unknown): 'image' | 'video' {
-  if (value === 'image' || value === 'video') {
-    return value;
-  }
-  throw new ValidationError('type must be "image" or "video"');
-}
-
-function requireImageUrl(value: unknown, field = 'image'): string {
+/**
+ * Validate a stored asset reference. Applies to images and video alike: a
+ * `videoUrl` goes through exactly the same allowlist as an `image`, so neither
+ * can become a `javascript:` or `data:` execution vector when rendered.
+ */
+function requireAssetUrl(value: unknown, field = 'image'): string {
   const url = requireText(value, field, IMAGE);
-  // Only same-origin paths and https URLs are stored, so a stored image can
+  // Only same-origin paths and https URLs are stored, so a stored asset can
   // never become a javascript: or data: execution vector when rendered.
   if (url.startsWith('/uploads/')) {
     return url;
@@ -46,18 +44,20 @@ function requireImageUrl(value: unknown, field = 'image'): string {
   throw new ValidationError(`${field} must be an https URL or an /uploads/ path`);
 }
 
+/**
+ * An optional asset. Returns '' rather than throwing so a project can be saved
+ * with a video and no cover image, which the public page renders behind its
+ * placeholder. The empty string is what gets written to storage and Supabase,
+ * and reads back as falsy.
+ */
+function optionalAssetUrl(value: unknown, field: string): string {
+  if (value === undefined || value === null || value === '') {
+    return '';
+  }
+  return requireAssetUrl(value, field);
+}
+
 const schemas = {
-  portfolio: (b: Record<string, unknown>) => ({
-    title: requireText(b.title, 'title', SHORT),
-    description: requireText(b.description, 'description', LONG),
-    category: optionalText(b.category, SHORT),
-    image: requireImageUrl(b.image),
-  }),
-  gallery: (b: Record<string, unknown>) => ({
-    title: requireText(b.title, 'title', SHORT),
-    type: requireGalleryType(b.type),
-    url: requireImageUrl(b.url, 'url'),
-  }),
   blog: (b: Record<string, unknown>) => ({
     title: requireText(b.title, 'title', SHORT),
     category: optionalText(b.category, SHORT),
@@ -65,12 +65,19 @@ const schemas = {
     excerpt: optionalText(b.excerpt, LONG),
     image: optionalText(b.image, IMAGE),
   }),
+  /**
+   * The single showcase entity. Everything except `title` is optional, because
+   * this table absorbed the old portfolio and gallery tables: a curated case
+   * study supplies `client` and `description`, while a loose media item may
+   * carry just a `videoUrl`, or just a cover image.
+   */
   work: (b: Record<string, unknown>) => ({
     title: requireText(b.title, 'title', SHORT),
     category: optionalText(b.category, SHORT),
     client: optionalText(b.client, SHORT),
-    description: requireText(b.description, 'description', LONG),
-    image: requireImageUrl(b.image),
+    description: optionalText(b.description, LONG),
+    image: optionalAssetUrl(b.image, 'image'),
+    videoUrl: optionalAssetUrl(b.videoUrl, 'videoUrl'),
   }),
   team: (b: Record<string, unknown>) => ({
     name: requireText(b.name, 'name', SHORT),
@@ -86,7 +93,7 @@ const schemas = {
   }),
   'homepage-images': (b: Record<string, unknown>) => ({
     section: requireText(b.section, 'section', SHORT),
-    imageUrl: requireImageUrl(b.imageUrl, 'imageUrl'),
+    imageUrl: requireAssetUrl(b.imageUrl, 'imageUrl'),
     multi: b.multi === true || b.multi === 'true',
   }),
 } as const;

@@ -19,14 +19,13 @@ const SERVICES = [
 
 const NAV = [
   { name: "About", href: "/about" },
-  { name: "Portfolio", href: "/portfolio" },
-  { name: "Gallery", href: "/gallery" },
+  { name: "Work", href: "/work" },
   { name: "Reviews", href: "/reviews" },
   { name: "Contact", href: "/contact" },
 ];
 
 function Wordmark({ className = "" }: { className?: string }) {
-  return <Logo className={`h-6 ${className}`} />;
+  return <Logo className={`h-10 ${className}`} />;
 }
 
 export default function Header() {
@@ -193,13 +192,17 @@ export default function Header() {
           </nav>
 
           <div className="flex items-center gap-2">
-            <ButtonLink
-              href="/contact"
-              size="sm"
-              className="hidden sm:inline-flex"
-            >
-              Free consultation
-            </ButtonLink>
+            {/* Visibility lives on a wrapper, not on the button: ButtonLink's
+                base classes already include `inline-flex`, and Tailwind emits
+                that rule after `.hidden`, so a `hidden` class on the button
+                itself never applies. The wrapper appears on `lg` alongside the
+                nav; at 1024px there are a few spare pixels only because the
+                nav flex-shrinks, so keep this breakpoint in step with `lg`. */}
+            <span className="hidden lg:block">
+              <ButtonLink href="/contact" size="sm">
+                Free consultation
+              </ButtonLink>
+            </span>
 
             <button
               type="button"

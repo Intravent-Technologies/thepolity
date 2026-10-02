@@ -4,27 +4,11 @@ import Image from 'next/image';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { Video } from 'lucide-react';
 import UploadField from '@/components/UploadField';
 import { notify, ToastViewport } from '@/components/admin/Toast';
 import { CategoryLabel, Eyebrow } from '@/components/ui';
 import Logo from '@/components/Logo';
-
-interface PortfolioItem {
-  id: string;
-  title: string;
-  description: string;
-  image: string;
-  category: string;
-  createdAt: string;
-}
-
-interface GalleryItem {
-  id: string;
-  title: string;
-  type: 'image' | 'video';
-  url: string;
-  createdAt: string;
-}
 
 interface BlogPost {
   id: string;
@@ -35,6 +19,11 @@ interface BlogPost {
   image: string;
 }
 
+/**
+ * The single showcase record, covering what used to be separate portfolio and
+ * gallery items. Only `title` is required; `videoUrl` is what distinguishes a
+ * media item from a case study.
+ */
 interface WorkProject {
   id: string;
   title: string;
@@ -42,6 +31,7 @@ interface WorkProject {
   client: string;
   description: string;
   image: string;
+  videoUrl: string;
 }
 
 interface TeamMember {
@@ -60,10 +50,10 @@ interface Review {
   rating: number;
 }
 
-type Tab = 'portfolio' | 'gallery' | 'blog' | 'work' | 'team' | 'reviews' | 'homepage';
+type Tab = 'work' | 'blog' | 'team' | 'reviews' | 'homepage';
 
 export default function AdminDashboard() {
-  const [tab, setTab] = useState<Tab>('portfolio');
+  const [tab, setTab] = useState<Tab>('work');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const router = useRouter();
 
@@ -135,10 +125,8 @@ export default function AdminDashboard() {
           className="mt-8 flex flex-wrap gap-1 border-b border-line"
         >
           {[
-            { key: 'portfolio', label: 'Portfolio' },
-            { key: 'gallery', label: 'Gallery' },
-            { key: 'blog', label: 'Blog' },
             { key: 'work', label: 'Work' },
+            { key: 'blog', label: 'Blog' },
             { key: 'team', label: 'Team' },
             { key: 'reviews', label: 'Reviews' },
             { key: 'homepage', label: 'Homepage' },
@@ -160,188 +148,12 @@ export default function AdminDashboard() {
           ))}
         </div>
 
-        {tab === 'portfolio' && <PortfolioManager />}
-        {tab === 'gallery' && <GalleryManager />}
         {tab === 'blog' && <BlogManager />}
         {tab === 'work' && <WorkManager />}
         {tab === 'team' && <TeamManager />}
         {tab === 'reviews' && <ReviewsManager />}
         {tab === 'homepage' && <HomepageManager />}
       </main>
-    </div>
-  );
-}
-
-function PortfolioManager() {
-  const [items, setItems] = useState<PortfolioItem[]>([]);
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [category, setCategory] = useState('Project');
-  const [image, setImage] = useState('');
-  const [saving, setSaving] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => { fetchItems(); }, []);
-
-  const fetchItems = async () => {
-    try {
-      const response = await fetch('/api/portfolio');
-      const data = await response.json();
-      setItems(Array.isArray(data) ? data : []);
-    } catch (error) { console.error('Error:', error); }
-    finally { setLoading(false); }
-  };
-
-  const handleAdd = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!title || !description || !image) { notify('Fill all fields'); return; }
-    setSaving(true);
-    try {
-      const res = await fetch('/api/portfolio', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title, description, image, category }) });
-      const data = await res.json();
-      if (data.error) { notify(data.error); return; }
-      setItems([data, ...items]);
-      setTitle(''); setDescription(''); setCategory('Project'); setImage('');
-    } catch { notify('Something went wrong. Please try again.'); }
-    finally { setSaving(false); }
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!confirm('Delete?')) return;
-    try {
-      await fetch(`/api/portfolio?id=${id}`, { method: 'DELETE' });
-      setItems(items.filter(i => i.id !== id));
-    } catch {}
-  };
-
-  return (
-    <div className="bg-surface rounded-card border border-line p-6">
-      <h2 className="text-xl font-bold text-ink mb-6">Add Portfolio Item</h2>
-      <form onSubmit={handleAdd} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="Title" className="px-4 py-3 bg-cream border border-line rounded-card text-ink placeholder:text-ink-subtle" />
-          <select value={category} onChange={e => setCategory(e.target.value)} className="px-4 py-3 bg-cream border border-line rounded-card text-ink">
-            <option className="bg-surface">Project</option><option className="bg-surface">Case Study</option><option className="bg-surface">Campaign</option><option className="bg-surface">Branding</option><option className="bg-surface">Design</option>
-          </select>
-        </div>
-        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} placeholder="Description" className="w-full px-4 py-3 bg-cream border border-line rounded-card text-ink placeholder:text-ink-subtle" />
-        <UploadField type="portfolio" label="Choose image" value={image} onChange={setImage} />
-        <button type="submit" disabled={saving || !image} className="px-6 py-3 bg-brand-500 text-white rounded-card font-medium hover:bg-brand-600 disabled:opacity-50">{saving ? 'Saving...' : 'Add Item'}</button>
-      </form>
-
-      <div className="border-t border-line mt-8 pt-8">
-        <h3 className="text-lg font-bold text-ink mb-4">Items ({items.length})</h3>
-        {loading ? <p className="text-ink-subtle">Loading...</p> : items.length === 0 ? <p className="text-ink-subtle">No items</p> : (
-          <div className="space-y-3">
-            {items.map(item => (
-              <div key={item.id} className="flex items-center justify-between p-3 bg-cream rounded-card">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="relative w-12 h-12 rounded bg-cream overflow-hidden flex-shrink-0"><Image src={item.image} alt="" fill sizes="3rem" className="object-cover" /></div>
-                  <div className="min-w-0">
-                    <div className="text-ink font-medium">{item.title}</div>
-                    <div className="text-ink-subtle text-sm">{item.category}</div>
-                    {item.description && <div className="text-ink-subtle text-xs truncate max-w-md">{item.description}</div>}
-                  </div>
-                </div>
-                <button onClick={() => handleDelete(item.id)} className="px-3 py-1 ml-3 flex-shrink-0 rounded border border-line-strong bg-surface text-sm text-ink-muted transition-colors duration-200 hover:border-brand-500 hover:text-brand-700">Delete</button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function GalleryManager() {
-  const [items, setItems] = useState<GalleryItem[]>([]);
-  const [title, setTitle] = useState('');
-  const [type, setType] = useState<'image' | 'video'>('image');
-  const [url, setUrl] = useState('');
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState('');
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => { fetchItems(); }, []);
-
-  // Switching between image and video invalidates a file of the other kind.
-  useEffect(() => { setUrl(''); }, [type]);
-
-  const fetchItems = async () => {
-    try {
-      const response = await fetch('/api/gallery');
-      const data = await response.json();
-      setItems(Array.isArray(data) ? data : []);
-    } catch {}
-    finally { setLoading(false); }
-  };
-
-  const handleAdd = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!title || !url) { setError('A title and an uploaded file are both required.'); return; }
-
-    setSaving(true);
-    setError('');
-    try {
-      const res = await fetch('/api/gallery', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title, type, url }) });
-      const newItem = await res.json();
-      if (newItem.error) { setError(newItem.error); return; }
-      setItems([newItem, ...items]);
-      setTitle(''); setUrl('');
-    } catch { setError('Could not save that item. Check your connection and retry.'); }
-    finally { setSaving(false); }
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!confirm('Delete?')) return;
-    try {
-      await fetch(`/api/gallery?id=${id}`, { method: 'DELETE' });
-      setItems(items.filter(i => i.id !== id));
-    } catch {}
-  };
-
-  return (
-    <div className="bg-surface rounded-card border border-line p-6">
-      <h2 className="text-xl font-bold text-ink mb-6">Add Gallery Item</h2>
-      <form onSubmit={handleAdd} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="Title" className="px-4 py-3 bg-cream border border-line rounded-card text-ink placeholder:text-ink-subtle" />
-          <select value={type} onChange={e => setType(e.target.value as 'image' | 'video')} className="px-4 py-3 bg-cream border border-line rounded-card text-ink">
-            <option value="image">Image</option><option value="video">Video</option>
-          </select>
-        </div>
-        <UploadField
-          type="gallery"
-          kind={type}
-          label={`Choose ${type}`}
-          value={url}
-          onChange={setUrl}
-        />
-        {error ? <p role="alert" className="text-sm text-brand-700">{error}</p> : null}
-        <button type="submit" disabled={saving || !url} className="px-6 py-3 bg-brand-500 text-white rounded-card font-medium hover:bg-brand-600 disabled:opacity-50">{saving ? 'Saving...' : 'Add Item'}</button>
-      </form>
-
-      <div className="border-t border-line mt-8 pt-8">
-        <h3 className="text-lg font-bold text-ink mb-4">Items ({items.length})</h3>
-        {loading ? <p className="text-ink-subtle">Loading...</p> : items.length === 0 ? <p className="text-ink-subtle">No items</p> : (
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            {items.map(item => (
-              <div key={item.id} className="relative rounded-card overflow-hidden bg-cream">
-                {item.type === 'image' ? (
-                  <Image src={item.url} alt={item.title} fill sizes="(min-width: 768px) 25vw, 50vw" className="h-32 object-cover" />
-                ) : (
-                  <video src={item.url} controls className="w-full h-32 object-cover" />
-                )}
-                <div className="p-2">
-                  <p className="text-ink text-xs font-medium truncate">{item.title}</p>
-                  <p className="text-ink-subtle text-xs capitalize">{item.type}</p>
-                </div>
-                <button onClick={() => handleDelete(item.id)} className="absolute top-2 right-2 px-2 py-1 rounded bg-ink/80 text-xs text-ink-inverse transition-colors duration-200 hover:bg-ink">Delete</button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
     </div>
   );
 }
@@ -403,7 +215,7 @@ function BlogManager() {
           <input type="date" value={date} onChange={e => setDate(e.target.value)} className="px-4 py-3 bg-cream border border-line rounded-card text-ink" />
         </div>
         <textarea value={excerpt} onChange={e => setExcerpt(e.target.value)} rows={3} placeholder="Excerpt" className="w-full px-4 py-3 bg-cream border border-line rounded-card text-ink placeholder:text-ink-subtle" />
-        <UploadField type="portfolio" label="Choose image" value={image} onChange={setImage} />
+        <UploadField type="work" label="Choose image" value={image} onChange={setImage} />
         <button type="submit" disabled={saving} className="px-6 py-3 bg-brand-500 text-white rounded-card font-medium hover:bg-brand-600 disabled:opacity-50">{saving ? 'Saving...' : 'Add Post'}</button>
       </form>
 
@@ -434,14 +246,20 @@ function BlogManager() {
 function WorkManager() {
   const [projects, setProjects] = useState<WorkProject[]>([]);
   const [title, setTitle] = useState('');
-  const [category, setCategory] = useState('Web Development');
+  const [category, setCategory] = useState('IT Consultancy');
   const [client, setClient] = useState('');
   const [description, setDescription] = useState('');
   const [image, setImage] = useState('');
+  const [videoUrl, setVideoUrl] = useState('');
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => { fetchProjects(); }, []);
+
+  const resetForm = () => {
+    setTitle(''); setCategory('IT Consultancy'); setClient('');
+    setDescription(''); setImage(''); setVideoUrl('');
+  };
 
   const fetchProjects = async () => {
     try {
@@ -454,41 +272,51 @@ function WorkManager() {
 
   const handleAdd = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!title || !description) { notify('Fill all fields'); return; }
+    // Only a title is required. Client and description belong to a case study;
+    // a media item may be just a title plus a video.
+    if (!title.trim()) { notify('A title is required'); return; }
+    if (!image && !videoUrl) { notify('Add a cover image or a video'); return; }
     setSaving(true);
     try {
-      const res = await fetch('/api/work', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title, category, client, description, image }) });
+      const res = await fetch('/api/work', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title, category, client, description, image, videoUrl }) });
       const data = await res.json();
       if (data.error) { notify(data.error); return; }
       setProjects([data, ...projects]);
-      setTitle(''); setCategory('Web Development'); setClient(''); setDescription(''); setImage('');
+      resetForm();
     } catch { notify('Something went wrong. Please try again.'); }
     finally { setSaving(false); }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete?')) return;
+    if (!confirm('Delete? This also removes the uploaded media.')) return;
     try {
       await fetch(`/api/work?id=${id}`, { method: 'DELETE' });
       setProjects(projects.filter(p => p.id !== id));
     } catch {}
   };
 
-  const categories = ['Web Development', 'Branding', 'IT Consultancy', 'Media', 'Project Management', 'Strategy'];
+  const categories = ['IT Consultancy', 'Project Management', 'Media', 'Strategy', 'Branding'];
 
   return (
     <div className="bg-surface rounded-card border border-line p-6">
-      <h2 className="text-xl font-bold text-ink mb-6">Add Work Project</h2>
+      <h2 className="text-xl font-bold text-ink mb-2">Add Work Project</h2>
+      <p className="mb-6 text-sm text-ink-muted">
+        A client project supplies a category, client and description. A media
+        item can be just a title and a video.
+      </p>
       <form onSubmit={handleAdd} className="space-y-4">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="Title" className="px-4 py-3 bg-cream border border-line rounded-card text-ink placeholder:text-ink-subtle" />
           <select value={category} onChange={e => setCategory(e.target.value)} className="px-4 py-3 bg-cream border border-line rounded-card text-ink">
             {categories.map(c => <option key={c} value={c} className="bg-surface">{c}</option>)}
           </select>
-          <input type="text" value={client} onChange={e => setClient(e.target.value)} placeholder="Client name" className="px-4 py-3 bg-cream border border-line rounded-card text-ink placeholder:text-ink-subtle" />
+          <input type="text" value={client} onChange={e => setClient(e.target.value)} placeholder="Client name (optional)" className="px-4 py-3 bg-cream border border-line rounded-card text-ink placeholder:text-ink-subtle" />
         </div>
-        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} placeholder="Description" className="w-full px-4 py-3 bg-cream border border-line rounded-card text-ink placeholder:text-ink-subtle" />
-        <UploadField type="portfolio" label="Choose image" value={image} onChange={setImage} />
+        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} placeholder="Description (optional)" className="w-full px-4 py-3 bg-cream border border-line rounded-card text-ink placeholder:text-ink-subtle" />
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <UploadField type="work" kind="image" label="Cover image" value={image} onChange={setImage} />
+          <UploadField type="work" kind="video" label="Video (optional)" value={videoUrl} onChange={setVideoUrl} />
+        </div>
         <button type="submit" disabled={saving} className="px-6 py-3 bg-brand-500 text-white rounded-card font-medium hover:bg-brand-600 disabled:opacity-50">{saving ? 'Saving...' : 'Add Project'}</button>
       </form>
 
@@ -499,10 +327,17 @@ function WorkManager() {
             {projects.map(project => (
               <div key={project.id} className="flex items-center justify-between p-3 bg-cream rounded-card">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="relative w-12 h-12 rounded bg-cream overflow-hidden flex-shrink-0">{project.image && <Image src={project.image} alt="" fill sizes="3rem" className="object-cover" />}</div>
+                  <div className="relative w-12 h-12 rounded bg-surface overflow-hidden flex-shrink-0">
+                    {project.image
+                      ? <Image src={project.image} alt="" fill sizes="3rem" className="object-cover" />
+                      : <div className="flex size-full items-center justify-center text-ink-subtle"><Video size={14} aria-hidden="true" /></div>}
+                  </div>
                   <div className="min-w-0">
                     <div className="text-ink font-medium">{project.title}</div>
-                    <div className="text-ink-subtle text-sm">{project.category} | {project.client}</div>
+                    <div className="text-ink-subtle text-sm">
+                      {[project.category, project.client].filter(Boolean).join(' | ') || 'Uncategorised'}
+                      {project.videoUrl ? ' · video' : ''}
+                    </div>
                     {project.description && <div className="text-ink-subtle text-xs truncate max-w-md">{project.description}</div>}
                   </div>
                 </div>
@@ -572,7 +407,7 @@ function TeamManager() {
           </select>
         </div>
         <textarea value={bio} onChange={e => setBio(e.target.value)} rows={3} placeholder="Bio" className="w-full px-4 py-3 bg-cream border border-line rounded-card text-ink placeholder:text-ink-subtle" />
-        <UploadField type="portfolio" label="Choose image" round value={image} onChange={setImage} />
+        <UploadField type="work" label="Choose image" round value={image} onChange={setImage} />
         <button type="submit" disabled={saving} className="px-6 py-3 bg-brand-500 text-white rounded-card font-medium hover:bg-brand-600 disabled:opacity-50">{saving ? 'Saving...' : 'Add Member'}</button>
       </form>
 
@@ -761,34 +596,6 @@ const HOMEPAGE_SECTION_GROUPS = [
     title: 'About Us Page',
     sections: [
       { key: 'about-ceo', label: 'CEO Photo' },
-    ]
-  },
-  {
-    title: 'Portfolio Page',
-    sections: [
-      { key: 'portfolio-1', label: 'Work 1' },
-      { key: 'portfolio-2', label: 'Work 2' },
-      { key: 'portfolio-3', label: 'Work 3' },
-      { key: 'portfolio-4', label: 'Work 4' },
-      { key: 'portfolio-5', label: 'Work 5' },
-      { key: 'portfolio-6', label: 'Work 6' },
-    ]
-  },
-  {
-    title: 'Gallery Page',
-    sections: [
-      { key: 'gallery-1', label: 'Image 1' },
-      { key: 'gallery-2', label: 'Image 2' },
-      { key: 'gallery-3', label: 'Image 3' },
-      { key: 'gallery-4', label: 'Image 4' },
-      { key: 'gallery-5', label: 'Image 5' },
-      { key: 'gallery-6', label: 'Image 6' },
-      { key: 'gallery-7', label: 'Image 7' },
-      { key: 'gallery-8', label: 'Image 8' },
-      { key: 'gallery-9', label: 'Image 9' },
-      { key: 'gallery-10', label: 'Image 10' },
-      { key: 'gallery-11', label: 'Image 11' },
-      { key: 'gallery-12', label: 'Image 12' },
     ]
   },
 ];

@@ -41,6 +41,10 @@ prod_error.log
 # uploads
 /public/uploads/
 
+# local content store. Deliberately outside public/ so published records are
+# not served over HTTP, and gitignored because it is runtime state, not source.
+/.data/
+
 # vercel
 .vercel
 

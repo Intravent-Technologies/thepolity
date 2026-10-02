@@ -51,8 +51,8 @@ export default function AdminLogin() {
               Admin <span className="text-brand-500">access</span>
             </CategoryLabel>
             <p className="mt-4 text-[0.95rem] leading-relaxed text-ink-muted">
-              Sign in to manage portfolio, gallery, blog, work, team, reviews
-              and homepage content.
+              Sign in to manage work, blog, team, reviews and homepage
+              content.
             </p>
           </div>
 

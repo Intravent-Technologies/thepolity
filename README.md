@@ -305,16 +305,30 @@ Response: { success, token }
 
 ## Data Storage
 
-- **Portfolio:** `public/data/portfolio.json`
-- **Gallery:** `public/data/gallery.json`
-- **Files:** `public/uploads/{type}/{filename}`
+Content has two backends. Supabase is used whenever
+`NEXT_PUBLIC_SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` are set; otherwise
+the app falls back to JSON files on disk. On a read-only filesystem (typical of
+serverless deploys) the fallback is unavailable, so a production deploy must
+configure Supabase.
 
-For production, consider:
-- Firebase/Firestore
-- MongoDB
-- AWS S3
-- Supabase
-- PostgreSQL
+**With Supabase** — tables are defined in `supabase/schema.sql`. An existing
+database predating the portfolio/gallery merge must run
+`supabase/merge-into-work.sql` instead, which copies those rows into
+`work_projects` before dropping the old tables. Check your row counts and take a
+backup first.
+
+**Without Supabase** (local development):
+
+- **Content:** `.data/{work,blog,team,reviews,homepage-images}.json`
+- **Files:** `public/uploads/{work,gallery}/{filename}`
+
+`.data/` sits outside `public/` on purpose. Anything under `public/` is served
+verbatim by Next, so storing content there would publish every record at
+`/data/*.json`.
+
+Showcase content — client projects and media alike — lives in one `work`
+entity, reachable at `/work`. `/portfolio` and `/gallery` permanently redirect
+there.
 
 ## Troubleshooting
 

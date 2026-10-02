@@ -13,7 +13,12 @@ import { uploadMediaFile, saveHomepageImage } from '@/lib/storage';
 const MAX_IMAGE_BYTES = 10 * 1024 * 1024;
 const MAX_VIDEO_BYTES = 100 * 1024 * 1024;
 const MAX_UPLOADS_PER_HOUR = 120;
-const UPLOAD_TYPES = ['portfolio', 'gallery', 'homepage'] as const;
+/**
+ * Showcase uploads are all 'work' now that portfolio and gallery share one
+ * entity. 'homepage' stays separate because those images are filed into the
+ * long-standing 'gallery' storage directory, which existing uploads rely on.
+ */
+const UPLOAD_TYPES = ['work', 'homepage'] as const;
 
 type UploadType = (typeof UPLOAD_TYPES)[number];
 

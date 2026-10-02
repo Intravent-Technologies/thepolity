@@ -34,14 +34,12 @@ function InstagramIcon({ className }: IconProps) {
 const COMPANY = [
   { name: "About", href: "/about" },
   { name: "Services", href: "/services" },
-  { name: "Portfolio", href: "/portfolio" },
   { name: "Work", href: "/work" },
   { name: "Reviews", href: "/reviews" },
   { name: "Contact", href: "/contact" },
 ];
 
 const RESOURCES = [
-  { name: "Gallery", href: "/gallery" },
   { name: "Blog", href: "/blog" },
   { name: "FAQs", href: "/faqs" },
   { name: "Privacy Policy", href: "/privacy-policy" },
@@ -86,7 +84,7 @@ export default function Footer() {
               aria-label="The Polity — home"
               className="inline-block"
             >
-              <Logo variant="inverse" className="h-8" />
+              <Logo variant="inverse" className="h-11" />
             </Link>
             <p className="mt-5 max-w-sm text-[0.95rem] leading-relaxed text-ink-inverse/65">
               Strategy, technology and media under one roof. We help

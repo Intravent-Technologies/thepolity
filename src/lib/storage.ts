@@ -16,8 +16,14 @@ let DATA_DIR: string;
 let UPLOADS_DIR: string;
 
 try {
-  DATA_DIR = path.join(process.cwd(), 'public', 'data');
-  UPLOADS_DIR = path.join(process.cwd(), 'public', 'uploads');
+/**
+ * Content store location. Deliberately outside `public/`: files under
+ * `public/` are served verbatim by Next, which would expose every published
+ * record at /data/*.json. Uploads stay in public/ because they must be
+ * fetchable by the browser.
+ */
+DATA_DIR = path.join(process.cwd(), '.data');
+UPLOADS_DIR = path.join(process.cwd(), 'public', 'uploads');
   if (!fs.existsSync(DATA_DIR)) {
     fs.mkdirSync(DATA_DIR, { recursive: true });
   }
@@ -30,23 +36,6 @@ try {
   UPLOADS_DIR = '';
 }
 
-export interface PortfolioItem {
-  id: string;
-  title: string;
-  description: string;
-  image: string;
-  category: string;
-  createdAt: string;
-}
-
-export interface GalleryItem {
-  id: string;
-  title: string;
-  type: 'image' | 'video';
-  url: string;
-  createdAt: string;
-}
-
 export interface BlogPost {
   id: string;
   title: string;
@@ -56,6 +45,16 @@ export interface BlogPost {
   image: string;
 }
 
+/**
+ * The single showcase entity, absorbing the old portfolio and gallery records.
+ * Only `title` is guaranteed: a curated case study fills in `client` and
+ * `description`, a loose media item may carry only `videoUrl`, and `image` may
+ * be empty for a video with no poster.
+ *
+ * These are `string` rather than `string | undefined` because the validation
+ * layer normalises a missing optional field to `''`, which is falsy and reads
+ * back consistently from both the JSON and Supabase paths.
+ */
 export interface WorkProject {
   id: string;
   title: string;
@@ -63,6 +62,8 @@ export interface WorkProject {
   client: string;
   description: string;
   image: string;
+  videoUrl: string;
+  createdAt: string;
 }
 
 export interface TeamMember {
@@ -121,14 +122,6 @@ function getPublicMediaUrl(storagePath: string): string {
   const supabase = getSupabaseAdminClient();
   const { data } = supabase.storage.from(SUPABASE_STORAGE_BUCKET).getPublicUrl(storagePath);
   return data.publicUrl;
-}
-
-function portfolioFilePath() {
-  return path.join(DATA_DIR, 'portfolio.json');
-}
-
-function galleryFilePath() {
-  return path.join(DATA_DIR, 'gallery.json');
 }
 
 function blogFilePath() {
@@ -283,206 +276,16 @@ export async function deleteHomepageImage(id: string): Promise<void> {
   );
 }
 
-export async function getPortfolioItems(): Promise<PortfolioItem[]> {
-  if (isSupabaseConfigured()) {
-    const supabase = getSupabaseAdminClient();
-    const { data, error } = await supabase
-      .from('portfolio_items')
-      .select('id, title, description, image, category, created_at')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      throw error;
-    }
-
-    return (data || []).map((item) => ({
-      id: item.id,
-      title: item.title,
-      description: item.description,
-      image: item.image,
-      category: item.category,
-      createdAt: item.created_at,
-    }));
-  }
-
-  return readLocalJson<PortfolioItem>(portfolioFilePath()).sort((a, b) =>
-    a.createdAt < b.createdAt ? 1 : -1
-  );
-}
-
-export async function getGalleryItems(): Promise<GalleryItem[]> {
-  if (isSupabaseConfigured()) {
-    const supabase = getSupabaseAdminClient();
-    const { data, error } = await supabase
-      .from('gallery_items')
-      .select('id, title, type, url, created_at')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      throw error;
-    }
-
-    return (data || []).map((item) => ({
-      id: item.id,
-      title: item.title,
-      type: item.type,
-      url: item.url,
-      createdAt: item.created_at,
-    }));
-  }
-
-  return readLocalJson<GalleryItem>(galleryFilePath()).sort((a, b) =>
-    a.createdAt < b.createdAt ? 1 : -1
-  );
-}
-
-export async function addPortfolioItem(
-  item: Omit<PortfolioItem, 'id' | 'createdAt'>
-): Promise<PortfolioItem> {
-  if (isSupabaseConfigured()) {
-    const supabase = getSupabaseAdminClient();
-    const { data, error } = await supabase
-      .from('portfolio_items')
-      .insert({
-        title: item.title,
-        description: item.description,
-        image: item.image,
-        category: item.category,
-      })
-      .select('id, title, description, image, category, created_at')
-      .single();
-
-    if (error) {
-      throw error;
-    }
-
-    return {
-      id: data.id,
-      title: data.title,
-      description: data.description,
-      image: data.image,
-      category: data.category,
-      createdAt: data.created_at,
-    };
-  }
-
-  const items = readLocalJson<PortfolioItem>(portfolioFilePath());
-  const newItem: PortfolioItem = {
-    ...item,
-    id: Date.now().toString(),
-    createdAt: new Date().toISOString(),
-  };
-  items.unshift(newItem);
-  writeLocalJson(portfolioFilePath(), items);
-  return newItem;
-}
-
-export async function addGalleryItem(
-  item: Omit<GalleryItem, 'id' | 'createdAt'>
-): Promise<GalleryItem> {
-  if (isSupabaseConfigured()) {
-    const supabase = getSupabaseAdminClient();
-    const { data, error } = await supabase
-      .from('gallery_items')
-      .insert({
-        title: item.title,
-        type: item.type,
-        url: item.url,
-      })
-      .select('id, title, type, url, created_at')
-      .single();
-
-    if (error) {
-      throw error;
-    }
-
-    return {
-      id: data.id,
-      title: data.title,
-      type: data.type,
-      url: data.url,
-      createdAt: data.created_at,
-    };
-  }
-
-  const items = readLocalJson<GalleryItem>(galleryFilePath());
-  const newItem: GalleryItem = {
-    ...item,
-    id: Date.now().toString(),
-    createdAt: new Date().toISOString(),
-  };
-  items.unshift(newItem);
-  writeLocalJson(galleryFilePath(), items);
-  return newItem;
-}
-
-export async function deletePortfolioItem(id: string): Promise<void> {
-  if (isSupabaseConfigured()) {
-    const supabase = getSupabaseAdminClient();
-    const { data: item, error: fetchError } = await supabase
-      .from('portfolio_items')
-      .select('image')
-      .eq('id', id)
-      .maybeSingle();
-
-    if (fetchError) {
-      throw fetchError;
-    }
-
-    const { error } = await supabase.from('portfolio_items').delete().eq('id', id);
-    if (error) {
-      throw error;
-    }
-
-    await deleteUploadedAsset(item?.image);
-    return;
-  }
-
-  const items = readLocalJson<PortfolioItem>(portfolioFilePath());
-  const itemToDelete = items.find((item) => item.id === id);
-  writeLocalJson(
-    portfolioFilePath(),
-    items.filter((item) => item.id !== id)
-  );
-  await deleteUploadedAsset(itemToDelete?.image);
-}
-
-export async function deleteGalleryItem(id: string): Promise<void> {
-  if (isSupabaseConfigured()) {
-    const supabase = getSupabaseAdminClient();
-    const { data: item, error: fetchError } = await supabase
-      .from('gallery_items')
-      .select('url')
-      .eq('id', id)
-      .maybeSingle();
-
-    if (fetchError) {
-      throw fetchError;
-    }
-
-    const { error } = await supabase.from('gallery_items').delete().eq('id', id);
-    if (error) {
-      throw error;
-    }
-
-    await deleteUploadedAsset(item?.url);
-    return;
-  }
-
-  const items = readLocalJson<GalleryItem>(galleryFilePath());
-  const itemToDelete = items.find((item) => item.id === id);
-  writeLocalJson(
-    galleryFilePath(),
-    items.filter((item) => item.id !== id)
-  );
-  await deleteUploadedAsset(itemToDelete?.url);
-}
-
 export async function uploadMediaFile(options: {
   buffer: Buffer;
   contentType: string;
   filename: string;
-  directory: 'portfolio' | 'gallery';
+  /**
+   * Storage subdirectory. 'work' holds showcase media. 'gallery' is retained
+   * for homepage images, which the upload route has always filed there; the
+   * name is historical and moving it would orphan existing uploads.
+   */
+  directory: 'work' | 'gallery';
 }): Promise<{ url: string; filename: string }> {
   const safeName = options.filename.replace(/[^a-zA-Z0-9.\-_]/g, '-');
   const filename = `${Date.now()}-${safeName}`;
@@ -648,28 +451,51 @@ export async function deleteBlogPost(id: string): Promise<void> {
   );
 }
 
+/**
+ * Normalise a work_projects row into the camelCase shape the app uses. Nullable
+ * columns come back as `null` from Postgres, which the local JSON path stores
+ * as `''`; both are normalised to `''` here so callers see one consistent
+ * falsy value.
+ */
+function mapWorkRow(row: Record<string, unknown>): WorkProject {
+  return {
+    id: String(row.id),
+    title: row.title ? String(row.title) : '',
+    category: row.category ? String(row.category) : '',
+    client: row.client ? String(row.client) : '',
+    description: row.description ? String(row.description) : '',
+    image: row.image ? String(row.image) : '',
+    videoUrl: row.video_url ? String(row.video_url) : '',
+    createdAt: row.created_at ? String(row.created_at) : '',
+  };
+}
+
+const WORK_COLUMNS = 'id, title, category, client, description, image, video_url, created_at';
+
 export async function getWorkProjects(): Promise<WorkProject[]> {
   if (isSupabaseConfigured()) {
     const supabase = getSupabaseAdminClient();
     const { data, error } = await supabase
       .from('work_projects')
-      .select('id, title, category, client, description, image')
-      .order('id', { ascending: false });
+      .select(WORK_COLUMNS)
+      // Newest first. This table previously had no created_at and was ordered by
+      // `id`, a uuid, which produced an arbitrary order.
+      .order('created_at', { ascending: false });
 
     if (error) {
       throw error;
     }
 
-    return data || [];
+    return (data || []).map((row) => mapWorkRow(row as Record<string, unknown>));
   }
 
   return readLocalJson<WorkProject>(workFilePath()).sort((a, b) =>
-    a.id < b.id ? 1 : -1
+    a.createdAt < b.createdAt ? 1 : -1
   );
 }
 
 export async function addWorkProject(
-  project: Omit<WorkProject, 'id'>
+  project: Omit<WorkProject, 'id' | 'createdAt'>
 ): Promise<WorkProject> {
   if (isSupabaseConfigured()) {
     const supabase = getSupabaseAdminClient();
@@ -681,21 +507,23 @@ export async function addWorkProject(
         client: project.client,
         description: project.description,
         image: project.image,
+        video_url: project.videoUrl,
       })
-      .select('id, title, category, client, description, image')
+      .select(WORK_COLUMNS)
       .single();
 
     if (error) {
       throw error;
     }
 
-    return data;
+    return mapWorkRow(data as Record<string, unknown>);
   }
 
   const projects = readLocalJson<WorkProject>(workFilePath());
   const newProject: WorkProject = {
     ...project,
     id: Date.now().toString(),
+    createdAt: new Date().toISOString(),
   };
   projects.unshift(newProject);
   writeLocalJson(workFilePath(), projects);
@@ -703,20 +531,39 @@ export async function addWorkProject(
 }
 
 export async function deleteWorkProject(id: string): Promise<void> {
+  // Both assets are removed with the record. This project had no cleanup
+  // before it absorbed the portfolio and gallery entities, both of which did
+  // delete their uploaded file, so this preserves that behaviour.
   if (isSupabaseConfigured()) {
     const supabase = getSupabaseAdminClient();
+    const { data: item, error: fetchError } = await supabase
+      .from('work_projects')
+      .select('image, video_url')
+      .eq('id', id)
+      .maybeSingle();
+
+    if (fetchError) {
+      throw fetchError;
+    }
+
     const { error } = await supabase.from('work_projects').delete().eq('id', id);
     if (error) {
       throw error;
     }
+
+    await deleteUploadedAsset(item?.image);
+    await deleteUploadedAsset(item?.video_url);
     return;
   }
 
   const projects = readLocalJson<WorkProject>(workFilePath());
+  const toDelete = projects.find((project) => project.id === id);
   writeLocalJson(
     workFilePath(),
     projects.filter((project) => project.id !== id)
   );
+  await deleteUploadedAsset(toDelete?.image);
+  await deleteUploadedAsset(toDelete?.videoUrl);
 }
 
 export async function getTeamMembers(): Promise<TeamMember[]> {
