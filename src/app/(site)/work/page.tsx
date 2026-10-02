@@ -10,12 +10,14 @@ import {
   Eyebrow,
   Section,
 } from '@/components/ui';
-import type { WorkProject } from '@/lib/work-types';
+import AlbumGrid from '@/components/work/AlbumGrid';
+import type { WorkAlbum, WorkProject } from '@/lib/work-types';
 
 const ALL = 'All';
 
 export default function Work() {
   const [projects, setProjects] = useState<WorkProject[]>([]);
+  const [albums, setAlbums] = useState<WorkAlbum[]>([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState(ALL);
 
@@ -32,6 +34,28 @@ export default function Work() {
       })
       .finally(() => {
         if (!cancelled) setLoading(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  /**
+   * Albums load separately from case studies. They are a different kind of
+   * thing — a photographed project rather than a written one — and a failure
+   * here must not blank the case studies above it.
+   */
+  useEffect(() => {
+    let cancelled = false;
+
+    fetch('/api/work/albums')
+      .then((res) => (res.ok ? res.json() : []))
+      .then((data: WorkAlbum[]) => {
+        if (!cancelled && Array.isArray(data)) setAlbums(data);
+      })
+      .catch(() => {
+        if (!cancelled) setAlbums([]);
       });
 
     return () => {
@@ -189,6 +213,20 @@ export default function Work() {
               )}
             </>
           )}
+
+          {/*
+            Albums are shown outside the category filter. A folder's photos
+            belong to one project, so filtering case studies by category should
+            not hide a whole album that happens to share a category label.
+          */}
+          {albums.length > 0 ? (
+            <div className="mt-20 border-t border-line pt-16 sm:mt-28 sm:pt-20">
+              <Eyebrow>Albums</Eyebrow>
+              <div className="mt-10 grid gap-x-8 gap-y-14 md:grid-cols-2">
+                <AlbumGrid albums={albums} />
+              </div>
+            </div>
+          ) : null}
         </Container>
       </Section>
 
