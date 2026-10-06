@@ -322,14 +322,24 @@ html {
 
   .tp-header[data-over-hero='true'] nav a,
   .tp-header[data-over-hero='true'] nav button,
-  .tp-header[data-over-hero='true'] [data-header-cta] {
+  .tp-header[data-over-hero='true'] [data-header-toggle] {
     color: var(--color-ink-inverse) !important;
   }
 
   .tp-header[data-over-hero='true'] nav a:hover,
-  .tp-header[data-over-hero='true'] nav button:hover {
+  .tp-header[data-over-hero='true'] nav button:hover,
+  .tp-header[data-over-hero='true'] [data-header-toggle]:hover {
     color: var(--color-brand-400) !important;
   }
+
+  /* The hamburger's ring is a border, not text, so the colour rule above leaves
+     it dark against the photograph. */
+  .tp-header[data-over-hero='true'] [data-header-toggle] {
+    border-color: rgb(255 255 255 / 0.35) !important;
+  }
+
+  /* The CTA is a filled brand button, so it stays orange on the hero. Flipping
+     its text to white would make the label disappear into the fill. */
 
   @media (prefers-reduced-motion: reduce) {
 

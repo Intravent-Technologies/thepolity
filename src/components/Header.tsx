@@ -24,8 +24,17 @@ const NAV = [
   { name: "Contact", href: "/contact" },
 ];
 
-function Wordmark({ className = "" }: { className?: string }) {
-  return <Logo className={`h-10 ${className}`} />;
+function Wordmark({
+  className = "",
+  invert = false,
+}: {
+  className?: string;
+  invert?: boolean;
+}) {
+  /* The logo is an image, so swapping to the inverse artwork is the only way to
+     keep it legible on the hero. A CSS colour rule cannot reach an <img> src,
+     which is why this is a prop rather than part of the over-hero stylesheet. */
+  return <Logo variant={invert ? "inverse" : "dark"} className={`h-10 ${className}`} />;
 }
 
 export default function Header() {
@@ -108,7 +117,7 @@ export default function Header() {
       <Container width="wide">
         <div className="flex h-18 items-center justify-between gap-6">
           <Link href="/" aria-label="The Polity — home" className="shrink-0">
-            <Wordmark />
+            <Wordmark invert={overHero} />
           </Link>
 
           <nav aria-label="Primary" className="hidden items-center gap-1 lg:flex">
@@ -204,7 +213,7 @@ export default function Header() {
                 itself never applies. The wrapper appears on `lg` alongside the
                 nav; at 1024px there are a few spare pixels only because the
                 nav flex-shrinks, so keep this breakpoint in step with `lg`. */}
-            <span className="hidden lg:block">
+            <span className="hidden lg:block" data-header-cta="true">
               <ButtonLink href="/contact" size="sm">
                 Free consultation
               </ButtonLink>
@@ -217,6 +226,7 @@ export default function Header() {
               aria-controls="mobile-nav"
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
               className="flex size-10 items-center justify-center rounded-full border border-line-strong text-ink transition-colors duration-200 hover:border-brand-500 hover:text-brand-600 lg:hidden"
+              data-header-toggle="true"
             >
               {mobileOpen ? <X className="size-5" /> : <Menu className="size-5" />}
             </button>
