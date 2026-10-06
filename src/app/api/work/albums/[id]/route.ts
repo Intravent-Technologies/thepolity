@@ -16,6 +16,7 @@ import {
   toErrorResponse,
 } from '@/lib/api-guard';
 import { ValidationError } from '@/lib/validate';
+import { recordAdminAction } from '@/lib/audit';
 
 const ENTITY: ContentEntity = 'albums';
 
@@ -149,6 +150,7 @@ export async function PATCH(
       }),
     });
 
+    recordAdminAction(request, 'album.update', 'album', updated.id, { updated: Object.keys(body) });
     return NextResponse.json(updated);
   } catch (error) {
     return toErrorResponse(error, 'Failed to update album');
@@ -172,6 +174,7 @@ export async function DELETE(
     }
 
     await deleteWorkAlbum(id);
+    recordAdminAction(request, 'album.delete', 'album', id);
     return NextResponse.json({ success: true });
   } catch (error) {
     return toErrorResponse(error, 'Failed to delete album');

@@ -9,7 +9,8 @@ import {
 } from '@/lib/storage';
 import { downloadDriveFile, listFolderFiles } from '@/lib/google-drive';
 import { MAX_VIDEO_BYTES } from '@/lib/upload-rules';
-import { clientIp, rateLimit } from '@/lib/rate-limit';
+import { clientIp, rateLimitRequest } from '@/lib/rate-limit';
+import { recordAdminAction } from '@/lib/audit';
 import { readRouteParam, requireAdmin, toErrorResponse } from '@/lib/api-guard';
 import type { WorkAlbumMedia } from '@/lib/work-types';
 import { ValidationError } from '@/lib/validate';
@@ -50,7 +51,7 @@ export async function POST(
   }
 
   const ip = clientIp(request);
-  const limit = rateLimit(`album-sync:${ip}`, MAX_SYNCS_PER_HOUR, 60 * 60 * 1000);
+  const limit = await rateLimitRequest(`album-sync:${ip}`, MAX_SYNCS_PER_HOUR, 60 * 60 * 1000);
   if (!limit.ok) {
     return NextResponse.json(
       { error: 'Too many syncs. Please try again later.' },
@@ -188,6 +189,13 @@ export async function POST(
         `${outcome.videosAdded} videos added, ${outcome.videosReused} reused, ` +
         `${outcome.videosSkipped.length} skipped`
     );
+
+    recordAdminAction(request, 'media.drive_sync', 'album', album.id, {
+      photos: outcome.photos,
+      videosAdded: outcome.videosAdded,
+      videosReused: outcome.videosReused,
+      videosSkipped: outcome.videosSkipped.length,
+    });
 
     return NextResponse.json({
       ...outcome,

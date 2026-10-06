@@ -24,9 +24,13 @@ const securityHeaders = [
   { key: "X-Frame-Options", value: "DENY" },
   { key: "Referrer-Policy", value: "strict-origin-when-cross-origin" },
   { key: "X-DNS-Prefetch-Control", value: "off" },
+  // Stops legacy plugins (Flash, Acrobat) reading the site cross-domain.
+  { key: "X-Permitted-Cross-Domain-Policies", value: "none" },
   {
     key: "Permissions-Policy",
-    value: "camera=(), microphone=(), geolocation=(), interest-cohort=()",
+    // `interest-cohort` was an FLoC-era directive browsers have dropped, so it
+    // only added noise. Every feature actually requested here is denied.
+    value: "camera=(), microphone=(), geolocation=(), payment=(), usb=()",
   },
   ...(isProduction
     ? [

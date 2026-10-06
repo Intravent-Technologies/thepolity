@@ -88,7 +88,7 @@ export function isSupabaseConfigured(): boolean {
   return !!(SUPABASE_URL && SUPABASE_SERVICE_ROLE_KEY);
 }
 
-function getSupabaseAdminClient(): SupabaseClient {
+export function getSupabaseAdminClient(): SupabaseClient {
   // Allow connection even without service key - for read operations
   if (!SUPABASE_URL) {
     console.log('[Storage] Missing URL');

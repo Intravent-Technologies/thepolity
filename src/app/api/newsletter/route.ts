@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { clientIp, rateLimit } from '@/lib/rate-limit';
+import { clientIp, rateLimitRequest } from '@/lib/rate-limit';
 import { isPlainObject } from '@/lib/validate';
 
 const MAX_ATTEMPTS = 5;
@@ -9,7 +9,7 @@ const MAX_EMAIL_LENGTH = 254;
 
 export async function POST(request: NextRequest) {
   const ip = clientIp(request);
-  const limit = rateLimit(`newsletter:${ip}`, MAX_ATTEMPTS, WINDOW_MS);
+  const limit = await rateLimitRequest(`newsletter:${ip}`, MAX_ATTEMPTS, WINDOW_MS);
 
   if (!limit.ok) {
     return NextResponse.json(

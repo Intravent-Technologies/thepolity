@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { clientIp, rateLimit } from '@/lib/rate-limit';
+import { clientIp, rateLimitRequest } from '@/lib/rate-limit';
 import { MAX_IMAGE_BYTES, MAX_VIDEO_BYTES } from '@/lib/upload-rules';
 import { hasAllowedExtension, safeUploadName } from '@/lib/validate';
 import { createAlbumUploadTicket, getWorkAlbumById, isSupabaseConfigured } from '@/lib/storage';
@@ -28,7 +28,7 @@ export async function POST(
   }
 
   const ip = clientIp(request);
-  const limit = rateLimit(`album-ticket:${ip}`, MAX_TICKETS_PER_HOUR, 60 * 60 * 1000);
+  const limit = await rateLimitRequest(`album-ticket:${ip}`, MAX_TICKETS_PER_HOUR, 60 * 60 * 1000);
   if (!limit.ok) {
     return NextResponse.json(
       { error: 'Too many upload attempts. Please try again later.' },

@@ -6,7 +6,8 @@ import {
   isAdminAuthConfigured,
   validateAdminPassword,
 } from '@/lib/auth';
-import { clientIp, rateLimit } from '@/lib/rate-limit';
+import { clientIp, rateLimitRequest } from '@/lib/rate-limit';
+import { recordAdminAction } from '@/lib/audit';
 import { isPlainObject } from '@/lib/validate';
 
 const MAX_ATTEMPTS = 8;
@@ -24,7 +25,7 @@ export async function POST(request: NextRequest) {
   }
 
   const ip = clientIp(request);
-  const limit = rateLimit(`auth:${ip}`, MAX_ATTEMPTS, WINDOW_MS);
+  const limit = await rateLimitRequest(`auth:${ip}`, MAX_ATTEMPTS, WINDOW_MS);
 
   if (!limit.ok) {
     return NextResponse.json(
@@ -46,6 +47,7 @@ export async function POST(request: NextRequest) {
 
   if (!(await validateAdminPassword(password))) {
     console.warn(`[auth] Failed admin login attempt from ${ip}`);
+    recordAdminAction(request, 'auth.login_failed', 'session', null, { ip });
     return NextResponse.json({ error: 'Invalid password' }, { status: 401 });
   }
 
@@ -56,6 +58,8 @@ export async function POST(request: NextRequest) {
       { status: 503 }
     );
   }
+
+  recordAdminAction(request, 'auth.login_succeeded', 'session', null, { ip });
 
   const response = NextResponse.json({ success: true, authenticated: true });
 

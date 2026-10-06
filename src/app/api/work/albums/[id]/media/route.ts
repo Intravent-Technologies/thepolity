@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { clientIp, rateLimit } from '@/lib/rate-limit';
+import { clientIp, rateLimitRequest } from '@/lib/rate-limit';
 import { MAX_IMAGE_BYTES, MAX_VIDEO_BYTES } from '@/lib/upload-rules';
 import {
   containsMarkup,
@@ -23,6 +23,7 @@ import {
   requireAdmin,
   toErrorResponse,
 } from '@/lib/api-guard';
+import { recordAdminAction } from '@/lib/audit';
 
 const MAX_UPLOADS_PER_HOUR = 240;
 
@@ -47,7 +48,7 @@ export async function POST(
   }
 
   const ip = clientIp(request);
-  const limit = rateLimit(`album-media:${ip}`, MAX_UPLOADS_PER_HOUR, 60 * 60 * 1000);
+  const limit = await rateLimitRequest(`album-media:${ip}`, MAX_UPLOADS_PER_HOUR, 60 * 60 * 1000);
   if (!limit.ok) {
     return NextResponse.json(
       { error: 'Too many uploads. Please try again later.' },
@@ -130,6 +131,11 @@ export async function POST(
 
     const media = await addWorkAlbumMedia(album.id, uploaded);
 
+    recordAdminAction(request, 'media.upload', 'album', albumId, {
+      uploaded: media.length,
+      rejected: rejected?.length ?? 0,
+    });
+
     /* One bad file in a batch of twenty should not throw away the nineteen that
        were fine, so partial success is the normal case and `rejected` is
        reported rather than treated as a failure. */
@@ -170,6 +176,7 @@ export async function PATCH(
     }
 
     const media = await reorderWorkAlbumMedia(album.id, orderedIds);
+    recordAdminAction(request, 'media.reorder', 'album', album.id, { count: orderedIds.length });
     return NextResponse.json({ media });
   } catch (error) {
     return toErrorResponse(error, 'Failed to reorder album');
@@ -202,6 +209,7 @@ export async function DELETE(
     }
 
     const media: WorkAlbumMedia[] = await removeWorkAlbumMedia(album.id, String(body.mediaId));
+    recordAdminAction(request, 'media.delete', 'album', album.id, { mediaId: body.mediaId });
     return NextResponse.json({ media });
   } catch (error) {
     return toErrorResponse(error, 'Failed to remove item');

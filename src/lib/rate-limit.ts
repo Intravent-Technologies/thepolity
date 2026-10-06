@@ -1,4 +1,5 @@
 import type { NextRequest } from 'next/server';
+import { isSupabaseConfigured, getSupabaseAdminClient } from '@/lib/storage';
 
 type Bucket = {
   count: number;
@@ -69,6 +70,12 @@ export type RateLimitResult = {
   retryAfterSeconds: number;
 };
 
+/**
+ * In-memory fallback. Accurate for a single long-lived process and useless
+ * across a serverless fleet, so it is only reached when Supabase is unavailable
+ * (local development, or a database outage). It is kept because dropping to no
+ * limit at all during an outage would be worse than a weak one.
+ */
 export function rateLimit(key: string, limit: number, windowMs: number): RateLimitResult {
   const now = Date.now();
   prune(now);
@@ -88,4 +95,64 @@ export function rateLimit(key: string, limit: number, windowMs: number): RateLim
     remaining,
     retryAfterSeconds: existing.count <= limit ? 0 : retryAfterSeconds,
   };
+}
+
+/** Housekeeping runs on a small share of calls so it costs almost nothing. */
+function shouldPruneRemote(): boolean {
+  return Math.random() < 0.02;
+}
+
+/**
+ * Rate limit against a shared Postgres counter so the allowance survives cold
+ * starts and is enforced identically across every instance.
+ *
+ * If the database cannot be reached this falls back to the in-memory limiter
+ * rather than failing the request: a transient outage should not lock the site
+ * owner out of their own dashboard, and the weaker local limit still catches a
+ * casual spray that the durable one would have stopped. A security control that
+ * fails *open* with no signal would be the wrong trade here, so the fallback is
+ * logged.
+ */
+export async function rateLimitRequest(
+  key: string,
+  limit: number,
+  windowMs: number
+): Promise<RateLimitResult> {
+  if (!isSupabaseConfigured()) {
+    return rateLimit(key, limit, windowMs);
+  }
+
+  try {
+    if (shouldPruneRemote()) {
+      // Fire and forget: a failure here must never affect the caller's result.
+      void getSupabaseAdminClient().rpc('prune_rate_limits').then(({ error }) => {
+        if (error) console.error('[rate-limit] prune failed:', error.message);
+      });
+    }
+
+    const { data, error } = await getSupabaseAdminClient().rpc('consume_rate_limit', {
+      p_key: key,
+      p_limit: limit,
+      p_window_ms: windowMs,
+    });
+
+    if (error) throw new Error(error.message);
+
+    const row = (Array.isArray(data) ? data[0] : data) as
+      | { allowed?: boolean; remaining?: number; retry_after?: number }
+      | null;
+
+    if (!row || typeof row.allowed !== 'boolean') {
+      throw new Error('unexpected response from consume_rate_limit');
+    }
+
+    return {
+      ok: row.allowed,
+      remaining: typeof row.remaining === 'number' ? row.remaining : 0,
+      retryAfterSeconds: Math.max(1, Math.ceil(row.retry_after ?? 1)),
+    };
+  } catch (error) {
+    console.error('[rate-limit] durable limiter unavailable, using local fallback:', error);
+    return rateLimit(key, limit, windowMs);
+  }
 }

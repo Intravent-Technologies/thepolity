@@ -12,6 +12,7 @@ import {
   toErrorResponse,
 } from '@/lib/api-guard';
 import { ValidationError } from '@/lib/validate';
+import { recordAdminAction } from '@/lib/audit';
 
 const ENTITY: ContentEntity = 'albums';
 
@@ -81,6 +82,7 @@ export async function POST(request: NextRequest) {
       driveFolderUrl,
     });
 
+    recordAdminAction(request, 'album.create', 'album', album.id, { title: album.title });
     return NextResponse.json(album, { status: 201 });
   } catch (error) {
     return toErrorResponse(error, 'Failed to create album');

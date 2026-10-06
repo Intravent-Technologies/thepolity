@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { clientIp, rateLimit } from '@/lib/rate-limit';
+import { clientIp, rateLimitRequest } from '@/lib/rate-limit';
+import { recordAdminAction } from '@/lib/audit';
 import { MAX_IMAGE_BYTES, MAX_VIDEO_BYTES } from '@/lib/upload-rules';
 import { safeUploadName } from '@/lib/validate';
 import {
@@ -31,7 +32,7 @@ export async function POST(
   }
 
   const ip = clientIp(request);
-  const limit = rateLimit(`album-confirm:${ip}`, MAX_CONFIRMS_PER_HOUR, 60 * 60 * 1000);
+  const limit = await rateLimitRequest(`album-confirm:${ip}`, MAX_CONFIRMS_PER_HOUR, 60 * 60 * 1000);
   if (!limit.ok) {
     return NextResponse.json(
       { error: 'Too many upload attempts. Please try again later.' },
@@ -109,7 +110,13 @@ export async function POST(
         },
       ]);
 
-      return NextResponse.json({ media }, { status: 201 });
+      recordAdminAction(request, 'media.upload', 'album', album.id, {
+      path: storagePath,
+      sizeBytes: stored.sizeBytes,
+      contentType: stored.contentType,
+      direct: true,
+    });
+return NextResponse.json({ media }, { status: 201 });
     } catch (error) {
       /* Nothing references the object if the row did not land, and the bucket is
          public, so leave nothing behind. */

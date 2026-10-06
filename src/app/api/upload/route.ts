@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { ADMIN_COOKIE_NAME, validateAdminSessionToken } from '@/lib/auth';
-import { clientIp, rateLimit } from '@/lib/rate-limit';
+import { requireAdmin } from '@/lib/api-guard';
+import { clientIp, rateLimitRequest } from '@/lib/rate-limit';
 import {
   containsMarkup,
   detectContentType,
@@ -28,7 +28,7 @@ function isUploadType(value: unknown): value is UploadType {
 
 export async function POST(request: NextRequest) {
   const ip = clientIp(request);
-  const limit = rateLimit(`upload:${ip}`, MAX_UPLOADS_PER_HOUR, 60 * 60 * 1000);
+  const limit = await rateLimitRequest(`upload:${ip}`, MAX_UPLOADS_PER_HOUR, 60 * 60 * 1000);
 
   if (!limit.ok) {
     return NextResponse.json(
@@ -37,9 +37,9 @@ export async function POST(request: NextRequest) {
     );
   }
 
-  const token = request.cookies.get(ADMIN_COOKIE_NAME)?.value;
-  if (!validateAdminSessionToken(token)) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
+  const denied = requireAdmin(request);
+  if (denied) {
+    return denied;
   }
 
   let formData: FormData;
