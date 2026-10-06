@@ -41,7 +41,7 @@ export default function Header() {
   const pathname = usePathname();
   const [servicesOpen, setServicesOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
+  const [atTop, setAtTop] = useState(true);
   const servicesRef = useRef<HTMLDivElement>(null);
 
   // Close everything on navigation. Adjusting during render avoids the
@@ -53,11 +53,33 @@ export default function Header() {
     setMobileOpen(false);
   }
 
+  /* Two thresholds rather than one, so the bar cannot flicker between its
+     transparent and solid states while the page sits near the top.
+
+     A single `scrollY > 8` test means a few pixels of scroll jitter, or an
+     elastic overscroll bouncing off the top on iOS, swaps the surface and every
+     link colour at once. Scrolling down only has to clear the higher threshold
+     to commit to the solid bar; coming back up, the lower one hands control to
+     the transparent state. The gap between them is the dead zone. */
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8);
+    const COMMIT_DOWN_PX = 24;
+    const RELEASING_UP_PX = 8;
+
+    const onScroll = () => {
+      const y = window.scrollY;
+      setAtTop((current) => {
+        if (current) return y < COMMIT_DOWN_PX;
+        return y > RELEASING_UP_PX;
+      });
+    };
+
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    return () => window.removeEventListener("scroll", onScroll);
+    window.addEventListener("resize", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
   }, []);
 
   // Escape closes, and a click outside dismisses the services panel.
@@ -97,8 +119,12 @@ export default function Header() {
 
   /* Only the homepage opens on a full-bleed photograph. Everywhere else the
      page starts on a light surface, so a transparent bar there would put white
-     links on cream. Scrolling past the hero turns the bar solid again. */
-  const overHero = pathname === "/" && !scrolled;
+     links on cream. Scrolling past the hero turns the bar solid again.
+
+     `scrolled` only drives the shadow; `atTop` decides the transparent state, so
+     the two no longer disagree about whether the page is at the top. */
+  const overHero = pathname === "/" && atTop;
+  const scrolled = !atTop;
 
   return (
     <header
@@ -237,7 +263,7 @@ export default function Header() {
       {mobileOpen ? (
         <div
           id="mobile-nav"
-          className="max-h-[calc(100dvh-4.5rem)] overflow-y-auto border-t border-line bg-cream lg:hidden"
+          className="max-h-[calc(100dvh-var(--tp-header-h))] overflow-y-auto border-t border-line bg-cream lg:hidden"
         >
           <Container className="py-6">
             <nav aria-label="Mobile" className="flex flex-col">

@@ -91,6 +91,14 @@
     -webkit-text-size-adjust: 100%;
   }
 
+  /* Height of the sticky bar (Header renders `h-18`). The homepage hero has to
+     start at y=0 for the transparent bar to sit on the photograph rather than
+     on the cream page background, and the mobile panel has to stop short of it.
+     Both read from here so the two cannot drift apart. */
+  :root {
+    --tp-header-h: 4.5rem;
+  }
+
   body {
     background-color: var(--color-cream);
     color: var(--color-ink);
@@ -184,8 +192,20 @@ html {
 
 @layer components {
   .animate-fade-rise {
-  animation: tp-fade-rise 0.6s var(--ease-out-quint) both;
+    animation: tp-fade-rise 0.6s var(--ease-out-quint) both;
   }
+
+  /* Pull a full-bleed opener up underneath the sticky header.
+
+     The header is a normal-flow sibling that comes *before* <main>, so without
+     this the hero's top edge sat one header-height down the page: the bar looked
+     transparent but was actually over the cream background, leaving white links
+     on cream. Negative margin puts the hero's real top edge at y=0, which is
+     what "over the hero" assumes. */
+  .tp-under-header {
+    margin-top: calc(var(--tp-header-h) * -1);
+  }
+
 
   /* Duplicated track plus a 50% translate gives a seamless loop. */
   .tp-marquee-track {
