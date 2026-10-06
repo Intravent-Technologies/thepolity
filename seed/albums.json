@@ -1,0 +1,26 @@
+{
+  "$comment": "Album definitions. This is authored content - the title, category and the Drive folder - so it lives in git and seeds an empty local store. It deliberately contains NO photo metadata: media rows are regenerated from the Drive folder by pressing Sync, which keeps roughly forty Drive file ids out of the repository. Editing an album in the admin rewrites .data/work-albums.json and does NOT change this file, so re-sync that album's folder here if you want a definition change to survive a fresh clone.",
+  "albums": [
+    {
+      "slug": "a-e-wedding-pictures",
+      "title": "A&E Wedding Pictures",
+      "category": "Wedding Event",
+      "description": "",
+      "driveFolderUrl": "https://drive.google.com/drive/folders/1HjbcHomjXINScWA-hSudygrmHHe--QQ2"
+    },
+    {
+      "slug": "studio-shoot",
+      "title": "Studio Shoot",
+      "category": "Studio Session",
+      "description": "",
+      "driveFolderUrl": "https://drive.google.com/drive/folders/1G4C9noQ5aZ4jvOOiraRbP9VFsIArOv9w"
+    },
+    {
+      "slug": "royalty-hrm-oba-gb-faduyile",
+      "title": "Royalty HRM Oba GB Faduyile",
+      "category": "Royalty",
+      "description": "",
+      "driveFolderUrl": "https://drive.google.com/drive/folders/1H71kjv_nTvDahH59hiAGTsO8RZ1DTX9l"
+    }
+  ]
+}

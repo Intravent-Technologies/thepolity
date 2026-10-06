@@ -668,6 +668,86 @@ function albumMediaFilePath() {
 }
 
 /**
+ * A definition of an album as authored content: what it is called and which
+ * Drive folder holds its media. This is the part that cannot be recovered from
+ * Google, so it is committed alongside the code rather than left in `.data/`,
+ * which is gitignored.
+ */
+interface AlbumSeed {
+  slug: string;
+  title: string;
+  category: string;
+  description: string;
+  driveFolderUrl: string;
+}
+
+/**
+ * Reads album definitions out of `seed/albums.json`, which is committed.
+ *
+ * Only definitions live there. Photo metadata deliberately does not: the media
+ * rows are all reproducible from the Drive folder by syncing, so seeding them
+ * would put several dozen Drive file ids in the repository for no benefit.
+ */
+function readAlbumSeeds(): AlbumSeed[] {
+  const seedPath = path.join(process.cwd(), 'seed', 'albums.json');
+  if (!fs.existsSync(seedPath)) return [];
+  try {
+    const parsed = JSON.parse(fs.readFileSync(seedPath, 'utf-8')) as {
+      albums?: AlbumSeed[];
+    };
+    return Array.isArray(parsed.albums) ? parsed.albums : [];
+  } catch (error) {
+    console.error('[Storage] Could not read seed/albums.json', error);
+    return [];
+  }
+}
+
+/** Extracts the bare folder id from a Drive URL, matching the sync route. */
+function folderIdFromUrl(url: string): string {
+  const match = url.match(/folders\/([A-Za-z0-9_-]+)/);
+  return match ? match[1] : '';
+}
+
+/**
+ * Returns the local album store, seeding it from `seed/albums.json` the first
+ * time it is read while still empty.
+ *
+ * Seeding only fills an empty store. An album added or edited in the admin is
+ * therefore never reverted, and `.data/` keeps working exactly as before for
+ * anyone who never runs a seeded clone. Seeded ids are derived from the slug so
+ * a fresh clone produces the same ids on every machine.
+ */
+function readLocalAlbums(): WorkAlbum[] {
+  const filePath = albumsFilePath();
+  const existing = readLocalJson<WorkAlbum>(filePath);
+  if (existing.length > 0) return existing;
+
+  const seeds = readAlbumSeeds();
+  if (seeds.length === 0) return existing;
+
+  const seeded: WorkAlbum[] = seeds.map((seed, index) => ({
+    id: `seed-${seed.slug}`,
+    slug: seed.slug,
+    title: seed.title,
+    category: seed.category,
+    description: seed.description,
+    coverDriveFileId: '',
+    driveFolderId: folderIdFromUrl(seed.driveFolderUrl),
+    driveFolderUrl: seed.driveFolderUrl,
+    photoCount: 0,
+    videoCount: 0,
+    lastSyncedAt: '',
+    createdAt: new Date(Date.now() - index * 1000).toISOString(),
+  }));
+
+  writeLocalJson(filePath, seeded);
+  console.log(
+    `[Storage] Seeded ${seeded.length} album definitions from seed/albums.json. Press Sync in the admin to pull their photos.`
+  );
+  return seeded;
+}
+
+/**
  * Local ids must be unique within a single sync, where many rows are created in
  * one tick. `Date.now()` alone collides there, so a random suffix is added.
  */
@@ -726,7 +806,7 @@ export async function getWorkAlbums(): Promise<WorkAlbum[]> {
     return (data || []).map((row) => mapAlbumRow(row as Record<string, unknown>));
   }
 
-  return readLocalJson<WorkAlbum>(albumsFilePath()).sort((a, b) =>
+  return readLocalAlbums().sort((a, b) =>
     a.createdAt < b.createdAt ? 1 : -1
   );
 }
@@ -745,7 +825,7 @@ export async function getWorkAlbumById(id: string): Promise<WorkAlbum | null> {
     return data ? mapAlbumRow(data as Record<string, unknown>) : null;
   }
 
-  return readLocalJson<WorkAlbum>(albumsFilePath()).find((album) => album.id === id) || null;
+  return readLocalAlbums().find((album) => album.id === id) || null;
 }
 
 export async function getWorkAlbumBySlug(slug: string): Promise<WorkAlbum | null> {
@@ -762,7 +842,7 @@ export async function getWorkAlbumBySlug(slug: string): Promise<WorkAlbum | null
     return data ? mapAlbumRow(data as Record<string, unknown>) : null;
   }
 
-  return readLocalJson<WorkAlbum>(albumsFilePath()).find((album) => album.slug === slug) || null;
+  return readLocalAlbums().find((album) => album.slug === slug) || null;
 }
 
 export async function getWorkAlbumMedia(albumId: string): Promise<WorkAlbumMedia[]> {
