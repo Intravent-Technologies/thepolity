@@ -15,12 +15,6 @@ import { Container } from './ui';
  * the source is usually a Drive-hosted album cover, which is not known at build
  * time. Remote hosts must be allow-listed in next.config for this to render at
  * all, so a missing entry shows the fallback silently rather than throwing.
- *
- * This component is the homepage's opening section and is the only place the
- * header goes transparent, so it pulls itself up under the bar (see
- * `.tp-under-header`). That also moves the hero's real top edge to y=0, which is
- * what the scrim below is tuned for: its darkest stop exists to keep the bar's
- * white links legible over the photograph.
  */
 export default function PhotoHero({
   imageSrc,
@@ -48,7 +42,7 @@ export default function PhotoHero({
   children?: React.ReactNode;
 }) {
   return (
-    <section       className="tp-under-header relative isolate flex min-h-[92svh] flex-col justify-end overflow-hidden bg-navy-800">
+    <section       className="relative isolate flex min-h-[92svh] flex-col justify-end overflow-hidden bg-navy-800">
       <div className="absolute inset-0 overflow-hidden">
         <Image
           src={imageSrc}

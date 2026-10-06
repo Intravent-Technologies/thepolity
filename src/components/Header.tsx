@@ -24,24 +24,18 @@ const NAV = [
   { name: "Contact", href: "/contact" },
 ];
 
-function Wordmark({
-  className = "",
-  invert = false,
-}: {
-  className?: string;
-  invert?: boolean;
-}) {
-  /* The logo is an image, so swapping to the inverse artwork is the only way to
-     keep it legible on the hero. A CSS colour rule cannot reach an <img> src,
-     which is why this is a prop rather than part of the over-hero stylesheet. */
-  return <Logo variant={invert ? "inverse" : "dark"} className={`h-10 ${className}`} />;
+/* The bar is always the light cream surface, so the logo is always the dark
+   artwork. The inverse variant exists for type set directly on a photograph;
+   nothing in the header does that any more. */
+function Wordmark({ className = "" }: { className?: string }) {
+  return <Logo variant="dark" className={`h-10 ${className}`} />;
 }
 
 export default function Header() {
   const pathname = usePathname();
   const [servicesOpen, setServicesOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [atTop, setAtTop] = useState(true);
+  const [scrolled, setScrolled] = useState(false);
   const servicesRef = useRef<HTMLDivElement>(null);
 
   // Close everything on navigation. Adjusting during render avoids the
@@ -53,33 +47,27 @@ export default function Header() {
     setMobileOpen(false);
   }
 
-  /* Two thresholds rather than one, so the bar cannot flicker between its
-     transparent and solid states while the page sits near the top.
+  /* The bar keeps the same cream surface at every scroll position. An earlier
+     version made it transparent over the hero photograph and solid below, which
+     meant the surface and every link colour flipped partway down the page and
+     again on the way back up: it read as a flicker, and on a phone the white
+     links briefly sat on a pale background and looked like the nav had
+     vanished. A bar that never changes cannot flicker.
 
-     A single `scrollY > 8` test means a few pixels of scroll jitter, or an
-     elastic overscroll bouncing off the top on iOS, swaps the surface and every
-     link colour at once. Scrolling down only has to clear the higher threshold
-     to commit to the solid bar; coming back up, the lower one hands control to
-     the transparent state. The gap between them is the dead zone. */
+     Scroll position now only drives a shadow, and with a dead zone so it eases
+     in rather than switching on the first pixel. */
   useEffect(() => {
-    const COMMIT_DOWN_PX = 24;
-    const RELEASING_UP_PX = 8;
+    const ON_PX = 16;
+    const OFF_PX = 4;
 
     const onScroll = () => {
       const y = window.scrollY;
-      setAtTop((current) => {
-        if (current) return y < COMMIT_DOWN_PX;
-        return y > RELEASING_UP_PX;
-      });
+      setScrolled((current) => (current ? y > OFF_PX : y >= ON_PX));
     };
 
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", onScroll, { passive: true });
-    return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", onScroll);
-    };
+    return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   // Escape closes, and a click outside dismisses the services panel.
@@ -117,18 +105,9 @@ export default function Header() {
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
 
-  /* Only the homepage opens on a full-bleed photograph. Everywhere else the
-     page starts on a light surface, so a transparent bar there would put white
-     links on cream. Scrolling past the hero turns the bar solid again.
-
-     `scrolled` only drives the shadow; `atTop` decides the transparent state, so
-     the two no longer disagree about whether the page is at the top. */
-  const overHero = pathname === "/" && atTop;
-  const scrolled = !atTop;
 
   return (
     <header
-      data-over-hero={overHero ? "true" : "false"}
       className={`tp-header sticky top-0 z-50 border-b border-line bg-cream/90 backdrop-blur-md transition-shadow duration-300 ${
         scrolled ? "shadow-[0_1px_0_rgba(20,18,14,0.04),0_8px_24px_-20px_rgba(20,18,14,0.4)]" : ""
       }`}
@@ -143,7 +122,7 @@ export default function Header() {
       <Container width="wide">
         <div className="flex h-18 items-center justify-between gap-6">
           <Link href="/" aria-label="The Polity — home" className="shrink-0">
-            <Wordmark invert={overHero} />
+            <Wordmark />
           </Link>
 
           <nav aria-label="Primary" className="hidden items-center gap-1 lg:flex">

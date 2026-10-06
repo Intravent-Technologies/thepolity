@@ -195,18 +195,6 @@ html {
     animation: tp-fade-rise 0.6s var(--ease-out-quint) both;
   }
 
-  /* Pull a full-bleed opener up underneath the sticky header.
-
-     The header is a normal-flow sibling that comes *before* <main>, so without
-     this the hero's top edge sat one header-height down the page: the bar looked
-     transparent but was actually over the cream background, leaving white links
-     on cream. Negative margin puts the hero's real top edge at y=0, which is
-     what "over the hero" assumes. */
-  .tp-under-header {
-    margin-top: calc(var(--tp-header-h) * -1);
-  }
-
-
   /* Duplicated track plus a 50% translate gives a seamless loop. */
   .tp-marquee-track {
   display: flex;
@@ -324,42 +312,6 @@ html {
     transform: scale(1.16) translate3d(0, -1.4%, 0);
   }
 }
-
-  /* ==========================================================================
-     Header over the hero
-     ========================================================================== */
-
-  /* At the top of the homepage the bar sits on a dark photograph, so it drops
-     its surface and its links flip to white. One attribute drives the whole
-     thing rather than threading a conditional through every link's className.
-     `!important` is needed because the utility classes above are equally
-     specific and would otherwise win on order alone. */
-  .tp-header[data-over-hero='true'] {
-    background-color: transparent !important;
-    border-color: transparent !important;
-    backdrop-filter: none !important;
-  }
-
-  .tp-header[data-over-hero='true'] nav a,
-  .tp-header[data-over-hero='true'] nav button,
-  .tp-header[data-over-hero='true'] [data-header-toggle] {
-    color: var(--color-ink-inverse) !important;
-  }
-
-  .tp-header[data-over-hero='true'] nav a:hover,
-  .tp-header[data-over-hero='true'] nav button:hover,
-  .tp-header[data-over-hero='true'] [data-header-toggle]:hover {
-    color: var(--color-brand-400) !important;
-  }
-
-  /* The hamburger's ring is a border, not text, so the colour rule above leaves
-     it dark against the photograph. */
-  .tp-header[data-over-hero='true'] [data-header-toggle] {
-    border-color: rgb(255 255 255 / 0.35) !important;
-  }
-
-  /* The CTA is a filled brand button, so it stays orange on the hero. Flipping
-     its text to white would make the label disappear into the fill. */
 
   @media (prefers-reduced-motion: reduce) {
 
