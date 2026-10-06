@@ -1,30 +1,29 @@
-'use client';
-
 import Image from 'next/image';
 import Link from 'next/link';
-import { useEffect, useState } from 'react';
 import { ArrowRight, Check } from 'lucide-react';
 import {
   Badge,
-  Button,
   ButtonLink,
   CategoryLabel,
   Container,
   Eyebrow,
-  Marquee,
   NumberedRow,
-  Panel,
   Section,
   SectionHeading,
 } from '@/components/ui';
-
-interface HomepageImages {
-  [key: string]: string;
-}
+import PhotoHero from '@/components/PhotoHero';
+import PhotoMarquee from '@/components/PhotoMarquee';
+import { getHomepageImages, getWorkAlbumMedia, getWorkAlbums } from '@/lib/storage';
+import {
+  ALBUM_COVER_WIDTH,
+  ALBUM_GRID_WIDTHS,
+  drivePhotoSrcSet,
+  drivePhotoUrl,
+} from '@/lib/work-types';
 
 /* Image keys are managed from the admin dashboard, so these identifiers are a
    contract — renaming one silently breaks that control. */
-const defaultImages: HomepageImages = {
+const defaultImages: Record<string, string> = {
   'hero-visual-1': '/hero-visual-media.jpg',
   'hero-visual-2': '/hero-visual-it.jpg',
   'hero-visual-3': '/hero-visual-projects.jpg',
@@ -115,16 +114,6 @@ const POSTS = [
   { title: 'Building Brands That Last', category: 'Branding', date: 'Jan 5, 2025' },
 ];
 
-/* Practice names, repeated for the loop. */
-const DISCIPLINES = [
-  'Technology',
-  'Media',
-  'Delivery',
-  'Strategy',
-  'Production',
-  'Support',
-];
-
 const PROOF_POINTS = [
   { value: '10+', label: 'Years combined practice experience' },
   { value: 'UK', label: 'Wide, nationwide client base' },
@@ -132,231 +121,275 @@ const PROOF_POINTS = [
   { value: '0', label: 'Discovery fees' },
 ];
 
-export default function Home() {
-  const [images, setImages] = useState<HomepageImages>(defaultImages);
-  const [email, setEmail] = useState('');
-  const [status, setStatus] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
+/* Widths a hero needs. Wider than the album grid so it stays sharp on a large
+   display without offering the browser choices it will never pick. */
+const HERO_WIDTHS = [1200, 1920, 2560] as const;
 
-  useEffect(() => {
-    let cancelled = false;
+export default async function Home() {
+  const [homepageImages, albums] = await Promise.all([
+    getHomepageImages(),
+    getWorkAlbums(),
+  ]);
 
-    fetch('/api/homepage-images')
-      .then((res) => (res.ok ? res.json() : []))
-      .then((data: { section: string; imageUrl: string }[]) => {
-        if (cancelled || !Array.isArray(data)) return;
-        // Slideshow sections now hold several rows. The newest is returned
-        // first, so only claim a section once.
-        const next: HomepageImages = {};
-        for (const item of data) {
-          if (!(item.section in next)) next[item.section] = item.imageUrl;
-        }
-        setImages((prev) => ({ ...prev, ...next }));
-      })
-      .catch(() => {
-        /* fall back to the bundled artwork */
-      });
+  /* Album media for the coverage band. Read per album because the local store
+     keeps media in a separate file keyed by album id. */
+  const media = await Promise.all(albums.map((album) => getWorkAlbumMedia(album.id)));
 
-    return () => {
-      cancelled = true;
-    };
-  }, []);
+  const photos = media
+    .flat()
+    .filter((item) => item.kind === 'image' && item.driveFileId)
+    .map((item) => ({
+      src: drivePhotoUrl(item.driveFileId, 800),
+      srcSet: drivePhotoSrcSet(item.driveFileId, ALBUM_GRID_WIDTHS),
+      alt: item.filename,
+    }));
 
-  async function handleSubscribe(event: React.FormEvent) {
-    event.preventDefault();
-    if (!email) return;
-
-    setStatus('loading');
-    try {
-      const res = await fetch('/api/newsletter', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ email }),
-      });
-      if (res.ok) {
-        setEmail('');
-        setStatus('success');
-      } else {
-        setStatus('error');
-      }
-    } catch {
-      setStatus('error');
-    }
-    setTimeout(() => setStatus('idle'), 4000);
+  /* Admin-managed homepage artwork wins, because an editor chose it. Several
+     rows can share a section key after the slideshow change, so the first row
+     returned is the newest and only the first claim to a key is honoured. */
+  const images: Record<string, string> = { ...defaultImages };
+  for (const item of homepageImages) {
+    if (!(item.section in images)) images[item.section] = item.imageUrl;
   }
+
+  /* Prefer a real album cover for the hero: it is the client's own work, which
+     is the whole point of the band. Fall back to bundled artwork only if no
+     album has been synced yet, so a fresh clone is never a blank navy box. */
+  const heroCover = albums.find((album) => album.coverDriveFileId && album.photoCount > 0);
+  const heroSrc = heroCover
+    ? drivePhotoUrl(heroCover.coverDriveFileId, ALBUM_COVER_WIDTH)
+    : images['hero-visual-media'];
+  const heroSrcSet = heroCover
+    ? drivePhotoSrcSet(heroCover.coverDriveFileId, HERO_WIDTHS)
+    : undefined;
+
+  /* Three rows, alternating direction, drawn round-robin from the pool so a
+     single album does not fill all three and make the band look repetitive. */
+  const rows = photos.length
+    ? [0, 1, 2].map((rowIndex) => ({
+        photos: photos.filter((_, i) => i % 3 === rowIndex),
+        reverse: rowIndex % 2 === 1,
+      }))
+    : [];
 
   return (
     <>
       {/* ---------------------------------------------------------------- Hero */}
-      <Section tone="cream" className="pb-16 pt-14 sm:pb-24 sm:pt-20">
-        <Container>
-          <Eyebrow>Strategy · Technology · Media</Eyebrow>
+      <PhotoHero
+        imageSrc={heroSrc}
+        imageSrcSet={heroSrcSet}
+        imageAlt={heroCover ? `${heroCover.title} — album cover` : ''}
+        priority
+        eyebrow="Strategy · Technology · Media"
+        title="One team for the work that decides whether growth actually happens."
+        lede="The Polity brings IT consultancy, media production and project management together, so you are not coordinating three suppliers to deliver one outcome."
+        actions={
+          <>
+            <ButtonLink href="/contact" size="lg">
+              Book a free consultation
+              <ArrowRight className="size-4" aria-hidden="true" />
+            </ButtonLink>
+            <ButtonLink href="/work" size="lg" variant="inverse">
+              See our work
+            </ButtonLink>
+          </>
+        }
+        detail={
+          <ul className="grid max-w-3xl gap-x-8 gap-y-3 border-t border-ink-inverse/15 pt-8 sm:grid-cols-2">
+            {[
+              'No discovery fee',
+              'Written scope before we start',
+              'Senior-led delivery',
+              'Based in Walsall, working UK-wide',
+            ].map((item) => (
+              <li key={item} className="flex items-start gap-2.5 text-sm text-ink-inverse/65">
+                <Check className="mt-0.5 size-4 shrink-0 text-brand-400" aria-hidden="true" />
+                {item}
+              </li>
+            ))}
+          </ul>
+        }
+      />
 
-          <h1 className="mt-7 max-w-5xl text-display text-ink">
-            One team for the work that decides whether growth actually happens.
-          </h1>
-
-          <div className="mt-12 grid items-end gap-10 lg:grid-cols-12 lg:gap-16">
-            <div className="lg:col-span-6">
-              <p className="text-lg leading-relaxed text-ink-muted">
-                The Polity brings IT consultancy, media production and project
-                management together, so you are not coordinating three
-                suppliers to deliver one outcome.
-              </p>
-
-              <div className="mt-10 flex flex-wrap items-center gap-3">
-                <ButtonLink href="/contact" size="lg">
-                  Book a free consultation
-                  <ArrowRight className="size-4" aria-hidden="true" />
-                </ButtonLink>
-                <ButtonLink href="/work" size="lg" variant="secondary">
-                  See our work
-                </ButtonLink>
-              </div>
-
-              <ul className="mt-12 grid gap-x-8 gap-y-3 border-t border-line pt-8 sm:grid-cols-2">
-                {['No discovery fee', 'Written scope before we start', 'Senior-led delivery', 'Based in Walsall, working UK-wide'].map(
-                  (item) => (
-                    <li key={item} className="flex items-start gap-2.5 text-sm text-ink-muted">
-                      <Check className="mt-0.5 size-4 shrink-0 text-brand-500" aria-hidden="true" />
-                      {item}
-                    </li>
-                  )
-                )}
-              </ul>
-            </div>
-
-            <div className="lg:col-span-6">
-              <div className="grid grid-cols-2 gap-3">
-                {(['hero-visual-1', 'hero-visual-2', 'hero-visual-3', 'hero-visual-4'] as const).map(
-                  (key, i) => (
-                    <div
-                      key={key}
-                      className={`relative aspect-4/5 overflow-hidden rounded-card border border-line bg-surface ${
-                        i % 2 === 1 ? 'mt-8' : ''
-                      }`}
-                    >
-                      <Image
-                        src={images[key]}
-                        alt=""
-                        aria-hidden="true"
-                        fill
-                        priority={i < 2}
-                        sizes="(min-width: 1024px) 23vw, 46vw"
-                        className="object-cover"
-                      />
-                    </div>
-                  )
-                )}
-              </div>
+      {/* ------------------------------------------------------------ Coverage */}
+      <section className="bg-navy-800">
+        <Container className="py-20 sm:py-24">
+          <div className="mx-auto max-w-2xl text-center">
+            <Eyebrow invert>Recent coverage</Eyebrow>
+            <h2 className="mt-6 text-headline text-ink-inverse">
+              Weddings, royal engagements and studio work.
+            </h2>
+            <p className="mt-6 text-lg leading-relaxed text-ink-inverse/70">
+              A sample of what the team has shot. Every frame below comes straight
+              from a live album.
+            </p>
+            <div className="mt-9 flex justify-center">
+              <ButtonLink href="/work" variant="inverse">
+                View portfolio
+                <ArrowRight className="size-4" aria-hidden="true" />
+              </ButtonLink>
             </div>
           </div>
-        </Container>
-      </Section>
 
-      {/* ------------------------------------------------------------ Marquee */}
-      <div className="tp-rule-top border-b border-line bg-surface py-5">
-        <Marquee durationSeconds={40} itemClassName="gap-14 pr-14">
-          {DISCIPLINES.map((item) => (
-            <span key={item} className="tp-label flex items-center gap-14 text-ink-subtle">
-              {item}
-              <span aria-hidden="true" className="size-1.5 rounded-full bg-brand-500" />
-            </span>
-          ))}
-        </Marquee>
-      </div>
-
-      {/* ------------------------------------------------------------- Proof */}
-      <Section tone="surface" className="py-16 sm:py-20">
-        <Container>
-          <dl className="grid gap-10 sm:grid-cols-2 lg:grid-cols-4">
+          <dl className="mx-auto mt-20 grid max-w-4xl gap-10 sm:grid-cols-2 lg:grid-cols-4">
             {PROOF_POINTS.map((point) => (
-              <div key={point.label} className="tp-rule-top pt-6">
-                <dt className="font-display text-5xl leading-none text-ink tabular">{point.value}</dt>
-                <dd className="mt-4 text-sm leading-relaxed text-ink-muted">{point.label}</dd>
+              <div key={point.label} className="border-t border-ink-inverse/20 pt-6">
+                <dt className="font-display text-5xl leading-none text-ink-inverse tabular">
+                  {point.value}
+                </dt>
+                <dd className="mt-4 text-sm leading-relaxed text-ink-inverse/60">
+                  {point.label}
+                </dd>
               </div>
             ))}
           </dl>
         </Container>
-      </Section>
+      </section>
+
+      {/* The marquee rows sit outside the container on purpose. Headings above
+          stay inset while the photographs bleed to the viewport edge, so the
+          media reads as larger than the layout holding it. */}
+      <div className="space-y-4 pb-20 sm:space-y-5 sm:pb-24">
+        {rows.length > 0 ? (
+          rows.map((row, i) => (
+            <PhotoMarquee
+              key={i}
+              photos={row.photos}
+              reverse={row.reverse}
+              durationSeconds={52 + i * 14}
+              /* The middle row is wider and landscape, which breaks the rhythm
+                 of its neighbours so the band does not read as three identical
+                 strips. */
+              tileClassName={
+                i === 1
+                  ? 'aspect-[16/10] w-[86vw] max-w-[620px] sm:max-w-[760px]'
+                  : 'aspect-[4/5] w-[74vw] max-w-[340px] sm:max-w-[420px]'
+              }
+              sizes={i === 1 ? '(min-width: 640px) 760px, 86vw' : '(min-width: 640px) 420px, 74vw'}
+            />
+          ))
+        ) : (
+          /* No synced albums yet. Fill the band with the bundled artwork so a
+             fresh clone still shows a composed page rather than empty rows. */
+          [images['hero-visual-media'], images['service-media'], images['blog-1']].map(
+            (src) => (
+              <div
+                key={src}
+                className="relative aspect-[16/9] w-full overflow-hidden bg-navy-700"
+              >
+                <Image
+                  src={src}
+                  alt=""
+                  fill
+                  sizes="100vw"
+                  aria-hidden="true"
+                  className="object-cover"
+                />
+              </div>
+            )
+          )
+        )}
+      </div>
 
       {/* ------------------------------------------------------------ Services */}
-      <Section tone="navy">
+      <Section tone="navy" className="border-b-[5px] border-brand-500">
         <Container>
-          <div className="flex flex-wrap items-end justify-between gap-8">
-            <SectionHeading
-              category="What we do"
-              title="Three practices, one point of contact."
-              invert
-              className="max-w-2xl"
-            />
-            <ButtonLink
-              href="/services"
-              variant="inverse"
-              size="sm"
-              className="shrink-0"
-            >
-              All services
-              <ArrowRight className="size-4" aria-hidden="true" />
-            </ButtonLink>
-          </div>
-
-          <div className="mt-16 grid gap-px overflow-hidden rounded-card border border-ink-inverse/15 bg-ink-inverse/15 md:grid-cols-3">
-            {SERVICES.map((service) => (
-              <article key={service.label} className="flex flex-col bg-navy-500 p-8">
-                <div className="relative aspect-16/10 overflow-hidden rounded-card border border-ink-inverse/10 bg-navy-400">
-                  <Image
-                    src={images[service.image]}
-                    alt=""
-                    aria-hidden="true"
-                    fill
-                    sizes="(min-width: 768px) 33vw, 100vw"
-                    className="object-cover"
-                  />
-                </div>
-
-                <CategoryLabel invert className="mt-7 text-2xl">
-                  {service.label}
-                </CategoryLabel>
-                <p className="mt-4 flex-1 text-[0.95rem] leading-relaxed text-ink-inverse/70">
-                  {service.description}
-                </p>
-
-                <ul className="mt-6 space-y-2">
-                  {service.points.map((point) => (
-                    <li key={point} className="flex items-start gap-2.5 text-sm text-ink-inverse/60">
-                      <Check className="mt-0.5 size-3.5 shrink-0 text-brand-500" aria-hidden="true" />
-                      {point}
-                    </li>
-                  ))}
-                </ul>
-
-                <Link
-                  href={service.href}
-                  className="mt-8 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-500 transition-colors duration-200 hover:text-brand-400"
-                >
-                  Explore {service.label}
+          <div className="grid gap-12 lg:grid-cols-12 lg:gap-16">
+            <div className="lg:col-span-5">
+              <SectionHeading
+                eyebrow="What we do"
+                title="Three practices, one point of contact."
+                invert
+              />
+              <p className="mt-7 max-w-md leading-relaxed text-ink-inverse/70">
+                Most engagements touch more than one of these. That is the point —
+                the outcome is what matters, not which department it lands in.
+              </p>
+              <div className="mt-9">
+                <ButtonLink href="/services" variant="inverse" size="sm">
+                  All services
                   <ArrowRight className="size-4" aria-hidden="true" />
-                </Link>
-              </article>
-            ))}
+                </ButtonLink>
+              </div>
+            </div>
+
+            {/* Label column beside a fluid description, hairline-divided. The
+                first row carries no top rule so the block does not start with a
+                stray line above the first item. */}
+            <div className="lg:col-span-7">
+              {SERVICES.map((service, i) => (
+                <article
+                  key={service.label}
+                  className={`group py-8 ${
+                    i === 0 ? '' : 'border-t border-ink-inverse/15'
+                  } sm:py-9`}
+                >
+                  <div className="grid gap-5 sm:grid-cols-[180px_minmax(0,1fr)] sm:gap-10">
+                    <CategoryLabel invert className="text-xl">
+                      {service.label}
+                    </CategoryLabel>
+                    <div>
+                      <p className="leading-relaxed text-ink-inverse/75 sm:max-w-[34rem] sm:pr-[12%]">
+                        {service.description}
+                      </p>
+
+                      <ul className="mt-5 flex flex-wrap gap-x-6 gap-y-2">
+                        {service.points.map((point) => (
+                          <li
+                            key={point}
+                            className="flex items-start gap-2 text-sm text-ink-inverse/55"
+                          >
+                            <Check
+                              className="mt-0.5 size-3.5 shrink-0 text-brand-400"
+                              aria-hidden="true"
+                            />
+                            {point}
+                          </li>
+                        ))}
+                      </ul>
+
+                      <div className="relative mt-6 aspect-16/9 w-full max-w-sm overflow-hidden rounded-card">
+                        <Image
+                          src={images[service.image]}
+                          alt=""
+                          aria-hidden="true"
+                          fill
+                          sizes="(min-width: 640px) 384px, 100vw"
+                          className="object-cover transition-transform duration-500 ease-[cubic-bezier(0.22,1,0.36,1)] group-hover:scale-[1.03]"
+                        />
+                      </div>
+
+                      <Link
+                        href={service.href}
+                        className="mt-6 inline-flex items-center gap-1.5 text-sm font-semibold text-brand-400 transition-colors duration-200 hover:text-brand-300"
+                      >
+                        Explore {service.label}
+                        <ArrowRight className="size-4" aria-hidden="true" />
+                      </Link>
+                    </div>
+                  </div>
+                </article>
+              ))}
+            </div>
           </div>
         </Container>
       </Section>
 
       {/* ------------------------------------------------------------ Approach */}
-      <Section tone="cream">
+      <Section tone="ink">
         <Container>
           <div className="grid gap-14 lg:grid-cols-12 lg:gap-20">
             <div className="lg:col-span-5">
               <SectionHeading
-                category="How we work"
+                eyebrow="How we work"
                 title="Straight answers, senior people, no surprises."
                 lede="Most of our work comes from clients who were let down somewhere else. That shapes how we operate."
+                invert
               />
 
               <ol className="mt-12 space-y-8">
                 {PRINCIPLES.map((principle, i) => (
-                  <NumberedRow key={principle.title} index={i + 1} title={principle.title}>
+                  <NumberedRow key={principle.title} index={i + 1} title={principle.title} invert>
                     {principle.body}
                   </NumberedRow>
                 ))}
@@ -364,90 +397,50 @@ export default function Home() {
             </div>
 
             <div className="lg:col-span-7">
-              <Panel>
-                <CategoryLabel>Getting started</CategoryLabel>
+              <div className="rounded-card border border-ink-inverse/15 p-8 sm:p-10">
+                <CategoryLabel invert>Getting started</CategoryLabel>
                 <ol className="mt-9 space-y-5">
                   {JOURNEY.map((step, i) => (
                     <li key={step} className="flex gap-4">
-                      <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-line-strong bg-cream text-xs font-semibold tabular text-ink-muted">
+                      <span className="flex size-7 shrink-0 items-center justify-center rounded-full border border-ink-inverse/25 text-xs font-semibold tabular text-ink-inverse/70">
                         {i + 1}
                       </span>
-                      <span className="pt-1 text-[0.95rem] leading-relaxed text-ink-muted">
-                        {step}
-                      </span>
+                      <span className="pt-1 leading-relaxed text-ink-inverse/75">{step}</span>
                     </li>
                   ))}
                 </ol>
 
-                <div className="mt-10 border-t border-line pt-8">
-                  <p className="text-[0.95rem] leading-relaxed text-ink-muted">
+                <div className="mt-10 border-t border-ink-inverse/15 pt-8">
+                  <p className="leading-relaxed text-ink-inverse/70">
                     Based in Walsall, West Midlands. Remote delivery is standard;
                     on-site visits are arranged where they genuinely help.
                   </p>
                 </div>
-              </Panel>
-            </div>
-          </div>
-        </Container>
-      </Section>
-
-      {/* ---------------------------------------------------------------- CTA */}
-      <Section tone="navy-deep">
-        <Container>
-          <div className="grid items-end gap-10 lg:grid-cols-12">
-            <div className="lg:col-span-7">
-              <Eyebrow className="text-brand-400">Next step</Eyebrow>
-              <h2 className="mt-5 text-headline text-ink-inverse">
-                Tell us what you are trying to fix.
-              </h2>
-              <p className="mt-6 max-w-xl text-lg leading-relaxed text-ink-inverse/70">
-                A short call is usually enough to work out whether we can help.
-                If we cannot, we will say so.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-3 lg:col-span-5 lg:justify-end">
-              <ButtonLink href="/contact" size="lg" variant="inverse">
-                Book a consultation
-                <ArrowRight className="size-4" aria-hidden="true" />
-              </ButtonLink>
-              <ButtonLink
-                href="tel:+447881168479"
-                size="lg"
-                variant="ghost"
-                className="text-ink-inverse hover:text-brand-500"
-              >
-                07881 168479
-              </ButtonLink>
+              </div>
             </div>
           </div>
         </Container>
       </Section>
 
       {/* ---------------------------------------------------------------- FAQ */}
-      <Section tone="surface">
+      <Section tone="ink">
         <Container>
-          <SectionHeading
-            category="Questions"
-            title="The things people ask first."
-            align="center"
-          />
+          <SectionHeading eyebrow="Questions" title="The things people ask first." align="center" invert />
 
-          <div className="mx-auto mt-14 max-w-3xl border-t border-line">
+          <div className="mx-auto mt-14 max-w-3xl border-t border-ink-inverse/15">
             {FAQS.map((faq) => (
-              <details key={faq.q} className="group border-b border-line">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-6 text-left text-lg font-medium text-ink transition-colors duration-200 hover:text-brand-600">
+              <details key={faq.q} className="group border-b border-ink-inverse/15">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-6 py-6 text-left text-lg font-medium text-ink-inverse transition-colors duration-200 hover:text-brand-400">
                   {faq.q}
                   <span
                     aria-hidden="true"
-                    className="relative size-4 shrink-0 text-ink-subtle transition-transform duration-200 group-open:rotate-45"
+                    className="relative size-4 shrink-0 text-ink-inverse/50 transition-transform duration-200 group-open:rotate-45"
                   >
                     <span className="absolute left-1/2 top-1/2 h-px w-4 -translate-x-1/2 -translate-y-1/2 bg-current" />
                     <span className="absolute left-1/2 top-1/2 h-4 w-px -translate-x-1/2 -translate-y-1/2 bg-current" />
                   </span>
                 </summary>
-                <p className="pb-6 pr-10 text-[0.95rem] leading-relaxed text-ink-muted">
-                  {faq.a}
-                </p>
+                <p className="pb-6 pr-10 leading-relaxed text-ink-inverse/70">{faq.a}</p>
               </details>
             ))}
           </div>
@@ -455,15 +448,11 @@ export default function Home() {
       </Section>
 
       {/* ------------------------------------------------------------- Journal */}
-      <Section tone="cream">
+      <Section tone="ink">
         <Container>
           <div className="flex flex-wrap items-end justify-between gap-6">
-            <SectionHeading
-              category="Journal"
-              title="Thinking out loud."
-              className="max-w-xl"
-            />
-            <ButtonLink href="/blog" variant="secondary" size="sm">
+            <SectionHeading eyebrow="Journal" title="Thinking out loud." className="max-w-xl" invert />
+            <ButtonLink href="/blog" variant="inverse" size="sm">
               All articles
               <ArrowRight className="size-4" aria-hidden="true" />
             </ButtonLink>
@@ -473,7 +462,7 @@ export default function Home() {
             {POSTS.map((post, i) => (
               <article key={post.title} className="group">
                 <Link href="/blog" className="block">
-                  <div className="relative aspect-16/10 overflow-hidden rounded-card border border-line bg-surface">
+                  <div className="relative aspect-16/10 overflow-hidden rounded-card bg-navy-700">
                     <Image
                       src={images[`blog-${i + 1}`]}
                       alt=""
@@ -485,9 +474,9 @@ export default function Home() {
                   </div>
                   <div className="mt-5 flex items-center gap-3">
                     <Badge>{post.category}</Badge>
-                    <time className="text-xs tabular text-ink-subtle">{post.date}</time>
+                    <time className="text-xs tabular text-ink-inverse/50">{post.date}</time>
                   </div>
-                  <h3 className="mt-3 text-lg font-semibold leading-snug text-ink transition-colors duration-200 group-hover:text-brand-600">
+                  <h3 className="mt-3 text-lg font-semibold leading-snug text-ink-inverse transition-colors duration-200 group-hover:text-brand-400">
                     {post.title}
                   </h3>
                 </Link>
@@ -497,52 +486,43 @@ export default function Home() {
         </Container>
       </Section>
 
-      {/* ---------------------------------------------------------- Newsletter */}
-      <Section tone="surface" className="py-20 sm:py-24">
+      {/* ---------------------------------------------------------------- CTA */}
+      <Section tone="navy" className="border-t-[5px] border-brand-500">
         <Container>
-          <div className="mx-auto max-w-2xl text-center">
-            <SectionHeading
-              category="Keep in touch"
-              title="Occasional notes, no noise."
-              lede="Roughly once a month, when we have something genuinely worth sending."
-              align="center"
-            />
+          <p className="flex items-center gap-3 text-xs font-medium uppercase tracking-[0.14em] text-ink-inverse/60">
+            <span aria-hidden="true" className="relative flex size-2">
+              <span className="absolute inline-flex size-full animate-ping rounded-full bg-brand-500 opacity-75" />
+              <span className="relative inline-flex size-2 rounded-full bg-brand-500" />
+            </span>
+            Available for work
+          </p>
 
-            <form onSubmit={handleSubscribe} className="mx-auto mt-10 max-w-md" noValidate>
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <label htmlFor="newsletter-email" className="sr-only">
-                  Email address
-                </label>
-                <input
-                  id="newsletter-email"
-                  type="email"
-                  name="email"
-                  required
-                  autoComplete="email"
-                  placeholder="you@company.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="h-12 flex-1 rounded-full border border-line-strong bg-cream px-5 text-[0.95rem] text-ink placeholder:text-ink-subtle transition-[border-color,box-shadow] duration-200 focus:border-brand-500 focus:outline-none focus-visible:outline-none focus:ring-2 focus:ring-brand-500/25"
-                />
-                <Button type="submit" disabled={status === 'loading'} className="shrink-0">
-                  {status === 'loading' ? 'Sending…' : 'Subscribe'}
-                </Button>
-              </div>
+          <h2 className="mt-7 max-w-[14ch] text-hero font-medium text-ink-inverse">
+            Tell us what you are trying to fix.
+          </h2>
 
-              <p aria-live="polite" className="mt-4 min-h-5 text-sm">
-                {status === 'success' && (
-                  <span className="text-brand-600">Thanks — you are on the list.</span>
-                )}
-                {status === 'error' && (
-                  <span className="text-brand-700">
-                    That did not work. Please check the address and try again.
-                  </span>
-                )}
-              </p>
-            </form>
+          <div className="mt-10 flex flex-wrap items-center gap-3">
+            <ButtonLink href="/contact" size="lg" variant="inverse">
+              Book a consultation
+              <ArrowRight className="size-4" aria-hidden="true" />
+            </ButtonLink>
+            <ButtonLink
+              href="tel:+447881168479"
+              size="lg"
+              variant="ghost"
+              className="text-ink-inverse hover:text-brand-400"
+            >
+              07881 168479
+            </ButtonLink>
           </div>
+
+          <p className="mt-8 max-w-xl text-lg leading-relaxed text-ink-inverse/70">
+            A short call is usually enough to work out whether we can help. If we
+            cannot, we will say so.
+          </p>
         </Container>
       </Section>
+
     </>
   );
 }

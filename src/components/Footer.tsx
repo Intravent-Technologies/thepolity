@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { ButtonLink, Container } from "./ui";
+import NewsletterForm from "./NewsletterForm";
 import Logo from "./Logo";
 
 /* Brand marks are not part of the lucide icon set, so they are inlined here.
@@ -75,8 +76,8 @@ export default function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="mt-auto bg-navy-700 text-ink-inverse">
-      <Container width="wide" className="py-16 sm:py-20">
+    <footer className="mt-auto bg-navy-800 text-ink-inverse">
+      <Container width="wide" className="pt-16 sm:pt-20">
         <div className="grid gap-12 lg:grid-cols-12">
           <div className="lg:col-span-4">
             <Link
@@ -151,7 +152,19 @@ export default function Footer() {
               <p className="text-[0.95rem] text-ink-inverse/50">{CONTACT.address}</p>
             </address>
 
-            <ul className="mt-6 flex gap-2.5">
+            {/* Newsletter lives in the footer rather than as its own band, which
+                is where the reference site puts it and means the signup follows
+                the visitor to the bottom of every page instead of only the
+                homepage. */}
+            <div className="mt-12 border-t border-ink-inverse/10 pt-9">
+              <h2 className="tp-label text-ink-inverse/50">Keep in touch</h2>
+              <NewsletterForm />
+            </div>
+
+            {/* Bare glyphs rather than the old circular chips. On a near-black
+                surface a ring of border around each icon adds noise without
+                adding affordance — the icon itself is already the target. */}
+            <ul className="mt-7 flex gap-7">
               {SOCIAL.map(({ name, href, icon: Icon }) => (
                 <li key={name}>
                   <a
@@ -159,9 +172,9 @@ export default function Footer() {
                     target="_blank"
                     rel="noopener noreferrer"
                     aria-label={`The Polity on ${name}`}
-                    className="flex size-10 items-center justify-center rounded-full border border-ink-inverse/20 bg-navy-500 text-ink-inverse/70 transition-[color,border-color] duration-200 hover:border-brand-500 hover:text-brand-500"
+                    className="block text-ink-inverse/40 transition-colors duration-200 hover:text-brand-500"
                   >
-                    <Icon className="size-4" aria-hidden="true" />
+                    <Icon className="size-5" aria-hidden="true" />
                   </a>
                 </li>
               ))}
@@ -170,18 +183,19 @@ export default function Footer() {
         </div>
       </Container>
 
-      <div className="border-t border-ink-inverse/10">
-        <Container width="wide" className="py-6">
-          <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
-            <p className="text-sm text-ink-inverse/50">
-              © {year} The Polity. All rights reserved.
-            </p>
-            <p className="text-sm text-ink-inverse/50">
-              Registered in England &amp; Wales
-            </p>
-          </div>
-        </Container>
-      </div>
+      {/* A large gap rather than a rule above the copyright. A border here
+          would draw a line across the full width and cut the footer into two
+          bands; the whitespace separates them without adding an edge. */}
+      <Container width="wide" className="pb-8 pt-28 sm:pt-36">
+        <div className="flex flex-col items-center justify-between gap-4 sm:flex-row">
+          <p className="text-sm text-ink-inverse/45">
+            © {year} The Polity. All rights reserved.
+          </p>
+          <p className="text-sm text-ink-inverse/45">
+            Registered in England &amp; Wales
+          </p>
+        </div>
+      </Container>
     </footer>
   );
 }

@@ -19,11 +19,15 @@
   --color-brand-800: #9a3d0b;
   --color-brand-900: #7c310e;
 
-  /* ---- Navy: dark sections and inverted surfaces ---- */
+  /* ---- Navy: dark sections and inverted surfaces ----
+     800 is the near-black the dark layout sits on. It is deliberately not
+     pure #000: photography reads better against a very slightly blue black
+     than against dead black, and it keeps the orange accent from vibrating. */
   --color-navy-400: #2c3050;
   --color-navy-500: #1b1e34;
   --color-navy-600: #15182a;
   --color-navy-700: #0f1120;
+  --color-navy-800: #07080f;
 
   /* ---- Ink: warm neutrals, never pure black ---- */
   --color-ink: #14120e;
@@ -57,6 +61,13 @@
   --text-title: clamp(1.375rem, 1.2rem + 0.7vw, 1.75rem);
   --text-title--line-height: 1.18;
   --text-title--letter-spacing: -0.016em;
+
+  /* Hero and closing-CTA display. Sized off the viewport rather than stepped
+     through breakpoints, so the headline always fills the same fraction of the
+     screen. The upper bound stops it becoming absurd on an ultrawide monitor. */
+  --text-hero: clamp(2.5rem, 1rem + 7.2vw, 8.5rem);
+  --text-hero--line-height: 0.95;
+  --text-hero--letter-spacing: -0.045em;
 
   /* ---- Radii: restrained. Cards are 10px, pills stay pills. ---- */
   --radius-card: 0.625rem;
@@ -184,7 +195,22 @@ html {
   }
 
   .tp-marquee-track:hover {
-  animation-play-state: paused;
+    animation-play-state: paused;
+  }
+
+  /* Rows alternate direction so a stack of them reads as a woven band rather
+     than three copies of the same slide. Same geometry, reversed: the track
+     runs from -50% back to 0, which is seamless because the content is
+     duplicated. */
+  .tp-marquee-track-reverse {
+    animation-name: tp-marquee-reverse;
+  }
+
+  /* Slow push-in behind the hero scrim. Long enough to read as a camera move
+     rather than a pan, and it never finishes, so the hero never settles into a
+     visibly frozen frame. */
+  .tp-kenburns {
+    animation: tp-kenburns 22s ease-out infinite alternate;
   }
 
 
@@ -261,7 +287,52 @@ html {
   }
 }
 
-@media (prefers-reduced-motion: reduce) {
+@keyframes tp-marquee-reverse {
+  from {
+    transform: translateX(-50%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes tp-kenburns {
+  from {
+    transform: scale(1.04) translate3d(0, 0, 0);
+  }
+  to {
+    transform: scale(1.16) translate3d(0, -1.4%, 0);
+  }
+}
+
+  /* ==========================================================================
+     Header over the hero
+     ========================================================================== */
+
+  /* At the top of the homepage the bar sits on a dark photograph, so it drops
+     its surface and its links flip to white. One attribute drives the whole
+     thing rather than threading a conditional through every link's className.
+     `!important` is needed because the utility classes above are equally
+     specific and would otherwise win on order alone. */
+  .tp-header[data-over-hero='true'] {
+    background-color: transparent !important;
+    border-color: transparent !important;
+    backdrop-filter: none !important;
+  }
+
+  .tp-header[data-over-hero='true'] nav a,
+  .tp-header[data-over-hero='true'] nav button,
+  .tp-header[data-over-hero='true'] [data-header-cta] {
+    color: var(--color-ink-inverse) !important;
+  }
+
+  .tp-header[data-over-hero='true'] nav a:hover,
+  .tp-header[data-over-hero='true'] nav button:hover {
+    color: var(--color-brand-400) !important;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+
   html {
     scroll-behavior: auto;
   }
@@ -276,6 +347,13 @@ html {
   }
 
   .tp-marquee-track {
+    animation: none !important;
+    transform: none !important;
+  }
+
+  /* Without this the hero photo stays blown up to 1.16 scale, which crops it
+     tighter than intended. */
+  .tp-kenburns {
     animation: none !important;
     transform: none !important;
   }

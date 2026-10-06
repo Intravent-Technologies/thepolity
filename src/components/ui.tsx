@@ -35,7 +35,7 @@ export function Section({
 }: {
   children: ReactNode;
   className?: string;
-  tone?: "cream" | "surface" | "sunken" | "muted" | "navy" | "navy-deep";
+  tone?: "cream" | "surface" | "sunken" | "muted" | "navy" | "navy-deep" | "ink";
   id?: string;
 }) {
   const tones = {
@@ -45,6 +45,7 @@ export function Section({
     muted: "bg-surface-muted text-ink",
     navy: "bg-navy-500 text-ink-inverse",
     "navy-deep": "bg-navy-700 text-ink-inverse",
+    ink: "bg-navy-800 text-ink-inverse",
   } as const;
 
   return (
@@ -62,12 +63,16 @@ export function Section({
 export function Eyebrow({
   children,
   className = "",
+  invert = false,
 }: {
   children: ReactNode;
   className?: string;
+  invert?: boolean;
 }) {
   return (
-    <p className={`tp-label text-brand-600 ${className}`}>{children}</p>
+    <p className={`tp-label ${invert ? 'text-brand-400' : 'text-brand-600'} ${className}`}>
+      {children}
+    </p>
   );
 }
 
@@ -266,22 +271,38 @@ export function NumberedRow({
   index,
   title,
   children,
+  invert = false,
   className = "",
 }: {
   index: number | string;
   title: string;
   children?: ReactNode;
+  invert?: boolean;
   className?: string;
 }) {
   return (
     <li className={`tp-rule-top flex gap-5 pt-6 ${className}`}>
-      <span className="tp-label shrink-0 pt-1 text-brand-600 tabular">
+      <span
+        className={`tp-label shrink-0 pt-1 tabular ${
+          invert ? 'text-brand-400' : 'text-brand-600'
+        }`}
+      >
         {typeof index === "number" ? String(index).padStart(2, "0") : index}
       </span>
       <div>
-        <h3 className="text-lg font-semibold text-ink">{title}</h3>
+        <h3
+          className={`text-lg font-semibold ${
+            invert ? 'text-ink-inverse' : 'text-ink'
+          }`}
+        >
+          {title}
+        </h3>
         {children ? (
-          <p className="mt-2 text-[0.95rem] leading-relaxed text-ink-muted">
+          <p
+            className={`mt-2 leading-relaxed ${
+              invert ? 'text-ink-inverse/70' : 'text-ink-muted'
+            }`}
+          >
             {children}
           </p>
         ) : null}

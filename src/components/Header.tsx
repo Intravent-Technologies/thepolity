@@ -86,9 +86,15 @@ export default function Header() {
   const isActive = (href: string) =>
     href === "/" ? pathname === "/" : pathname.startsWith(href);
 
+  /* Only the homepage opens on a full-bleed photograph. Everywhere else the
+     page starts on a light surface, so a transparent bar there would put white
+     links on cream. Scrolling past the hero turns the bar solid again. */
+  const overHero = pathname === "/" && !scrolled;
+
   return (
     <header
-      className={`sticky top-0 z-50 border-b border-line bg-cream/90 backdrop-blur-md transition-shadow duration-300 ${
+      data-over-hero={overHero ? "true" : "false"}
+      className={`tp-header sticky top-0 z-50 border-b border-line bg-cream/90 backdrop-blur-md transition-shadow duration-300 ${
         scrolled ? "shadow-[0_1px_0_rgba(20,18,14,0.04),0_8px_24px_-20px_rgba(20,18,14,0.4)]" : ""
       }`}
     >
