@@ -54,6 +54,125 @@ interface MediaResponse {
   error?: string;
 }
 
+interface UploadTicket {
+  signedUrl: string;
+  storagePath: string;
+  error?: string;
+}
+
+/**
+ * Put one file into the album: ask the server where to put it, send the bytes
+ * there, then ask the server to verify and record it.
+ *
+ * The middle step goes straight to Supabase, so its size is not limited by
+ * whatever the hosting platform allows in a request body. XHR rather than fetch
+ * because fetch still cannot report upload progress, and a stalled multi-
+ * megabyte transfer with no feedback reads as a hung page.
+ */
+async function uploadOneFile(
+  albumId: string,
+  file: File,
+  onProgress: (fraction: number) => void
+): Promise<WorkAlbumMedia[]> {
+  const ticketRes = await fetch(`/api/work/albums/${albumId}/media/ticket`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      filename: file.name,
+      contentType: file.type,
+      sizeBytes: file.size,
+    }),
+  });
+
+  const ticket = (await ticketRes.json().catch(() => ({}))) as UploadTicket & { direct?: boolean };
+
+  if (ticketRes.status === 501 || ticket.direct === false) {
+    // No Supabase on this server: fall back to the multipart route, which
+    // writes to local disk. Only useful in local development.
+    return uploadViaRoute(albumId, file, onProgress);
+  }
+
+  if (!ticketRes.ok || !ticket.signedUrl) {
+    throw new Error(ticket.error ?? 'The server would not accept that file.');
+  }
+
+  await new Promise<void>((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('PUT', ticket.signedUrl);
+    xhr.setRequestHeader('Content-Type', file.type || 'application/octet-stream');
+    xhr.setRequestHeader('x-upsert', 'false');
+
+    xhr.upload.addEventListener('progress', (event) => {
+      if (event.lengthComputable) onProgress(event.loaded / event.total);
+    });
+    xhr.addEventListener('load', () =>
+      xhr.status >= 200 && xhr.status < 300
+        ? resolve()
+        : reject(new Error('the file could not be transferred')),
+    );
+    xhr.addEventListener('error', () => reject(new Error('the connection dropped')));
+    xhr.addEventListener('abort', () => reject(new Error('the upload was cancelled')));
+
+    xhr.send(file);
+  });
+
+  const confirmRes = await fetch(`/api/work/albums/${albumId}/media/confirm`, {
+    method: 'POST',
+    credentials: 'include',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      storagePath: ticket.storagePath,
+      filename: file.name,
+      sizeBytes: file.size,
+      kind: file.type.startsWith('video/') ? 'video' : 'image',
+    }),
+  });
+
+  const confirmed = (await confirmRes.json().catch(() => ({}))) as MediaResponse;
+  if (!confirmRes.ok || !Array.isArray(confirmed.media)) {
+    throw new Error(confirmed.error ?? 'the file was uploaded but could not be saved');
+  }
+
+  return confirmed.media;
+}
+
+/** Local-disk fallback for when the server has no Supabase configured. */
+async function uploadViaRoute(
+  albumId: string,
+  file: File,
+  onProgress: (fraction: number) => void
+): Promise<WorkAlbumMedia[]> {
+  const formData = new FormData();
+  formData.append('file', file);
+
+  const payload = await new Promise<MediaResponse>((resolve, reject) => {
+    const xhr = new XMLHttpRequest();
+    xhr.open('POST', `/api/work/albums/${albumId}/media`);
+    xhr.withCredentials = true;
+
+    xhr.upload.addEventListener('progress', (event) => {
+      if (event.lengthComputable) onProgress(event.loaded / event.total);
+    });
+    xhr.addEventListener('load', () => {
+      try {
+        resolve(JSON.parse(xhr.responseText) as MediaResponse);
+      } catch {
+        resolve({});
+      }
+    });
+    xhr.addEventListener('error', () => reject(new Error('the connection dropped')));
+    xhr.addEventListener('abort', () => reject(new Error('the upload was cancelled')));
+
+    xhr.send(formData);
+  });
+
+  if (payload.error || !Array.isArray(payload.media)) {
+    throw new Error(payload.error ?? 'the file could not be uploaded');
+  }
+  return payload.media;
+}
+
 export default function AlbumEditor({ album, onClose, onSaved }: AlbumEditorProps) {
   const [draft, setDraft] = useState({
     title: album.title,
@@ -154,51 +273,57 @@ export default function AlbumEditor({ album, onClose, onSaved }: AlbumEditorProp
       setProgress(0);
       setRejected(refused);
 
-      const formData = new FormData();
-      for (const file of usable) formData.append('file', file);
-
-      const xhr = new XMLHttpRequest();
+      const added: WorkAlbumMedia[] = [];
+      const problems: string[] = [];
 
       try {
-        // XHR rather than fetch: upload progress is not available on fetch, and
-        // a stalled batch of large files reads as a hang with no feedback.
-        const payload = await new Promise<MediaResponse>((resolve, reject) => {
-          xhr.open('POST', `/api/work/albums/${album.id}/media`);
-          xhr.withCredentials = true;
+        /* Each file is transferred browser-to-Supabase using a URL minted by the
+           ticket route. The bytes never pass through a Next route handler, which
+           is what lets a 10MB photograph succeed: a Vercel function rejects
+           request bodies over roughly 4.5MB, so the old multipart route failed
+           on exactly the files an admin most wants to add.
 
-          xhr.upload.addEventListener('progress', (event) => {
-            if (event.lengthComputable) {
-              setProgress(Math.round((event.loaded / event.total) * 100));
-            }
-          });
+           Files go one at a time on purpose. A parallel batch of large videos
+           would saturate the connection, share one progress bar, and give no
+           indication of which file is actually moving. */
+        for (let i = 0; i < usable.length; i++) {
+          const file = usable[i];
+          setProgress(Math.round((i / usable.length) * 100));
 
-          xhr.addEventListener('load', () => {
-            try {
-              resolve(JSON.parse(xhr.responseText) as MediaResponse);
-            } catch {
-              resolve({});
-            }
-          });
-          xhr.addEventListener('error', () => reject(new Error('The connection dropped.')));
-          xhr.addEventListener('abort', () => reject(new Error('Upload cancelled.')));
-
-          xhr.send(formData);
-        });
-
-        if (payload.error) {
-          notify(payload.error);
-        } else if (Array.isArray(payload.media)) {
-          setMedia(payload.media);
-          setPendingOrder(null);
-          const added = payload.media.length - media.length;
-          const refusedToo = payload.rejected?.length || 0;
-          notify(
-            refusedToo > 0
-              ? `Added ${added}. ${refusedToo} file${refusedToo === 1 ? '' : 's'} could not be added.`
-              : `Added ${added} to this album.`,
-            refusedToo > 0 ? 'error' : 'success'
-          );
+          try {
+            const row = await uploadOneFile(album.id, file, (fraction) => {
+              // Each file owns a slice of the bar, so the bar never jumps back.
+              const base = (i / usable.length) * 100;
+              setProgress(Math.round(base + fraction * (100 / usable.length)));
+            });
+            added.push(...row);
+          } catch (cause) {
+            problems.push(
+              `${file.name}: ${cause instanceof Error ? cause.message : 'could not be uploaded'}`
+            );
+          }
         }
+
+        setProgress(100);
+
+        if (added.length > 0) {
+          // Functional update, so a batch of files cannot clobber rows that
+          // arrived while this one was still transferring.
+          setMedia((current) => [...current, ...added]);
+          setPendingOrder(null);
+        }
+        setRejected([...refused, ...problems]);
+
+        const addedCount = added.length;
+        const refusedCount = (refused.length + problems.length) || 0;
+        notify(
+          addedCount === 0
+            ? 'Nothing was added.'
+            : refusedCount > 0
+              ? `Added ${addedCount}. ${refusedCount} file${refusedCount === 1 ? '' : 's'} could not be added.`
+              : `Added ${addedCount} to this album.`,
+          addedCount === 0 || refusedCount > 0 ? 'error' : 'success'
+        );
       } catch (cause) {
         notify(cause instanceof Error ? cause.message : 'Upload failed.');
       } finally {
@@ -207,7 +332,7 @@ export default function AlbumEditor({ album, onClose, onSaved }: AlbumEditorProp
         if (fileInput.current) fileInput.current.value = '';
       }
     },
-    [album.id, media.length, uploading]
+    [album.id, uploading]
   );
 
   const saveOrder = async (order: number[]) => {

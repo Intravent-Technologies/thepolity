@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import type { WorkAlbum, WorkAlbumMedia, WorkAlbumMediaKind, WorkProject } from '@/lib/work-types';
-import { ValidationError } from '@/lib/validate';
+import { ValidationError, detectContentType, isAllowedUploadType } from '@/lib/validate';
 import { ALBUM_COVER_WIDTH, albumCoverSrc } from '@/lib/work-types';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
@@ -108,7 +108,7 @@ function getSupabaseAdminClient(): SupabaseClient {
   return supabaseClient;
 }
 
-function getPublicMediaUrl(storagePath: string): string {
+export function getPublicMediaUrl(storagePath: string): string {
   const supabase = getSupabaseAdminClient();
   const { data } = supabase.storage.from(SUPABASE_STORAGE_BUCKET).getPublicUrl(storagePath);
   return data.publicUrl;
@@ -327,6 +327,121 @@ export async function uploadMediaFile(options: {
  */
 export async function deleteStoredAsset(assetUrl?: string): Promise<void> {
   return deleteUploadedAsset(assetUrl);
+}
+
+/* ---------------------------------------------------------------------------
+   Direct-to-storage uploads
+   ---------------------------------------------------------------------------
+   A Vercel function rejects any request body over about 4.5MB, and a phone
+   photograph is routinely larger than that. Passing the bytes through a route
+   handler therefore made admin uploads fail for exactly the files an admin
+   most wants to add.
+
+   Instead the browser PUTs the bytes straight to Supabase Storage using a
+   signed upload URL minted here. The file never touches a serverless function,
+   so the size limit stops applying, while the path and the filename are still
+   chosen by the server: a signed URL only permits one exact object, so a client
+   cannot write anywhere else in the bucket.
+   */
+
+/** Bytes needed to recognise every allowed type. All signatures live in the
+    first few dozen bytes, including the ISO base-media brands. */
+const SNIFF_BYTES = 64 * 1024;
+
+/**
+ * Mint a single-purpose upload URL. Returns the absolute URL the browser PUTs
+ * to, plus the path the object will occupy.
+ */
+export async function createAlbumUploadTicket(options: {
+  filename: string;
+  contentType: string;
+  /** Directory the object is filed under, e.g. 'albums'. */
+  directory: 'albums' | 'work' | 'gallery';
+}): Promise<{ signedUrl: string; token: string; storagePath: string }> {
+  if (!isSupabaseConfigured()) {
+    throw new Error('Supabase is not configured, so direct upload is unavailable.');
+  }
+
+  const safeName = options.filename.replace(/[^a-zA-Z0-9.\-_]/g, '-');
+  // A random suffix matters more than the timestamp here: two admins picking
+  // files with the same name in the same millisecond would otherwise collide.
+  const unique = Math.random().toString(36).slice(2, 8);
+  const storagePath = `${options.directory}/${Date.now()}-${unique}-${safeName}`;
+
+  const { data, error } = await getSupabaseAdminClient()
+    .storage.from(SUPABASE_STORAGE_BUCKET)
+    .createSignedUploadUrl(storagePath);
+
+  if (error || !data?.signedUrl || !data.token) {
+    throw new Error(error?.message ?? 'Could not create an upload URL.');
+  }
+
+  return { signedUrl: data.signedUrl, token: data.token, storagePath };
+}
+
+/**
+ * Check what actually landed in the bucket and prove it is a real allowed file.
+ *
+ * Because the bytes went browser-to-Supabase, the server never saw them, so this
+ * re-derives the truth from storage rather than trusting what the client
+ * claimed: the object's real size, and its leading bytes read back over a
+ * ranged request. A client that uploads a script while announcing a JPEG is
+ * rejected here, and the object is removed rather than left behind.
+ */
+export async function confirmUploadedObject(options: {
+  storagePath: string;
+  expectedSizeBytes: number;
+  maxBytes: number;
+}): Promise<{ sizeBytes: number; contentType: string }> {
+  const supabase = getSupabaseAdminClient();
+  const bucket = supabase.storage.from(SUPABASE_STORAGE_BUCKET);
+  const { storagePath } = options;
+
+  const { data: info, error: infoError } = await bucket.info(storagePath);
+  if (infoError || !info) {
+    throw new Error('That file did not finish uploading. Please try again.');
+  }
+
+  /* `info()` reports size and content type at the top level; only `list()`
+     nests them under `metadata`. Older responses used the nested shape, so both
+     are read rather than assuming one. */
+  const sizeBytes = Number(info.size ?? info.metadata?.size ?? 0);
+  if (sizeBytes <= 0) {
+    await removeStoredObject(storagePath);
+    throw new Error('That file is empty.');
+  }
+  if (sizeBytes > options.maxBytes) {
+    await removeStoredObject(storagePath);
+    throw new Error(`That file is over ${Math.round(options.maxBytes / (1024 * 1024))}MB.`);
+  }
+
+  /* Read back only the head of the object. A 100MB video does not have to be
+     pulled through a function to be identified, and the bucket is public, so a
+     range request is the cheapest honest check available. */
+  const head = await fetch(getPublicMediaUrl(storagePath), {
+    headers: { Range: `bytes=0-${SNIFF_BYTES - 1}` },
+    cache: 'no-store',
+  });
+
+  if (!head.ok && head.status !== 206) {
+    throw new Error('Could not read that file back to check it.');
+  }
+
+  const sniff = Buffer.from(await head.arrayBuffer());
+  const detected = detectContentType(sniff);
+
+  if (!detected || !isAllowedUploadType(detected)) {
+    await removeStoredObject(storagePath);
+    throw new Error('That file is not a supported image or video.');
+  }
+
+  return { sizeBytes, contentType: detected };
+}
+
+/** Remove one object by its storage path, ignoring a missing bucket. */
+export async function removeStoredObject(storagePath: string): Promise<void> {
+  if (!isSupabaseConfigured() || !storagePath) return;
+  await getSupabaseAdminClient().storage.from(SUPABASE_STORAGE_BUCKET).remove([storagePath]);
 }
 
 async function deleteUploadedAsset(assetUrl?: string): Promise<void> {
