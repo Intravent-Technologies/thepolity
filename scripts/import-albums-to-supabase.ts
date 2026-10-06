@@ -38,6 +38,8 @@ type LocalAlbum = {
   description: string;
   coverDriveFileId: string;
   coverMediaId: string;
+  driveFolderId: string;
+  driveFolderUrl: string;
   photoCount: number;
   videoCount: number;
   lastSyncedAt: string;
