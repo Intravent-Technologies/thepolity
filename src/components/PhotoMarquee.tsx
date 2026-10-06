@@ -19,6 +19,12 @@ export interface MarqueePhoto {
  * Photo width is fixed per breakpoint rather than derived from a count of
  * "slides to show", so a row keeps its composition as the viewport changes and
  * stays legible on a phone.
+ *
+ * Tiles are cropped to a fixed aspect, so the crop anchor matters: these are
+ * portraits of people, and CSS centres an object-cover by default, which slices
+ * heads off at the top. Anchoring to the top keeps the face in frame on the
+ * narrow, tall tiles a phone gets. Pass imagePositionClassName to override for
+ * a row that is mostly architecture or landscape.
  */
 export default function PhotoMarquee({
   photos,
@@ -26,6 +32,7 @@ export default function PhotoMarquee({
   durationSeconds = 46,
   tileClassName = 'aspect-[4/5] w-[74vw] max-w-[340px] sm:max-w-[420px]',
   sizes = '(min-width: 640px) 420px, 74vw',
+  imagePositionClassName = 'object-top',
   className = '',
   children,
 }: {
@@ -34,6 +41,8 @@ export default function PhotoMarquee({
   durationSeconds?: number;
   tileClassName?: string;
   sizes?: string;
+  /** CSS object-position utility. Defaults to top so faces survive the crop. */
+  imagePositionClassName?: string;
   className?: string;
   /** Rendered once per row, immediately before the track. */
   children?: ReactNode;
@@ -73,7 +82,7 @@ export default function PhotoMarquee({
                     sizes={sizes}
                     {...(photo.srcSet ? { srcSet: photo.srcSet } : {})}
                     loading={isDuplicate ? 'lazy' : undefined}
-                    className="object-cover"
+                    className={`object-cover ${imagePositionClassName}`}
                   />
                 </div>
               ))}
