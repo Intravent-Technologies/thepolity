@@ -51,3 +51,8 @@ prod_error.log
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+# Supabase CLI's local link state: project ref, pooler URL and API
+# versions for this machine. Nothing here belongs in the repository.
+supabase/.temp
+
