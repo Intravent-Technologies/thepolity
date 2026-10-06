@@ -157,6 +157,8 @@ export async function generateMetadata({
     return { title: 'Album not found' };
   }
 
+  /* Only a Drive-hosted cover is advertised to social scrapers. An upload is
+     served from our own bucket, which crawlers do not fetch. */
   const images = album.coverDriveFileId
     ? [drivePhotoUrl(album.coverDriveFileId, ALBUM_COVER_WIDTH)]
     : undefined;

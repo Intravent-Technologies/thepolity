@@ -2,6 +2,8 @@ import fs from 'fs';
 import path from 'path';
 import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 import type { WorkAlbum, WorkAlbumMedia, WorkAlbumMediaKind, WorkProject } from '@/lib/work-types';
+import { ValidationError } from '@/lib/validate';
+import { ALBUM_COVER_WIDTH, albumCoverSrc } from '@/lib/work-types';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || process.env.SUPABASE_URL;
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
@@ -732,6 +734,8 @@ function readLocalAlbums(): WorkAlbum[] {
     category: seed.category,
     description: seed.description,
     coverDriveFileId: '',
+    coverMediaId: '',
+    coverUrl: '',
     driveFolderId: folderIdFromUrl(seed.driveFolderUrl),
     driveFolderUrl: seed.driveFolderUrl,
     photoCount: 0,
@@ -756,7 +760,7 @@ function localId(): string {
 }
 
 const ALBUM_COLUMNS =
-  'id, slug, title, category, description, cover_drive_file_id, drive_folder_id, drive_folder_url, photo_count, video_count, last_synced_at, created_at';
+  'id, slug, title, category, description, cover_drive_file_id, cover_media_id, drive_folder_id, drive_folder_url, photo_count, video_count, last_synced_at, created_at';
 
 const ALBUM_MEDIA_COLUMNS =
   'id, album_id, drive_file_id, filename, kind, mime_type, size_bytes, storage_path, public_url, sort_order, created_at';
@@ -769,6 +773,8 @@ function mapAlbumRow(row: Record<string, unknown>): WorkAlbum {
     category: row.category ? String(row.category) : '',
     description: row.description ? String(row.description) : '',
     coverDriveFileId: row.cover_drive_file_id ? String(row.cover_drive_file_id) : '',
+    coverMediaId: row.cover_media_id ? String(row.cover_media_id) : '',
+    coverUrl: '',
     driveFolderId: row.drive_folder_id ? String(row.drive_folder_id) : '',
     driveFolderUrl: row.drive_folder_url ? String(row.drive_folder_url) : '',
     photoCount: Number(row.photo_count || 0),
@@ -793,6 +799,70 @@ function mapAlbumMediaRow(row: Record<string, unknown>): WorkAlbumMedia {
   };
 }
 
+/**
+ * Fill in each album's `coverUrl`.
+ *
+ * An album cover is one of two things: a Drive file id, or a media row the admin
+ * nominated. Only the second needs a lookup, and it needs exactly one row per
+ * album that has chosen it — so the query is keyed on the cover ids themselves
+ * rather than pulling every album's photographs just to pick one.
+ *
+ * Albums left with an empty `coverUrl` are genuinely coverless: a new album with
+ * no photos yet. Callers render a placeholder for those.
+ */
+async function attachAlbumCovers(albums: WorkAlbum[]): Promise<WorkAlbum[]> {
+  const pending = albums.filter((album) => album.coverMediaId);
+  if (pending.length === 0) {
+    // Nothing uploaded has been nominated as a cover, so every cover that does
+    // exist is a Drive id and can be resolved without touching media at all.
+    return albums.map((album) => ({
+      ...album,
+      coverUrl: albumCoverSrc(album) || '',
+    }));
+  }
+
+  const covers = new Map<string, string>();
+
+  if (isSupabaseConfigured()) {
+    const { data } = await getSupabaseAdminClient()
+      .from('work_album_media')
+      .select('id, drive_file_id, public_url')
+      .in(
+        'id',
+        pending.map((album) => album.coverMediaId)
+      );
+
+    for (const row of data || []) {
+      const src = albumCoverSrc({ coverMediaId: '', coverDriveFileId: '' }, [
+        {
+          id: String(row.id),
+          driveFileId: row.drive_file_id ? String(row.drive_file_id) : '',
+          publicUrl: row.public_url ? String(row.public_url) : '',
+        },
+      ]);
+      if (src) {
+        covers.set(String(row.id), src);
+      }
+    }
+  } else {
+    for (const item of readLocalJson<WorkAlbumMedia>(albumMediaFilePath())) {
+      if (item.publicUrl) {
+        covers.set(item.id, item.publicUrl);
+      }
+    }
+  }
+
+  return albums.map((album) => {
+    /* A nominated cover that has since been deleted leaves nothing to show.
+       Fall through to the Drive id rather than caching a dead reference. */
+    const uploaded = album.coverMediaId ? covers.get(album.coverMediaId) : '';
+    return {
+      ...album,
+      coverUrl: uploaded || albumCoverSrc(album, undefined, ALBUM_COVER_WIDTH) || '',
+    };
+  });
+}
+
 export async function getWorkAlbums(): Promise<WorkAlbum[]> {
   if (isSupabaseConfigured()) {
     const { data, error } = await getSupabaseAdminClient()
@@ -803,11 +873,13 @@ export async function getWorkAlbums(): Promise<WorkAlbum[]> {
     if (error) {
       throw error;
     }
-    return (data || []).map((row) => mapAlbumRow(row as Record<string, unknown>));
+    return attachAlbumCovers(
+      (data || []).map((row) => mapAlbumRow(row as Record<string, unknown>))
+    );
   }
 
-  return readLocalAlbums().sort((a, b) =>
-    a.createdAt < b.createdAt ? 1 : -1
+  return attachAlbumCovers(
+    readLocalAlbums().sort((a, b) => (a.createdAt < b.createdAt ? 1 : -1))
   );
 }
 
@@ -822,10 +894,13 @@ export async function getWorkAlbumById(id: string): Promise<WorkAlbum | null> {
     if (error) {
       throw error;
     }
-    return data ? mapAlbumRow(data as Record<string, unknown>) : null;
+    return data
+      ? (await attachAlbumCovers([mapAlbumRow(data as Record<string, unknown>)]))[0] || null
+      : null;
   }
 
-  return readLocalAlbums().find((album) => album.id === id) || null;
+  const album = readLocalAlbums().find((item) => item.id === id);
+  return album ? (await attachAlbumCovers([album]))[0] : null;
 }
 
 export async function getWorkAlbumBySlug(slug: string): Promise<WorkAlbum | null> {
@@ -839,10 +914,13 @@ export async function getWorkAlbumBySlug(slug: string): Promise<WorkAlbum | null
     if (error) {
       throw error;
     }
-    return data ? mapAlbumRow(data as Record<string, unknown>) : null;
+    return data
+      ? (await attachAlbumCovers([mapAlbumRow(data as Record<string, unknown>)]))[0] || null
+      : null;
   }
 
-  return readLocalAlbums().find((album) => album.slug === slug) || null;
+  const album = readLocalAlbums().find((item) => item.slug === slug);
+  return album ? (await attachAlbumCovers([album]))[0] : null;
 }
 
 export async function getWorkAlbumMedia(albumId: string): Promise<WorkAlbumMedia[]> {
@@ -865,8 +943,22 @@ export async function getWorkAlbumMedia(albumId: string): Promise<WorkAlbumMedia
 }
 
 export async function addWorkAlbum(
-  album: Omit<WorkAlbum, 'id' | 'createdAt' | 'photoCount' | 'videoCount' | 'lastSyncedAt'> &
-    Partial<Pick<WorkAlbum, 'photoCount' | 'videoCount' | 'lastSyncedAt'>>
+  /* `coverMediaId` is optional because a new album has no media yet, so there is
+     nothing for it to point at. `coverUrl`, the counts and the sync time are
+     derived by the store rather than supplied by the caller. */
+  album: Omit<
+    WorkAlbum,
+    | 'id'
+    | 'createdAt'
+    | 'photoCount'
+    | 'videoCount'
+    | 'lastSyncedAt'
+    | 'coverMediaId'
+    | 'coverUrl'
+  > &
+    Partial<
+      Pick<WorkAlbum, 'photoCount' | 'videoCount' | 'lastSyncedAt' | 'coverMediaId'>
+    >
 ): Promise<WorkAlbum> {
   if (isSupabaseConfigured()) {
     const { data, error } = await getSupabaseAdminClient()
@@ -876,7 +968,8 @@ export async function addWorkAlbum(
         title: album.title,
         category: album.category,
         description: album.description,
-        cover_drive_file_id: album.coverDriveFileId,
+        cover_drive_file_id: album.coverDriveFileId || null,
+        cover_media_id: album.coverMediaId || null,
         drive_folder_id: album.driveFolderId,
         drive_folder_url: album.driveFolderUrl,
         photo_count: album.photoCount || 0,
@@ -889,13 +982,17 @@ export async function addWorkAlbum(
     if (error) {
       throw error;
     }
-    return mapAlbumRow(data as Record<string, unknown>);
+    return (await attachAlbumCovers([
+      mapAlbumRow(data as Record<string, unknown>),
+    ]))[0];
   }
 
   const albums = readLocalJson<WorkAlbum>(albumsFilePath());
   const created: WorkAlbum = {
     ...album,
     id: localId(),
+    coverMediaId: album.coverMediaId || '',
+    coverUrl: '',
     photoCount: album.photoCount || 0,
     videoCount: album.videoCount || 0,
     lastSyncedAt: album.lastSyncedAt || '',
@@ -903,7 +1000,7 @@ export async function addWorkAlbum(
   };
   albums.unshift(created);
   writeLocalJson(albumsFilePath(), albums);
-  return created;
+  return (await attachAlbumCovers([created]))[0];
 }
 
 export async function updateWorkAlbum(
@@ -916,6 +1013,7 @@ export async function updateWorkAlbum(
       | 'category'
       | 'description'
       | 'coverDriveFileId'
+      | 'coverMediaId'
       | 'driveFolderId'
       | 'driveFolderUrl'
       | 'photoCount'
@@ -933,7 +1031,10 @@ export async function updateWorkAlbum(
         ...(patch.category !== undefined && { category: patch.category }),
         ...(patch.description !== undefined && { description: patch.description }),
         ...(patch.coverDriveFileId !== undefined && {
-          cover_drive_file_id: patch.coverDriveFileId,
+          cover_drive_file_id: patch.coverDriveFileId || null,
+        }),
+        ...(patch.coverMediaId !== undefined && {
+          cover_media_id: patch.coverMediaId || null,
         }),
         ...(patch.driveFolderId !== undefined && { drive_folder_id: patch.driveFolderId }),
         ...(patch.driveFolderUrl !== undefined && {
@@ -952,7 +1053,11 @@ export async function updateWorkAlbum(
     if (error) {
       throw error;
     }
-    return mapAlbumRow(data as Record<string, unknown>);
+    /* Re-derived, because a patch that changes the cover would otherwise hand
+       back a `coverUrl` still pointing at the photo just replaced. */
+    return (await attachAlbumCovers([
+      mapAlbumRow(data as Record<string, unknown>),
+    ]))[0];
   }
 
   const albums = readLocalJson<WorkAlbum>(albumsFilePath());
@@ -962,7 +1067,7 @@ export async function updateWorkAlbum(
   }
   albums[index] = { ...albums[index], ...patch };
   writeLocalJson(albumsFilePath(), albums);
-  return albums[index];
+  return (await attachAlbumCovers([albums[index]]))[0];
 }
 
 /**
@@ -974,6 +1079,152 @@ export async function updateWorkAlbum(
  * file is removed from storage too, so removing a photo in Drive actually
  * removes it from the site.
  */
+/**
+ * Append media to an album without going through Drive.
+ *
+ * Rows land with an empty `driveFileId`, which is how every later operation
+ * recognises them as admin uploads rather than Drive content. A sync will not
+ * remove them, because Drive has never heard of them.
+ *
+ * Sort order continues from the album's current maximum, so uploading to a
+ * synced album appends rather than reorders what is already there.
+ */
+export async function addWorkAlbumMedia(
+  albumId: string,
+  incoming: Omit<WorkAlbumMedia, 'id' | 'albumId'>[]
+): Promise<WorkAlbumMedia[]> {
+  const existing = await getWorkAlbumMedia(albumId);
+  const startOrder = existing.reduce((max, item) => Math.max(max, item.sortOrder), -1) + 1;
+
+  const rows = incoming.map((item, index) => ({ ...item, sortOrder: startOrder + index }));
+
+  if (isSupabaseConfigured()) {
+    const supabase = getSupabaseAdminClient();
+
+    /* Admin uploads have no Drive id, so the (album_id, drive_file_id) unique
+       constraint cannot distinguish them and upsert would collide on ''. They
+       are therefore inserted one statement at a time. */
+    for (const item of rows) {
+      const { error } = await supabase.from('work_album_media').insert({
+        album_id: albumId,
+        drive_file_id: null,
+        filename: item.filename,
+        kind: item.kind,
+        mime_type: item.mimeType,
+        size_bytes: item.sizeBytes,
+        storage_path: item.storagePath || null,
+        public_url: item.publicUrl || null,
+        sort_order: item.sortOrder,
+      });
+      if (error) {
+        throw error;
+      }
+    }
+  } else {
+    const all = readLocalJson<WorkAlbumMedia>(albumMediaFilePath());
+    for (const item of rows) {
+      all.push({ ...item, id: localId(), albumId });
+    }
+    writeLocalJson(albumMediaFilePath(), all);
+  }
+
+  return getWorkAlbumMedia(albumId);
+}
+
+/**
+ * Persist a new display order for an album's media.
+ *
+ * `orderedIds` is the complete list in the order the admin arranged. Anything
+ * not mentioned keeps its current position after the mentioned rows, so a
+ * partial payload from a stale tab cannot silently drop photos.
+ */
+export async function reorderWorkAlbumMedia(
+  albumId: string,
+  orderedIds: string[]
+): Promise<WorkAlbumMedia[]> {
+  const existing = await getWorkAlbumMedia(albumId);
+  const position = new Map(orderedIds.map((id, index) => [id, index]));
+
+  const ordered = [
+    ...existing
+      .filter((item) => position.has(item.id))
+      .sort((a, b) => (position.get(a.id) as number) - (position.get(b.id) as number)),
+    ...existing.filter((item) => !position.has(item.id)),
+  ];
+
+  const updated = ordered.map((item, index) => ({ ...item, sortOrder: index }));
+
+  if (isSupabaseConfigured()) {
+    const supabase = getSupabaseAdminClient();
+    for (const item of updated) {
+      const { error } = await supabase
+        .from('work_album_media')
+        .update({ sort_order: item.sortOrder })
+        .eq('id', item.id);
+      if (error) {
+        throw error;
+      }
+    }
+  } else {
+    const all = readLocalJson<WorkAlbumMedia>(albumMediaFilePath());
+    const byId = new Map(updated.map((item) => [item.id, item]));
+    writeLocalJson(
+      albumMediaFilePath(),
+      all.map((item) => (byId.has(item.id) ? (byId.get(item.id) as WorkAlbumMedia) : item))
+    );
+  }
+
+  return getWorkAlbumMedia(albumId);
+}
+
+/**
+ * Remove one item from an album, deleting the stored file if we own it.
+ *
+ * A Drive-hosted photo has no file of ours to remove, so only the row goes.
+ */
+export async function removeWorkAlbumMedia(
+  albumId: string,
+  mediaId: string
+): Promise<WorkAlbumMedia[]> {
+  const existing = await getWorkAlbumMedia(albumId);
+  const target = existing.find((item) => item.id === mediaId);
+  if (!target) {
+    throw new ValidationError('That item is no longer in the album');
+  }
+
+  if (isSupabaseConfigured()) {
+    const { error } = await getSupabaseAdminClient()
+      .from('work_album_media')
+      .delete()
+      .eq('id', mediaId);
+    if (error) {
+      throw error;
+    }
+  } else {
+    writeLocalJson(
+      albumMediaFilePath(),
+      readLocalJson<WorkAlbumMedia>(albumMediaFilePath()).filter((item) => item.id !== mediaId)
+    );
+  }
+
+  await deleteUploadedAsset(target.publicUrl);
+
+  /* A cover that pointed at the removed row has to go with it, or the album
+     renders a tile pointing at nothing. */
+  const album = await getWorkAlbumById(albumId);
+  if (album && album.coverMediaId === mediaId) {
+    await updateWorkAlbum(albumId, { coverMediaId: '' });
+  }
+
+  const remaining = await getWorkAlbumMedia(albumId);
+  await updateWorkAlbum(albumId, {
+    photoCount: remaining.filter((item) => item.kind === 'image').length,
+    videoCount: remaining.filter((item) => item.kind === 'video').length,
+  });
+
+  return remaining;
+}
+
 export async function saveWorkAlbumMedia(
   albumId: string,
   incoming: Omit<WorkAlbumMedia, 'id' | 'albumId'>[]
@@ -1019,7 +1270,11 @@ export async function saveWorkAlbumMedia(
       }
     }
 
-    const removed = existing.filter((item) => !keptIds.has(item.driveFileId));
+    // Rows with no Drive id were uploaded through the admin, so Drive has no
+    // opinion about them and a sync must never remove them.
+    const removed = existing.filter(
+      (item) => item.driveFileId !== '' && !keptIds.has(item.driveFileId)
+    );
     if (removed.length > 0) {
       const { error: deleteError } = await supabase
         .from('work_album_media')
@@ -1044,15 +1299,23 @@ export async function saveWorkAlbumMedia(
   }
 
   const all = readLocalJson<WorkAlbumMedia>(albumMediaFilePath());
+  const isAdminUpload = (item: WorkAlbumMedia) => item.driveFileId === '';
+
   const survivors = all.filter(
-    (item) => item.albumId !== albumId || keptIds.has(item.driveFileId)
+    (item) =>
+      item.albumId !== albumId || isAdminUpload(item) || keptIds.has(item.driveFileId)
   );
   const removed = all.filter(
-    (item) => item.albumId === albumId && !keptIds.has(item.driveFileId)
+    (item) =>
+      item.albumId === albumId && !isAdminUpload(item) && !keptIds.has(item.driveFileId)
   );
 
+  // Keyed only by Drive id. Admin uploads share the empty string, so keying them
+  // here would collapse several distinct rows into one.
   const byDriveId = new Map(
-    survivors.filter((item) => item.albumId === albumId).map((item) => [item.driveFileId, item])
+    survivors
+      .filter((item) => item.albumId === albumId && !isAdminUpload(item))
+      .map((item) => [item.driveFileId, item])
   );
 
   for (const item of incoming) {
@@ -1080,9 +1343,20 @@ export async function saveWorkAlbumMedia(
     await deleteUploadedAsset(item.publicUrl);
   }
 
-  return survivors
+  const saved = survivors
     .filter((item) => item.albumId === albumId)
     .sort((a, b) => a.sortOrder - b.sortOrder);
+
+  /* Counts are derived from the rows that survived rather than from what this
+     sync happened to fetch, so admin uploads stay counted. Doing it here rather
+     than in the sync route means no caller can forget, and the totals cannot
+     drift away from the media that actually exists. */
+  await updateWorkAlbum(albumId, {
+    photoCount: saved.filter((item) => item.kind === 'image').length,
+    videoCount: saved.filter((item) => item.kind === 'video').length,
+  });
+
+  return saved;
 }
 
 /**

@@ -86,6 +86,11 @@ export async function PATCH(
         'coverDriveFileId' in incoming
           ? incoming.coverDriveFileId
           : album.coverDriveFileId,
+      /* An uploaded photo cannot be named by a Drive id, so the cover chosen in
+         the editor arrives as a media row id and travels separately from the
+         Drive-form field above. */
+      coverMediaId:
+        'coverMediaId' in incoming ? incoming.coverMediaId : album.coverMediaId,
       driveFolderUrl:
         'driveFolderUrl' in incoming
           ? incoming.driveFolderUrl
@@ -105,10 +110,24 @@ export async function PATCH(
       }
     }
 
-    // Re-parse so a folder swap is validated and the id is refreshed from the
-    // new URL rather than being trusted as pasted.
-    const driveFolderId = parseDriveFolderId(String(body.driveFolderUrl));
+    /* Re-parse so a folder swap is validated and the id is refreshed from the
+       new URL rather than being trusted as pasted. An empty link is legitimate
+       — an album can be filled entirely by uploading — so only a link that was
+       actually supplied is held to being a real folder. */
+    const driveFolderUrl = String(body.driveFolderUrl).trim();
+    const driveFolderId = driveFolderUrl ? parseDriveFolderId(driveFolderUrl) : '';
     const folderChanged = driveFolderId !== album.driveFolderId;
+
+    /* A nominated cover has to exist in the album it is being set on. Without
+       this check a mistyped or stale id would be stored and the album would
+       render a tile pointing at nothing. */
+    const coverMediaId = String((merged as { coverMediaId?: unknown }).coverMediaId || '');
+    if (coverMediaId) {
+      const media = await getWorkAlbumMedia(album.id);
+      if (!media.some((item) => item.id === coverMediaId)) {
+        throw new ValidationError('That photo is no longer in this album');
+      }
+    }
 
     const updated = await updateWorkAlbum(album.id, {
       title: String(body.title),
@@ -116,10 +135,12 @@ export async function PATCH(
       category: String(body.category || ''),
       description: String(body.description || ''),
       coverDriveFileId: String(body.coverDriveFileId || ''),
+      coverMediaId,
       driveFolderId,
-      driveFolderUrl: String(body.driveFolderUrl).trim(),
-      // Pointing at a different folder invalidates the counts and cover that
-      // were derived from the old one.
+      driveFolderUrl,
+      /* Pointing at a different folder invalidates the counts and cover that
+         were derived from the old one. An uploaded cover survives, since it did
+         not come from that folder. */
       ...(folderChanged && {
         photoCount: 0,
         videoCount: 0,

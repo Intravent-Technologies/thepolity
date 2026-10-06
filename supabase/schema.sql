@@ -90,8 +90,16 @@ create table if not exists public.work_albums (
   title text not null,
   category text,
   description text,
+  -- Cover chosen from the Drive folder. Nullable, and null for an album whose
+  -- cover is an uploaded photo.
   cover_drive_file_id text,
-  drive_folder_id text not null,
+  -- Cover chosen as one of the album's own media rows, which is the only way to
+  -- cover a photo uploaded through the admin. Takes precedence over
+  -- cover_drive_file_id when both are set. The column is added further down,
+  -- after work_album_media exists, because it references that table.
+  -- cover_media_id uuid,
+  -- Null for an album built entirely from admin uploads, with no Drive folder.
+  drive_folder_id text,
   drive_folder_url text,
   photo_count integer not null default 0,
   video_count integer not null default 0,
@@ -102,7 +110,10 @@ create table if not exists public.work_albums (
 create table if not exists public.work_album_media (
   id uuid primary key default gen_random_uuid(),
   album_id uuid not null references public.work_albums (id) on delete cascade,
-  drive_file_id text not null,
+  -- Null for anything uploaded through the admin. Rows with a value came from a
+  -- Drive sync, which is how a later sync tells the two apart and knows to leave
+  -- uploads alone.
+  drive_file_id text,
   filename text not null,
   kind text not null check (kind in ('image', 'video')),
   mime_type text,
@@ -115,12 +126,19 @@ create table if not exists public.work_album_media (
   created_at timestamptz not null default now(),
   -- Makes Sync idempotent: re-syncing an unchanged folder upserts rather than
   -- duplicating, so repeat presses are free and safe.
+  -- Postgres treats nulls as distinct inside a unique index, so many uploads in
+  -- one album coexist while Drive rows stay unique per album.
   unique (album_id, drive_file_id)
 );
 
 -- Indexes
 create index if not exists work_projects_created_at_idx
   on public.work_projects (created_at desc);
+
+-- Added after the media table exists, since it points at it.
+alter table public.work_albums
+  add column if not exists cover_media_id uuid
+  references public.work_album_media (id) on delete set null;
 
 create index if not exists work_albums_created_at_idx
   on public.work_albums (created_at desc);

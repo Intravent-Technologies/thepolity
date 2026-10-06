@@ -128,7 +128,9 @@ const schemas = {
     category: optionalText(b.category, SHORT),
     description: optionalText(b.description, LONG),
     coverDriveFileId: optionalDriveFileId(b.coverDriveFileId, 'coverDriveFileId'),
-    driveFolderUrl: requireText(b.driveFolderUrl, 'driveFolderUrl', IMAGE),
+    /* Optional, because an album can now be built entirely from uploads made in
+       the admin. Drive is one way to fill an album, not the only one. */
+    driveFolderUrl: optionalText(b.driveFolderUrl, IMAGE),
   }),
   team: (b: Record<string, unknown>) => ({
     name: requireText(b.name, 'name', SHORT),

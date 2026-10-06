@@ -18,7 +18,8 @@ create table if not exists public.work_albums (
   category text,
   description text,
   cover_drive_file_id text,
-  drive_folder_id text not null,
+  -- Null for an album built entirely from admin uploads, with no Drive folder.
+  drive_folder_id text,
   drive_folder_url text,
   photo_count integer not null default 0,
   video_count integer not null default 0,
@@ -29,7 +30,9 @@ create table if not exists public.work_albums (
 create table if not exists public.work_album_media (
   id uuid primary key default gen_random_uuid(),
   album_id uuid not null references public.work_albums (id) on delete cascade,
-  drive_file_id text not null,
+  -- Null for anything uploaded through the admin. A sync recognises its own
+  -- rows by this being set, and leaves the rest alone.
+  drive_file_id text,
   filename text not null,
   kind text not null check (kind in ('image', 'video')),
   mime_type text,
@@ -43,6 +46,18 @@ create table if not exists public.work_album_media (
   created_at timestamptz not null default now(),
   unique (album_id, drive_file_id)
 );
+
+-- Added as an alter because it references work_album_media, defined above.
+alter table public.work_albums
+  add column if not exists cover_media_id uuid
+  references public.work_album_media (id) on delete set null;
+
+-- Albums may now exist without a Drive folder, so drop the old requirement.
+alter table public.work_albums
+  alter column drive_folder_id drop not null;
+
+alter table public.work_album_media
+  alter column drive_file_id drop not null;
 
 create index if not exists work_albums_created_at_idx
   on public.work_albums (created_at desc);

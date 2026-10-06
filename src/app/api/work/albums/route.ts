@@ -55,9 +55,13 @@ export async function POST(request: NextRequest) {
   try {
     const body = parseContentBody(ENTITY, await readJsonBody(request));
 
-    // Throws a ValidationError with a readable message if the link is not a
-    // Drive folder URL, which surfaces to the admin as a 400.
-    const driveFolderId = parseDriveFolderId(String(body.driveFolderUrl));
+    const driveFolderUrl = String(body.driveFolderUrl || '').trim();
+
+    /* The Drive link is optional now. When present it is parsed strictly and a
+       bad link fails the request with a readable message rather than creating an
+       album that can never sync. When absent the album is simply filled by
+       uploads from the admin. */
+    const driveFolderId = driveFolderUrl ? parseDriveFolderId(driveFolderUrl) : '';
 
     const slug = String(body.slug);
     const existing = await getWorkAlbums();
@@ -74,7 +78,7 @@ export async function POST(request: NextRequest) {
       description: String(body.description || ''),
       coverDriveFileId: String(body.coverDriveFileId || ''),
       driveFolderId,
-      driveFolderUrl: String(body.driveFolderUrl).trim(),
+      driveFolderUrl,
     });
 
     return NextResponse.json(album, { status: 201 });

@@ -48,14 +48,25 @@ export type WorkAlbumMediaKind = 'image' | 'video';
 export interface WorkAlbumMedia {
   id: string;
   albumId: string;
+  /**
+   * Google Drive file id for media pulled by a sync, or '' for a file uploaded
+   * through the admin. Rows with no Drive id are the admin's own and are never
+   * removed by a later sync, because Drive knows nothing about them.
+   */
   driveFileId: string;
   filename: string;
   kind: WorkAlbumMediaKind;
   mimeType: string;
   sizeBytes: number;
-  /** Storage object path for mirrored videos; '' for images. */
+  /**
+   * Storage object path. Set for mirrored Drive videos and for anything uploaded
+   * through the admin; '' for a Drive-hosted image, which is never copied.
+   */
   storagePath: string;
-  /** Public CDN URL for mirrored videos; '' for images. */
+  /**
+   * Public CDN URL for anything stored in our own bucket — mirrored videos and
+   * admin uploads. '' for a Drive-hosted image.
+   */
   publicUrl: string;
   sortOrder: number;
 }
@@ -73,7 +84,25 @@ export interface WorkAlbum {
   title: string;
   category: string;
   description: string;
+  /**
+   * Cover photo, as a Drive file id.
+   *
+   * This only ever holds a Drive id, so a photo uploaded through the admin
+   * cannot be nominated here. `coverMediaId` covers that case; when both are
+   * set, `coverMediaId` wins.
+   */
   coverDriveFileId: string;
+  /** Id of the media row used as the cover, for admin-uploaded photos. */
+  coverMediaId: string;
+  /**
+   * Finished URL for the cover photo, resolved on the server from whichever
+   * source actually holds it: a Drive id, or the `publicUrl` of an upload.
+   *
+   * Resolved here rather than in the browser so a grid of albums does not have
+   * to download every album's media to find one picture. Empty when the album
+   * has no cover yet, which is the honest state of a new album.
+   */
+  coverUrl: string;
   driveFolderId: string;
   driveFolderUrl: string;
   photoCount: number;
@@ -118,4 +147,72 @@ export function drivePhotoSrcSet(
   widths: readonly number[] = ALBUM_GRID_WIDTHS
 ): string {
   return widths.map((width) => `${drivePhotoUrl(driveFileId, width)} ${width}w`).join(', ');
+}
+
+/**
+ * Display URL for any album photo, whichever side of the site actually holds it.
+ *
+ * An album can now mix sources: photos pulled from Drive keep only a Drive id,
+ * while a photo uploaded through the admin lives in our own bucket and has only
+ * a public URL. Callers used to call `drivePhotoUrl()` unconditionally, which
+ * produced `.../d/=w1600` for an upload — a URL that resolves to nothing at all.
+ *
+ * Returns null when neither source is usable, so the caller can render a
+ * deliberate "unavailable" tile instead of a broken image.
+ */
+export function albumMediaImageSrc(
+  media: Pick<WorkAlbumMedia, 'driveFileId' | 'publicUrl'>,
+  width: number
+): string | null {
+  if (media.publicUrl) {
+    return media.publicUrl;
+  }
+  if (media.driveFileId) {
+    return drivePhotoUrl(media.driveFileId, width);
+  }
+  return null;
+}
+
+/**
+ * `srcSet` for an album photo, or undefined when there is only one file.
+ *
+ * Only a Drive photo can be resized on demand by its CDN. An upload is served
+ * from storage as the single file that was uploaded, so advertising fake widths
+ * for it would download the same bytes several times over.
+ */
+export function albumMediaSrcSet(
+  media: Pick<WorkAlbumMedia, 'driveFileId' | 'publicUrl'>,
+  widths: readonly number[] = ALBUM_GRID_WIDTHS
+): string | undefined {
+  if (media.publicUrl || !media.driveFileId) {
+    return undefined;
+  }
+  return drivePhotoSrcSet(media.driveFileId, widths);
+}
+
+/**
+ * Display URL for an album's cover photo.
+ *
+ * `coverMediaId` is checked first because it is the only field that can point at
+ * an uploaded photo, and because an admin who picked a cover by hand must not
+ * have it silently replaced by whatever Drive happens to list first.
+ *
+ * `media` may be omitted where the caller has no media rows to hand; the cover
+ * then falls back to the Drive id alone.
+ */
+export function albumCoverSrc(
+  album: Pick<WorkAlbum, 'coverMediaId' | 'coverDriveFileId'>,
+  media?: readonly Pick<WorkAlbumMedia, 'id' | 'driveFileId' | 'publicUrl'>[],
+  width: number = ALBUM_COVER_WIDTH
+): string | null {
+  if (album.coverMediaId && media) {
+    const chosen = media.find((item) => item.id === album.coverMediaId);
+    if (chosen) {
+      return albumMediaImageSrc(chosen, width);
+    }
+  }
+  if (album.coverDriveFileId) {
+    return drivePhotoUrl(album.coverDriveFileId, width);
+  }
+  return null;
 }

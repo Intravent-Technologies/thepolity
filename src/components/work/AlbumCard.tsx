@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { Images } from 'lucide-react';
 import { Badge } from '@/components/ui';
-import { ALBUM_COVER_WIDTH, drivePhotoUrl, type WorkAlbum } from '@/lib/work-types';
+import type { WorkAlbum } from '@/lib/work-types';
 
 /**
  * One album, rendered as a case study in the `/work` grid.
@@ -21,17 +21,19 @@ export default function AlbumCard({ album }: { album: WorkAlbum }) {
     <article>
       <Link href={`/work/${album.slug}`} className="group block">
         <div className="relative aspect-16/10 overflow-hidden rounded-card border border-line bg-surface transition-colors duration-200 group-hover:border-line-strong">
-          {album.coverDriveFileId ? (
+          {album.coverUrl ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
-              src={drivePhotoUrl(album.coverDriveFileId, ALBUM_COVER_WIDTH)}
+              src={album.coverUrl}
               alt={album.title}
               loading="lazy"
               decoding="async"
               className="size-full object-cover"
             />
           ) : (
-            // Reachable only between adding an album and its first sync.
+            // Reachable only between adding an album and its first upload or
+            // sync. `coverUrl` is resolved on the server from either source, so
+            // an empty value really does mean there is no cover to show.
             <div className="flex size-full items-center justify-center bg-surface-sunken">
               <Images className="size-8 text-ink-subtle" aria-hidden="true" />
             </div>

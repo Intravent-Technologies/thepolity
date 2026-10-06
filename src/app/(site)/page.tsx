@@ -15,10 +15,10 @@ import PhotoHero from '@/components/PhotoHero';
 import PhotoMarquee from '@/components/PhotoMarquee';
 import { getHomepageImages, getWorkAlbumMedia, getWorkAlbums } from '@/lib/storage';
 import {
-  ALBUM_COVER_WIDTH,
   ALBUM_GRID_WIDTHS,
+  albumMediaImageSrc,
+  albumMediaSrcSet,
   drivePhotoSrcSet,
-  drivePhotoUrl,
 } from '@/lib/work-types';
 
 /* Image keys are managed from the admin dashboard, so these identifiers are a
@@ -135,14 +135,20 @@ export default async function Home() {
      keeps media in a separate file keyed by album id. */
   const media = await Promise.all(albums.map((album) => getWorkAlbumMedia(album.id)));
 
+  /* Uploads and Drive photos both belong in the band, so the URL is resolved
+     from whichever source holds each file. Rows with neither are skipped rather
+     than queued as a broken image. */
   const photos = media
     .flat()
-    .filter((item) => item.kind === 'image' && item.driveFileId)
+    .filter((item) => item.kind === 'image')
     .map((item) => ({
-      src: drivePhotoUrl(item.driveFileId, 800),
-      srcSet: drivePhotoSrcSet(item.driveFileId, ALBUM_GRID_WIDTHS),
+      src: albumMediaImageSrc(item, 800),
+      srcSet: albumMediaSrcSet(item, ALBUM_GRID_WIDTHS),
       alt: item.filename,
-    }));
+    }))
+    .filter((item): item is { src: string; srcSet: string | undefined; alt: string } =>
+      Boolean(item.src)
+    );
 
   /* Admin-managed homepage artwork wins, because an editor chose it. Several
      rows can share a section key after the slideshow change, so the first row
@@ -155,11 +161,11 @@ export default async function Home() {
   /* Prefer a real album cover for the hero: it is the client's own work, which
      is the whole point of the band. Fall back to bundled artwork only if no
      album has been synced yet, so a fresh clone is never a blank navy box. */
-  const heroCover = albums.find((album) => album.coverDriveFileId && album.photoCount > 0);
-  const heroSrc = heroCover
-    ? drivePhotoUrl(heroCover.coverDriveFileId, ALBUM_COVER_WIDTH)
-    : images['hero-visual-media'];
-  const heroSrcSet = heroCover
+  const heroCover = albums.find((album) => album.coverUrl && album.photoCount > 0);
+  const heroSrc = heroCover?.coverUrl || images['hero-visual-media'];
+  /* Only the Drive CDN can resize on demand, so an uploaded cover gets the one
+     file we have instead of a srcSet pointing at widths that do not exist. */
+  const heroSrcSet = heroCover?.coverDriveFileId
     ? drivePhotoSrcSet(heroCover.coverDriveFileId, HERO_WIDTHS)
     : undefined;
 

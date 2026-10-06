@@ -5,8 +5,8 @@ import { ChevronLeft, ChevronRight, X } from 'lucide-react';
 import {
   ALBUM_GRID_WIDTHS,
   ALBUM_LIGHTBOX_WIDTH,
-  drivePhotoSrcSet,
-  drivePhotoUrl,
+  albumMediaImageSrc,
+  albumMediaSrcSet,
   type WorkAlbumMedia,
 } from '@/lib/work-types';
 
@@ -32,15 +32,18 @@ const STAGE_FALLBACK = 1;
 const STAGE_GONE = 2;
 
 /**
- * A photo that stays in Google Drive.
+ * An album photo, whether it stays in Google Drive or was uploaded here.
  *
  * Renders a plain `<img>` rather than `next/image`. `next/image` would have to
  * be pointed at an undocumented host, and its optimizer proxies every byte
  * through this app — exactly the cost this feature exists to avoid. Google's
- * CDN already resizes, so `srcSet` lets each visitor fetch one right-sized file
- * instead of a ~3 MB original.
+ * CDN already resizes, so a Drive photo gets a `srcSet` and each visitor fetches
+ * one right-sized file instead of a ~3 MB original; an upload is served as-is.
+ *
+ * Only a Drive photo has a fallback to try, since the Drive thumbnail endpoint
+ * is keyed on a Drive id. An upload that 404s is simply gone.
  */
-function DrivePhoto({
+function AlbumPhoto({
   media,
   width,
   sizes,
@@ -65,19 +68,30 @@ function DrivePhoto({
     );
   }
 
-  const failed = stage === STAGE_FALLBACK;
+  // Nothing to load from: no Drive id and no stored file.
+  const source = albumMediaImageSrc(media, width);
+  if (!source) {
+    return (
+      <div
+        className={`flex aspect-4/3 items-center justify-center bg-surface-sunken text-sm text-ink-subtle ${className ?? ''}`}
+      >
+        Image unavailable
+      </div>
+    );
+  }
+
+  const canFallBack = stage === STAGE_FALLBACK && media.driveFileId !== '';
+  const srcSet = canFallBack ? undefined : albumMediaSrcSet(media, ALBUM_GRID_WIDTHS);
 
   return (
     // eslint-disable-next-line @next/next/no-img-element
     <img
       src={
-        failed
+        canFallBack
           ? thumbnailFallbackUrl(media.driveFileId, width)
-          : drivePhotoUrl(media.driveFileId, width)
+          : source
       }
-      {...(failed
-        ? {}
-        : { srcSet: drivePhotoSrcSet(media.driveFileId, ALBUM_GRID_WIDTHS) })}
+      {...(srcSet ? { srcSet } : {})}
       sizes={sizes}
       alt={media.filename}
       loading="lazy"
@@ -93,7 +107,7 @@ function GridPhoto({ media }: { media: WorkAlbumMedia }) {
   const [stage, setStage] = useState(STAGE_PRIMARY);
 
   return (
-    <DrivePhoto
+    <AlbumPhoto
       media={media}
       width={1200}
       sizes="(min-width: 1024px) 33vw, (min-width: 640px) 50vw, 100vw"
@@ -294,7 +308,7 @@ const total = photos.length;
               className="flex min-h-0 w-full flex-1 items-center justify-center"
               onClick={(event) => event.stopPropagation()}
             >
-              <DrivePhoto
+              <AlbumPhoto
                 media={active}
                 width={ALBUM_LIGHTBOX_WIDTH}
                 sizes="100vw"

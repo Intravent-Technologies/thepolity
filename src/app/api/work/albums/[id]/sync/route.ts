@@ -168,14 +168,17 @@ export async function POST(
 
     const saved = await saveWorkAlbumMedia(album.id, incoming);
 
-    // Give a fresh album a sensible cover instead of an empty tile. An explicit
-    // cover chosen by an admin is never overwritten.
+    // `saveWorkAlbumMedia` has already refreshed the album's counts from the
+    // rows that survived, so admin uploads remain counted without this repeating
+    // the arithmetic.
+
+    /* Give a fresh album a sensible cover instead of an empty tile. A cover the
+       admin chose by hand is never overwritten, in either form: `coverMediaId`
+       means they picked an uploaded photo, `coverDriveFileId` a Drive one. */
     const coverDriveFileId =
-      album.coverDriveFileId || images[0]?.id || '';
+      album.coverMediaId || album.coverDriveFileId ? album.coverDriveFileId : images[0]?.id || '';
 
     await updateWorkAlbum(album.id, {
-      photoCount: images.length,
-      videoCount: videos.length - outcome.videosSkipped.length,
       lastSyncedAt: new Date().toISOString(),
       coverDriveFileId,
     });

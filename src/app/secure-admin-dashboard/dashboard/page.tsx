@@ -9,7 +9,8 @@ import UploadField from '@/components/UploadField';
 import { notify, ToastViewport } from '@/components/admin/Toast';
 import { CategoryLabel, Eyebrow } from '@/components/ui';
 import Logo from '@/components/Logo';
-import { drivePhotoUrl, type WorkAlbum, type WorkProject } from '@/lib/work-types';
+import type { WorkAlbum, WorkProject } from '@/lib/work-types';
+import AlbumEditor from './AlbumEditor';
 
 interface BlogPost {
   id: string;
@@ -361,6 +362,8 @@ function AlbumManager() {
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(true);
   const [syncingId, setSyncingId] = useState('');
+  // The album open in the editor below the list, if any.
+  const [editingId, setEditingId] = useState('');
 
   // Per-album feedback rather than one global message, so two albums cannot
   // overwrite each other's result while an admin works down a list.
@@ -381,10 +384,6 @@ function AlbumManager() {
     e.preventDefault();
     if (!title.trim()) {
       notify('A title is required');
-      return;
-    }
-    if (!folderUrl.trim()) {
-      notify('Paste the Google Drive folder link');
       return;
     }
 
@@ -418,7 +417,11 @@ function AlbumManager() {
       setCategory('');
       setDescription('');
       setFolderUrl('');
-      notify('Album added. Press Sync to pull in its photos.');
+      notify(
+        folderUrl.trim()
+          ? 'Album added. Press Sync to pull in its photos.'
+          : 'Album added. Open it and upload photos.',
+      );
     } catch {
       notify('Something went wrong. Please try again.');
     } finally {
@@ -495,10 +498,17 @@ function AlbumManager() {
     <div className="bg-surface rounded-card border border-line p-6">
       <h2 className="text-xl font-bold text-ink mb-2">Add Album</h2>
       <p className="mb-6 text-sm text-ink-muted">
-        An album is a project documented by photos in a Google Drive folder. Set
-        the folder to &ldquo;Anyone with the link&rdquo; as Viewer, paste the link,
-        then press Sync. Photos are served straight from Google; only videos are
-        copied into our storage.
+        An album is a project documented by photographs. Two ways to fill it, and
+        you can use either or both:
+        <br />
+        <strong className="font-medium text-ink">Google Drive</strong> — set the
+        folder to &ldquo;Anyone with the link&rdquo; as Viewer, paste the link, then
+        press Sync. Photos are served straight from Google and nothing is copied
+        except videos.
+        <br />
+        <strong className="font-medium text-ink">Upload</strong> — leave the link
+        empty, add the album, then open it and drop your files in. Files are copied
+        into our own storage, so they stay available whatever Drive does.
       </p>
 
       <form onSubmit={handleAdd} className="space-y-4">
@@ -545,9 +555,14 @@ function AlbumManager() {
       </form>
 
       <div className="border-t border-line mt-8 pt-8">
-        <h3 className="text-lg font-bold text-ink mb-4">
+        <h3 className="text-lg font-bold text-ink mb-1">
           Albums ({albums.length})
         </h3>
+        <p className="mb-4 text-sm text-ink-muted">
+          Press <strong className="font-medium text-ink">Edit</strong> to change an
+          album&rsquo;s details, upload photos, choose its cover, or rearrange the
+          order they appear in.
+        </p>
 
         {loading ? (
           <p className="text-ink-subtle">Loading...</p>
@@ -564,10 +579,10 @@ function AlbumManager() {
                   <div className="flex items-center justify-between gap-3">
                     <div className="flex items-center gap-3 min-w-0">
                       <div className="relative w-12 h-12 rounded bg-surface overflow-hidden flex-shrink-0">
-                        {album.coverDriveFileId ? (
+                        {album.coverUrl ? (
                           // eslint-disable-next-line @next/next/no-img-element
                           <img
-                            src={drivePhotoUrl(album.coverDriveFileId, 200)}
+                            src={album.coverUrl}
                             alt=""
                             className="size-full object-cover"
                           />
@@ -606,6 +621,21 @@ function AlbumManager() {
 
                       <button
                         type="button"
+                        onClick={() =>
+                          setEditingId((current) => (current === album.id ? '' : album.id))
+                        }
+                        aria-expanded={editingId === album.id}
+                        className={`px-3 py-1 rounded border text-sm transition-colors duration-200 ${
+                          editingId === album.id
+                            ? 'border-brand-500 bg-brand-500 text-white'
+                            : 'border-line-strong bg-surface text-ink-muted hover:border-brand-500 hover:text-brand-700'
+                        }`}
+                      >
+                        {editingId === album.id ? 'Close' : 'Edit'}
+                      </button>
+
+                      <button
+                        type="button"
                         onClick={() => handleSync(album)}
                         disabled={Boolean(syncingId)}
                         className="px-3 py-1 rounded border border-line-strong bg-surface text-sm text-ink-muted transition-colors duration-200 hover:border-brand-500 hover:text-brand-700 disabled:opacity-50"
@@ -630,6 +660,20 @@ function AlbumManager() {
 
                   {errors[album.id] ? (
                     <p className="mt-2 text-sm text-brand-700">{errors[album.id]}</p>
+                  ) : null}
+
+                  {editingId === album.id ? (
+                    <div className="mt-4 border-t border-line pt-4">
+                      <AlbumEditor
+                        album={album}
+                        onClose={() => setEditingId('')}
+                        onSaved={(updated) =>
+                          setAlbums((current) =>
+                            current.map((item) => (item.id === updated.id ? updated : item))
+                          )
+                        }
+                      />
+                    </div>
                   ) : null}
                 </div>
               );
