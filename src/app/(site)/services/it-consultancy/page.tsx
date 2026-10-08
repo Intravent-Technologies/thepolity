@@ -69,13 +69,22 @@ export default function ITConsultancy() {
             <p className="mx-auto mt-5 max-w-2xl text-lg text-ink-muted">
               Let us help you modernize your technology stack.
             </p>
-            <Link
-              href="/contact"
-              className="mt-8 inline-flex items-center gap-2 rounded-full bg-[color:var(--color-brand-500)] px-8 py-4 font-medium text-white transition-colors hover:bg-[color:var(--color-brand-400)]"
-            >
-              Get Started
-              <ArrowRight className="h-5 w-5" />
-            </Link>
+            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+              <Link
+                href="/contact"
+                className="inline-flex items-center gap-2 rounded-full bg-[color:var(--color-brand-500)] px-8 py-4 font-medium text-white transition-colors hover:bg-[color:var(--color-brand-400)]"
+              >
+                Get Started
+                <ArrowRight className="h-5 w-5" />
+              </Link>
+              <Link
+                href="/work"
+                className="inline-flex items-center gap-2 rounded-full border border-line-strong px-8 py-4 font-medium text-ink transition-colors hover:border-brand-500 hover:text-brand-600"
+              >
+                View our work
+                <ArrowRight className="h-5 w-5" />
+              </Link>
+            </div>
           </motion.div>
         </section>
       

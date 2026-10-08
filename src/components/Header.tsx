@@ -7,14 +7,12 @@ import { ChevronDown, Menu, X } from "lucide-react";
 import { ButtonLink, Container } from "./ui";
 import Logo from "./Logo";
 
+/* The three practices The Polity actually sells. Each entry goes straight to
+   that service's own page, and every list closes with a CTA to the Work nav. */
 const SERVICES = [
   { name: "IT Consultancy", href: "/services/it-consultancy" },
   { name: "Project Management", href: "/services/project-management" },
-  { name: "Photography", href: "/services/media/photography" },
-  { name: "Event Coverage", href: "/services/media/events" },
-  { name: "Photo Tourism", href: "/services/media/photo-tourism" },
-  { name: "Portraits", href: "/services/media/portraits" },
-  { name: "Visuals & Graphics", href: "/services/media/visuals" },
+  { name: "Media / Photography", href: "/services/media" },
 ];
 
 const NAV = [
@@ -186,10 +184,10 @@ export default function Header() {
                     </Link>
                   ))}
                   <Link
-                    href="/services"
-                    className="mt-1 block border-t border-line px-3.5 py-2.5 pt-3 text-sm font-medium text-brand-600 transition-colors duration-150 hover:text-brand-700"
+                    href="/work"
+                    className="mt-1 flex items-center justify-between gap-2 border-t border-line px-3.5 py-2.5 pt-3 text-sm font-medium text-brand-600 transition-colors duration-150 hover:text-brand-700"
                   >
-                    All services →
+                    View our work <span aria-hidden="true">→</span>
                   </Link>
                 </div>
               ) : null}
@@ -274,10 +272,10 @@ export default function Header() {
                     </Link>
                   ))}
                   <Link
-                    href="/services"
-                    className="block py-2.5 pl-4 text-base font-medium text-brand-600"
+                    href="/work"
+                    className="mt-1 block border-t border-line pt-3 pl-4 pb-2.5 text-base font-medium text-brand-600"
                   >
-                    All services
+                    View our work →
                   </Link>
                 </div>
               </details>

@@ -44,15 +44,20 @@ export default function PhotoHero({
   return (
     <section       className="relative isolate flex min-h-[92svh] flex-col justify-end overflow-hidden bg-navy-800">
       <div className="absolute inset-0 overflow-hidden">
-        <Image
-          src={imageSrc}
-          alt={imageAlt}
-          fill
-          priority={priority}
-          sizes="100vw"
-          {...(imageSrcSet ? { srcSet: imageSrcSet } : {})}
-          className="tp-kenburns object-cover"
-        />
+        {/* No source means no photograph: render nothing rather than an img with
+            an empty src, which makes the browser re-request the whole page. The
+            navy background and scrim carry the frame on their own. */}
+        {imageSrc ? (
+          <Image
+            src={imageSrc}
+            alt={imageAlt}
+            fill
+            priority={priority}
+            sizes="100vw"
+            {...(imageSrcSet ? { srcSet: imageSrcSet } : {})}
+            className="tp-kenburns object-cover"
+          />
+        ) : null}
       </div>
 
       {/* Scrim. Two stops rather than one flat wash so the top of the frame,

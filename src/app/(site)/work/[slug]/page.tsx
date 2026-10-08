@@ -37,9 +37,14 @@ export default async function AlbumPage({
     getWorkAlbums(),
   ]);
 
-  // Previous/next across all published albums, ordered by title so the sequence
-  // is stable and predictable rather than dependent on sync timing.
-  const ordered = [...albums].sort((a, b) => a.title.localeCompare(b.title));
+  // Previous/next across published albums, ordered by title so the sequence is
+  // stable and predictable rather than dependent on sync timing. Albums with no
+  // media are excluded here for the same reason the /work grid excludes them:
+  // a draft reads as a dead end to a visitor. The admin preview link still
+  // reaches the empty page directly.
+  const ordered = albums
+    .filter((item) => item.photoCount + item.videoCount > 0)
+    .sort((a, b) => a.title.localeCompare(b.title));
   const index = ordered.findIndex((item) => item.id === album.id);
   const previous = index > 0 ? ordered[index - 1] : null;
   const next = index >= 0 && index < ordered.length - 1 ? ordered[index + 1] : null;

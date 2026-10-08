@@ -162,7 +162,9 @@ export default async function Home() {
      is the whole point of the band. Fall back to bundled artwork only if no
      album has been synced yet, so a fresh clone is never a blank navy box. */
   const heroCover = albums.find((album) => album.coverUrl && album.photoCount > 0);
-  const heroSrc = heroCover?.coverUrl || images['hero-visual-media'];
+  /* `hero-visual-media` is not a managed section key — the bundled media card
+     lives under `hero-visual-1`, so that is the fallback to reach for. */
+  const heroSrc = heroCover?.coverUrl || images['hero-visual-1'] || '';
   /* Only the Drive CDN can resize on demand, so an uploaded cover gets the one
      file we have instead of a srcSet pointing at widths that do not exist. */
   const heroSrcSet = heroCover?.coverDriveFileId
@@ -277,7 +279,7 @@ export default async function Home() {
         ) : (
           /* No synced albums yet. Fill the band with the bundled artwork so a
              fresh clone still shows a composed page rather than empty rows. */
-          [images['hero-visual-media'], images['service-media'], images['blog-1']].map(
+          [images['hero-visual-1'], images['service-media'], images['blog-1']].map(
             (src) => (
               <div
                 key={src}

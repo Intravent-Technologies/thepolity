@@ -72,6 +72,17 @@ export default function RootLayout({
       lang="en-GB"
       className={`${inter.variable} ${newsreader.variable} antialiased`}
     >
+      {/*
+        Google's image CDN (lh3.googleusercontent.com) rejects image requests
+        whose referer is http://localhost — it answers 429 and every hosted
+        photo breaks locally while production (thepolityservices.com referer)
+        stays fine. Development builds therefore send no referer at all, which
+        the CDN serves normally; production builds are unaffected by the
+        NODE_ENV guard.
+      */}
+      {process.env.NODE_ENV === 'development' ? (
+        <meta name="referrer" content="no-referrer" />
+      ) : null}
       <body className="flex min-h-dvh flex-col">{children}</body>
     </html>
   );
