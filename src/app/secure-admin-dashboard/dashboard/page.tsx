@@ -1,15 +1,27 @@
 'use client';
 
 import Image from 'next/image';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Images, Video } from 'lucide-react';
+import {
+  ExternalLink,
+  FileText,
+  Images,
+  LogOut,
+  Pencil,
+  Plus,
+  Quote,
+  RefreshCw,
+  Star,
+  Trash2,
+} from 'lucide-react';
 import UploadField from '@/components/UploadField';
 import { notify, ToastViewport } from '@/components/admin/Toast';
-import { CategoryLabel, Eyebrow } from '@/components/ui';
+import { Eyebrow } from '@/components/ui';
 import Logo from '@/components/Logo';
-import type { WorkAlbum, WorkProject } from '@/lib/work-types';
+import { AnimatePresence, motion } from 'framer-motion';
+import type { WorkAlbum } from '@/lib/work-types';
 import AlbumEditor from './AlbumEditor';
 
 interface BlogPost {
@@ -18,14 +30,6 @@ interface BlogPost {
   category: string;
   date: string;
   excerpt: string;
-  image: string;
-}
-
-interface TeamMember {
-  id: string;
-  name: string;
-  role: string;
-  bio: string;
   image: string;
 }
 
@@ -38,15 +42,22 @@ interface Review {
 }
 
 /**
- * Work projects and albums are separate tabs because they are built from
- * different places: a project is uploaded here, while an album's photos live in
- * a Google Drive folder that we only mirror the metadata for.
+ * The panel covers exactly three things: photo albums (filled from a Google
+ * Drive link), blog posts and reviews. Everything else on the site is either
+ * code or seeded data.
  */
-type Tab = 'work' | 'albums' | 'blog' | 'team' | 'reviews' | 'homepage';
+type Tab = 'albums' | 'blog' | 'reviews';
+
+const TABS: { key: Tab; label: string; icon: typeof Images }[] = [
+  { key: 'albums', label: 'Albums', icon: Images },
+  { key: 'blog', label: 'Blog', icon: FileText },
+  { key: 'reviews', label: 'Reviews', icon: Star },
+];
 
 export default function AdminDashboard() {
-  const [tab, setTab] = useState<Tab>('work');
+  const [tab, setTab] = useState<Tab>('albums');
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [counts, setCounts] = useState<Partial<Record<Tab, number>>>({});
   const router = useRouter();
 
   const checkAuth = async () => {
@@ -67,6 +78,32 @@ export default function AdminDashboard() {
     checkAuth();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  /* Sidebar badges: one cheap GET per section, only once the session is known
+     good. A failure just leaves the badges blank — the managers still load. */
+  useEffect(() => {
+    if (!isAuthenticated) return;
+    let cancelled = false;
+    const readCount = async (url: string) => {
+      try {
+        const res = await fetch(url);
+        const data = await res.json();
+        return Array.isArray(data) ? data.length : 0;
+      } catch {
+        return 0;
+      }
+    };
+    Promise.all([
+      readCount('/api/work/albums'),
+      readCount('/api/blog'),
+      readCount('/api/reviews'),
+    ]).then(([albums, blog, reviews]) => {
+      if (!cancelled) setCounts({ albums, blog, reviews });
+    });
+    return () => {
+      cancelled = true;
+    };
+  }, [isAuthenticated]);
 
   const handleLogout = async () => {
     await fetch('/api/auth/logout', { method: 'POST', credentials: 'include' });
@@ -89,68 +126,209 @@ export default function AdminDashboard() {
     <div className="min-h-screen bg-cream">
       <ToastViewport />
 
-      <header className="border-b border-line bg-surface">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-4 sm:px-6 lg:px-8">
-          <Link href="/" className="flex items-baseline gap-2">
-            <Logo className="h-6" />
-            <Eyebrow>Admin</Eyebrow>
+      {/* The sidebar is present at every width: an icon rail on phones, the
+          full labelled panel from sm up. */}
+      <aside className="fixed inset-y-0 left-0 z-40 flex w-[4.5rem] flex-col border-r border-navy-600 bg-navy-700 sm:w-64">
+        <div className="px-4 pb-2 pt-7 sm:px-6">
+          {/* The brand block points back into the dashboard, not the public
+              site: "View site" below is the deliberate way out. */}
+          <Link
+            href="/secure-admin-dashboard/dashboard"
+            aria-label="Admin dashboard"
+            className="inline-flex items-center gap-3"
+          >
+            <Logo variant="inverse" className="h-6" />
+            <span className="hidden h-4 w-px bg-white/20 sm:block" aria-hidden="true" />
+            <span className="tp-label hidden text-brand-300 sm:inline">Admin</span>
+          </Link>
+        </div>
+
+        <nav className="mt-8 flex-1 space-y-1 px-2 sm:px-3" aria-label="Content sections">
+          {TABS.map((item) => {
+            const Icon = item.icon;
+            const active = tab === item.key;
+            const count = counts[item.key];
+            return (
+              <button
+                key={item.key}
+                type="button"
+                onClick={() => setTab(item.key)}
+                aria-label={item.label}
+                aria-current={active ? 'page' : undefined}
+                title={item.label}
+                className={`flex h-11 w-full items-center justify-center gap-3 rounded-card text-sm font-semibold transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/60 sm:justify-start sm:px-4 ${
+                  active
+                    ? 'bg-white/10 text-ink-inverse shadow-[inset_3px_0_0_0_theme(colors.brand.500)]'
+                    : 'text-ink-inverse/65 hover:bg-white/5 hover:text-ink-inverse'
+                }`}
+              >
+                <Icon
+                  className={`size-4 shrink-0 ${active ? 'text-brand-400' : ''}`}
+                  aria-hidden="true"
+                />
+                <span className="hidden sm:inline">{item.label}</span>
+                {typeof count === 'number' ? (
+                  <span className="ml-auto hidden rounded-full bg-white/10 px-2 py-0.5 text-xs font-semibold tabular text-ink-inverse/80 sm:inline-flex">
+                    {count}
+                  </span>
+                ) : null}
+              </button>
+            );
+          })}
+        </nav>
+
+        <div className="space-y-1 border-t border-navy-600 p-2 sm:p-3">
+          <Link
+            href="/"
+            aria-label="View site"
+            title="View site"
+            className="flex h-11 w-full items-center justify-center gap-3 rounded-card text-sm font-medium text-ink-inverse/65 transition-colors duration-200 hover:bg-white/5 hover:text-ink-inverse focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/60 sm:justify-start sm:px-4"
+          >
+            <ExternalLink className="size-4 shrink-0" aria-hidden="true" />
+            <span className="hidden sm:inline">View site</span>
           </Link>
           <button
             onClick={handleLogout}
-            className="rounded-full border border-line-strong px-4 py-2 text-sm text-ink-muted transition-colors duration-200 hover:border-brand-500 hover:text-brand-600"
+            aria-label="Log out"
+            title="Log out"
+            className="flex h-11 w-full items-center justify-center gap-3 rounded-card text-sm font-medium text-ink-inverse/65 transition-colors duration-200 hover:bg-white/5 hover:text-ink-inverse focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-400/60 sm:justify-start sm:px-4"
           >
-            Log out
+            <LogOut className="size-4 shrink-0" aria-hidden="true" />
+            <span className="hidden sm:inline">Log out</span>
           </button>
         </div>
-      </header>
+      </aside>
 
-      <main className="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-        <CategoryLabel>Content</CategoryLabel>
-        <p className="mt-3 max-w-xl text-[0.95rem] leading-relaxed text-ink-muted">
-          Everything published to the site is edited here. Changes go live as
-          soon as they are saved.
-        </p>
-
-        <div
-          role="tablist"
-          aria-label="Content sections"
-          className="mt-8 flex flex-wrap gap-1 border-b border-line"
-        >
-          {[
-            { key: 'work', label: 'Work' },
-            { key: 'albums', label: 'Albums' },
-            { key: 'blog', label: 'Blog' },
-            { key: 'team', label: 'Team' },
-            { key: 'reviews', label: 'Reviews' },
-            { key: 'homepage', label: 'Homepage' },
-          ].map((item) => (
-            <button
-              key={item.key}
-              type="button"
-              role="tab"
-              onClick={() => setTab(item.key as Tab)}
-              aria-selected={tab === item.key}
-              className={`-mb-px border-b-2 px-4 py-2.5 text-sm font-semibold transition-colors duration-200 ${
-                tab === item.key
-                  ? 'border-brand-500 text-ink'
-                  : 'border-transparent text-ink-muted hover:border-line-strong hover:text-ink'
-              }`}
-            >
-              {item.label}
-            </button>
-          ))}
+      <main className="pb-24 pl-[5.25rem] pr-4 pt-10 sm:pl-[17.5rem] sm:pr-8 lg:pl-80 lg:pr-12 lg:pt-14">
+        <div className="max-w-2xl">
+          <Eyebrow>Content studio</Eyebrow>
+          <h1 className="mt-4 text-display text-ink">Everything published, in one place.</h1>
+          <p className="mt-5 text-lg leading-relaxed text-ink-muted">
+            Photo albums, blog posts and reviews. Changes go live as soon as
+            they are saved.
+          </p>
         </div>
 
-        {tab === 'blog' && <BlogManager />}
-        {tab === 'work' && <WorkManager />}
-        {tab === 'albums' && <AlbumManager />}
-        {tab === 'team' && <TeamManager />}
-        {tab === 'reviews' && <ReviewsManager />}
-        {tab === 'homepage' && <HomepageManager />}
+        <div className="mt-10">
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={tab}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -6 }}
+              transition={{ duration: 0.16, ease: 'easeOut' }}
+            >
+              {tab === 'albums' && <AlbumManager />}
+              {tab === 'blog' && <BlogManager />}
+              {tab === 'reviews' && <ReviewsManager />}
+            </motion.div>
+          </AnimatePresence>
+        </div>
       </main>
     </div>
   );
 }
+
+/* ==========================================================================
+   Shared field + surface styles
+   ========================================================================== */
+
+const inputClass =
+  'w-full rounded-card border border-line-strong bg-surface px-4 text-[0.95rem] text-ink placeholder:text-ink-subtle transition-[border-color,box-shadow] duration-200 focus:border-brand-500 focus:outline-none focus-visible:outline-none focus:ring-2 focus:ring-brand-500/25';
+
+function FieldLabel({ htmlFor, children }: { htmlFor: string; children: ReactNode }) {
+  return (
+    <label htmlFor={htmlFor} className="mb-2 block text-sm font-medium text-ink">
+      {children}
+    </label>
+  );
+}
+
+function FormCard({
+  title,
+  lede,
+  children,
+}: {
+  title: string;
+  lede?: ReactNode;
+  children: ReactNode;
+}) {
+  return (
+    <aside className="lg:sticky lg:top-24 lg:self-start">
+      <div className="rounded-card border border-line bg-surface p-6 shadow-[0_1px_2px_rgba(20,18,14,0.04)] sm:p-7">
+        <h2 className="text-headline text-ink">{title}</h2>
+        {lede ? (
+          <div className="mt-3 text-sm leading-relaxed text-ink-muted">{lede}</div>
+        ) : null}
+        <div className="mt-6">{children}</div>
+      </div>
+    </aside>
+  );
+}
+
+function ListPanel({
+  title,
+  count,
+  loading,
+  emptyTitle,
+  emptyHint,
+  children,
+}: {
+  title: string;
+  count: number;
+  loading: boolean;
+  emptyTitle: string;
+  emptyHint: string;
+  children: ReactNode;
+}) {
+  return (
+    <section>
+      <div className="flex items-baseline justify-between gap-4 border-b border-line pb-4">
+        <h2 className="text-title text-ink">{title}</h2>
+        <span className="tp-label text-ink-subtle">{count}</span>
+      </div>
+
+      {loading ? (
+        <ul className="mt-6 space-y-3" aria-hidden="true">
+          {[0, 1, 2].map((i) => (
+            <li
+              key={i}
+              className="h-24 animate-pulse rounded-card border border-line bg-surface"
+              style={{ animationDelay: `${i * 90}ms` }}
+            />
+          ))}
+        </ul>
+      ) : count === 0 ? (
+        <div className="mt-6 rounded-card border border-dashed border-line-strong bg-surface px-6 py-14 text-center">
+          <p className="text-title text-ink">{emptyTitle}</p>
+          <p className="mx-auto mt-2 max-w-sm text-sm leading-relaxed text-ink-muted">
+            {emptyHint}
+          </p>
+        </div>
+      ) : (
+        <div className="mt-6 space-y-3">{children}</div>
+      )}
+    </section>
+  );
+}
+
+function DeleteButton({ onClick, label }: { onClick: () => void; label: string }) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={label}
+      title={label}
+      className="inline-flex h-9 w-9 items-center justify-center rounded-full text-ink-subtle transition-colors duration-200 hover:bg-red-50 hover:text-red-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-red-400/50"
+    >
+      <Trash2 className="size-4" aria-hidden="true" />
+    </button>
+  );
+}
+
+/* ==========================================================================
+   Blog
+   ========================================================================== */
 
 function BlogManager() {
   const [posts, setPosts] = useState<BlogPost[]>([]);
@@ -183,167 +361,128 @@ function BlogManager() {
       if (data.error) { notify(data.error); return; }
       setPosts([data, ...posts]);
       setTitle(''); setCategory('Strategy'); setExcerpt(''); setImage('');
+      notify('Post published.', 'success');
     } catch { notify('Something went wrong. Please try again.'); }
     finally { setSaving(false); }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete?')) return;
+    if (!confirm('Delete this post?')) return;
     try {
-      await fetch(`/api/blog?id=${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/blog?id=${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error();
       setPosts(posts.filter(p => p.id !== id));
-    } catch {}
+      notify('Post deleted.', 'success');
+    } catch { notify('Could not delete that post.'); }
   };
 
   const categories = ['Strategy', 'Technology', 'Branding', 'Analytics', 'Management', 'Media'];
 
   return (
-    <div className="bg-surface rounded-card border border-line p-6">
-      <h2 className="text-xl font-bold text-ink mb-6">Add Blog Post</h2>
-      <form onSubmit={handleAdd} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="Title" className="px-4 py-3 bg-cream border border-line rounded-card text-ink placeholder:text-ink-subtle" />
-          <select value={category} onChange={e => setCategory(e.target.value)} className="px-4 py-3 bg-cream border border-line rounded-card text-ink">
-            {categories.map(c => <option key={c} value={c} className="bg-surface">{c}</option>)}
-          </select>
-          <input type="date" value={date} onChange={e => setDate(e.target.value)} className="px-4 py-3 bg-cream border border-line rounded-card text-ink" />
-        </div>
-        <textarea value={excerpt} onChange={e => setExcerpt(e.target.value)} rows={3} placeholder="Excerpt" className="w-full px-4 py-3 bg-cream border border-line rounded-card text-ink placeholder:text-ink-subtle" />
-        <UploadField type="work" label="Choose image" value={image} onChange={setImage} />
-        <button type="submit" disabled={saving} className="px-6 py-3 bg-brand-500 text-white rounded-card font-medium hover:bg-brand-600 disabled:opacity-50">{saving ? 'Saving...' : 'Add Post'}</button>
-      </form>
-
-      <div className="border-t border-line mt-8 pt-8">
-        <h3 className="text-lg font-bold text-ink mb-4">Posts ({posts.length})</h3>
-        {loading ? <p className="text-ink-subtle">Loading...</p> : posts.length === 0 ? <p className="text-ink-subtle">No posts</p> : (
-          <div className="space-y-3">
-            {posts.map(post => (
-              <div key={post.id} className="flex items-center justify-between p-3 bg-cream rounded-card">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="relative w-12 h-12 rounded bg-cream overflow-hidden flex-shrink-0">{post.image && <Image src={post.image} alt="" fill sizes="3rem" className="object-cover" />}</div>
-                  <div className="min-w-0">
-                    <div className="text-ink font-medium">{post.title}</div>
-                    <div className="text-ink-subtle text-sm">{post.category} | {post.date}</div>
-                    {post.excerpt && <div className="text-ink-subtle text-xs truncate max-w-md">{post.excerpt}</div>}
-                  </div>
-                </div>
-                <button onClick={() => handleDelete(post.id)} className="px-3 py-1 ml-3 flex-shrink-0 rounded border border-line-strong bg-surface text-sm text-ink-muted transition-colors duration-200 hover:border-brand-500 hover:text-brand-700">Delete</button>
-              </div>
-            ))}
+    <div className="grid gap-8 lg:grid-cols-[22rem_minmax(0,1fr)] xl:gap-12">
+      <FormCard
+        title="New post"
+        lede="A title and an excerpt are required. The image is optional and uploads into site storage."
+      >
+        <form onSubmit={handleAdd} className="space-y-5">
+          <div>
+            <FieldLabel htmlFor="blog-title">Title</FieldLabel>
+            <input
+              id="blog-title"
+              type="text"
+              value={title}
+              onChange={e => setTitle(e.target.value)}
+              placeholder="Post title"
+              className={inputClass}
+            />
           </div>
-        )}
-      </div>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div>
+              <FieldLabel htmlFor="blog-category">Category</FieldLabel>
+              <select
+                id="blog-category"
+                value={category}
+                onChange={e => setCategory(e.target.value)}
+                className={inputClass}
+              >
+                {categories.map(c => <option key={c} value={c}>{c}</option>)}
+              </select>
+            </div>
+            <div>
+              <FieldLabel htmlFor="blog-date">Date</FieldLabel>
+              <input
+                id="blog-date"
+                type="date"
+                value={date}
+                onChange={e => setDate(e.target.value)}
+                className={inputClass}
+              />
+            </div>
+          </div>
+          <div>
+            <FieldLabel htmlFor="blog-excerpt">Excerpt</FieldLabel>
+            <textarea
+              id="blog-excerpt"
+              value={excerpt}
+              onChange={e => setExcerpt(e.target.value)}
+              rows={4}
+              placeholder="A short summary shown on the blog index"
+              className={`${inputClass} min-h-28 resize-y py-3`}
+            />
+          </div>
+          <UploadField type="work" label="Cover image" value={image} onChange={setImage} />
+          <button
+            type="submit"
+            disabled={saving}
+            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-brand-500 text-sm font-semibold text-navy-700 transition-colors duration-200 hover:bg-brand-600 hover:text-white disabled:opacity-50"
+          >
+            <Plus className="size-4" aria-hidden="true" />
+            {saving ? 'Publishing…' : 'Publish post'}
+          </button>
+        </form>
+      </FormCard>
+
+      <ListPanel
+        title="Posts"
+        count={posts.length}
+        loading={loading}
+        emptyTitle="No posts yet"
+        emptyHint="Published posts appear on the blog and can be shared anywhere."
+      >
+        {posts.map(post => (
+          <article key={post.id} className="flex items-start gap-4 rounded-card border border-line bg-surface p-4 transition-colors duration-200 hover:border-line-strong sm:items-center">
+            <div className="relative size-14 shrink-0 overflow-hidden rounded-card bg-cream">
+              {post.image ? (
+                <Image src={post.image} alt="" fill sizes="3.5rem" className="object-cover" />
+              ) : (
+                <div className="flex size-full items-center justify-center text-ink-subtle">
+                  <FileText className="size-5" aria-hidden="true" />
+                </div>
+              )}
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="truncate font-semibold text-ink">{post.title}</p>
+                <span className="inline-flex shrink-0 items-center rounded-full bg-brand-100 px-2.5 py-0.5 text-xs font-semibold text-brand-800">
+                  {post.category}
+                </span>
+              </div>
+              <p className="mt-0.5 text-sm text-ink-subtle">{post.date}</p>
+              {post.excerpt && (
+                <p className="mt-1 truncate text-sm text-ink-muted">{post.excerpt}</p>
+              )}
+            </div>
+            <DeleteButton onClick={() => handleDelete(post.id)} label={`Delete ${post.title}`} />
+          </article>
+        ))}
+      </ListPanel>
     </div>
   );
 }
 
-function WorkManager() {
-  const [projects, setProjects] = useState<WorkProject[]>([]);
-  const [title, setTitle] = useState('');
-  const [category, setCategory] = useState('IT Consultancy');
-  const [client, setClient] = useState('');
-  const [description, setDescription] = useState('');
-  const [image, setImage] = useState('');
-  const [videoUrl, setVideoUrl] = useState('');
-  const [saving, setSaving] = useState(false);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => { fetchProjects(); }, []);
-
-  const resetForm = () => {
-    setTitle(''); setCategory('IT Consultancy'); setClient('');
-    setDescription(''); setImage(''); setVideoUrl('');
-  };
-
-  const fetchProjects = async () => {
-    try {
-      const response = await fetch('/api/work');
-      const data = await response.json();
-      setProjects(Array.isArray(data) ? data : []);
-    } catch {}
-    finally { setLoading(false); }
-  };
-
-  const handleAdd = async (e: React.FormEvent) => {
-    e.preventDefault();
-    // Only a title is required. Client and description belong to a case study;
-    // a media item may be just a title plus a video.
-    if (!title.trim()) { notify('A title is required'); return; }
-    if (!image && !videoUrl) { notify('Add a cover image or a video'); return; }
-    setSaving(true);
-    try {
-      const res = await fetch('/api/work', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ title, category, client, description, image, videoUrl }) });
-      const data = await res.json();
-      if (data.error) { notify(data.error); return; }
-      setProjects([data, ...projects]);
-      resetForm();
-    } catch { notify('Something went wrong. Please try again.'); }
-    finally { setSaving(false); }
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!confirm('Delete? This also removes the uploaded media.')) return;
-    try {
-      await fetch(`/api/work?id=${id}`, { method: 'DELETE' });
-      setProjects(projects.filter(p => p.id !== id));
-    } catch {}
-  };
-
-  const categories = ['IT Consultancy', 'Project Management', 'Media', 'Strategy', 'Branding'];
-
-  return (
-    <div className="bg-surface rounded-card border border-line p-6">
-      <h2 className="text-xl font-bold text-ink mb-2">Add Work Project</h2>
-      <p className="mb-6 text-sm text-ink-muted">
-        A client project supplies a category, client and description. A media
-        item can be just a title and a video.
-      </p>
-      <form onSubmit={handleAdd} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <input type="text" value={title} onChange={e => setTitle(e.target.value)} placeholder="Title" className="px-4 py-3 bg-cream border border-line rounded-card text-ink placeholder:text-ink-subtle" />
-          <select value={category} onChange={e => setCategory(e.target.value)} className="px-4 py-3 bg-cream border border-line rounded-card text-ink">
-            {categories.map(c => <option key={c} value={c} className="bg-surface">{c}</option>)}
-          </select>
-          <input type="text" value={client} onChange={e => setClient(e.target.value)} placeholder="Client name (optional)" className="px-4 py-3 bg-cream border border-line rounded-card text-ink placeholder:text-ink-subtle" />
-        </div>
-        <textarea value={description} onChange={e => setDescription(e.target.value)} rows={3} placeholder="Description (optional)" className="w-full px-4 py-3 bg-cream border border-line rounded-card text-ink placeholder:text-ink-subtle" />
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <UploadField type="work" kind="image" label="Cover image" value={image} onChange={setImage} />
-          <UploadField type="work" kind="video" label="Video (optional)" value={videoUrl} onChange={setVideoUrl} />
-        </div>
-        <button type="submit" disabled={saving} className="px-6 py-3 bg-brand-500 text-white rounded-card font-medium hover:bg-brand-600 disabled:opacity-50">{saving ? 'Saving...' : 'Add Project'}</button>
-      </form>
-
-      <div className="border-t border-line mt-8 pt-8">
-        <h3 className="text-lg font-bold text-ink mb-4">Projects ({projects.length})</h3>
-        {loading ? <p className="text-ink-subtle">Loading...</p> : projects.length === 0 ? <p className="text-ink-subtle">No projects</p> : (
-          <div className="space-y-3">
-            {projects.map(project => (
-              <div key={project.id} className="flex items-center justify-between p-3 bg-cream rounded-card">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="relative w-12 h-12 rounded bg-surface overflow-hidden flex-shrink-0">
-                    {project.image
-                      ? <Image src={project.image} alt="" fill sizes="3rem" className="object-cover" />
-                      : <div className="flex size-full items-center justify-center text-ink-subtle"><Video size={14} aria-hidden="true" /></div>}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-ink font-medium">{project.title}</div>
-                    <div className="text-ink-subtle text-sm">
-                      {[project.category, project.client].filter(Boolean).join(' | ') || 'Uncategorised'}
-                      {project.videoUrl ? ' · video' : ''}
-                    </div>
-                    {project.description && <div className="text-ink-subtle text-xs truncate max-w-md">{project.description}</div>}
-                  </div>
-                </div>
-                <button onClick={() => handleDelete(project.id)} className="px-3 py-1 ml-3 flex-shrink-0 rounded border border-line-strong bg-surface text-sm text-ink-muted transition-colors duration-200 hover:border-brand-500 hover:text-brand-700">Delete</button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
+/* ==========================================================================
+   Albums
+   ========================================================================== */
 
 /** What a sync reports back, so the admin can see what actually happened. */
 interface SyncResult {
@@ -421,6 +560,7 @@ function AlbumManager() {
         folderUrl.trim()
           ? 'Album added. Press Sync to pull in its photos.'
           : 'Album added. Open it and upload photos.',
+        'success',
       );
     } catch {
       notify('Something went wrong. Please try again.');
@@ -486,287 +626,243 @@ function AlbumManager() {
         return;
       }
       setAlbums(albums.filter((item) => item.id !== album.id));
+      if (editingId === album.id) setEditingId('');
+      notify('Album deleted.', 'success');
     } catch {
       notify('Could not delete that album.');
     }
   };
 
-  const inputClass =
-    'px-4 py-3 bg-cream border border-line rounded-card text-ink placeholder:text-ink-subtle';
-
   return (
-    <div className="bg-surface rounded-card border border-line p-6">
-      <h2 className="text-xl font-bold text-ink mb-2">Add Album</h2>
-      <p className="mb-6 text-sm text-ink-muted">
-        An album is a project documented by photographs. Two ways to fill it, and
-        you can use either or both:
-        <br />
-        <strong className="font-medium text-ink">Google Drive</strong> — set the
-        folder to &ldquo;Anyone with the link&rdquo; as Viewer, paste the link, then
-        press Sync. Photos are served straight from Google and nothing is copied
-        except videos.
-        <br />
-        <strong className="font-medium text-ink">Upload</strong> — leave the link
-        empty, add the album, then open it and drop your files in. Files are copied
-        into our own storage, so they stay available whatever Drive does.
-      </p>
-
-      <form onSubmit={handleAdd} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input
-            type="text"
-            value={title}
-            onChange={(e) => setTitle(e.target.value)}
-            placeholder="Title"
-            className={inputClass}
-          />
-          <input
-            type="text"
-            value={category}
-            onChange={(e) => setCategory(e.target.value)}
-            placeholder="Category (optional)"
-            className={inputClass}
-          />
-        </div>
-
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          rows={3}
-          placeholder="Description (optional)"
-          className={`w-full ${inputClass}`}
-        />
-
-        <input
-          type="url"
-          value={folderUrl}
-          onChange={(e) => setFolderUrl(e.target.value)}
-          placeholder="https://drive.google.com/drive/folders/..."
-          className={`w-full ${inputClass}`}
-        />
-
-        <button
-          type="submit"
-          disabled={saving}
-          className="px-6 py-3 bg-brand-500 text-white rounded-card font-medium hover:bg-brand-600 disabled:opacity-50"
-        >
-          {saving ? 'Adding...' : 'Add Album'}
-        </button>
-      </form>
-
-      <div className="border-t border-line mt-8 pt-8">
-        <h3 className="text-lg font-bold text-ink mb-1">
-          Albums ({albums.length})
-        </h3>
-        <p className="mb-4 text-sm text-ink-muted">
-          Press <strong className="font-medium text-ink">Edit</strong> to change an
-          album&rsquo;s details, upload photos, choose its cover, or rearrange the
-          order they appear in.
-        </p>
-
-        {loading ? (
-          <p className="text-ink-subtle">Loading...</p>
-        ) : albums.length === 0 ? (
-          <p className="text-ink-subtle">No albums yet</p>
-        ) : (
-          <div className="space-y-3">
-            {albums.map((album) => {
-              const busy = syncingId === album.id;
-              const neverSynced = !album.lastSyncedAt;
-
-              return (
-                <div key={album.id} className="p-3 bg-cream rounded-card">
-                  <div className="flex items-center justify-between gap-3">
-                    <div className="flex items-center gap-3 min-w-0">
-                      <div className="relative w-12 h-12 rounded bg-surface overflow-hidden flex-shrink-0">
-                        {album.coverUrl ? (
-                          // eslint-disable-next-line @next/next/no-img-element
-                          <img
-                            src={album.coverUrl}
-                            alt=""
-                            className="size-full object-cover"
-                          />
-                        ) : (
-                          <div className="flex size-full items-center justify-center text-ink-subtle">
-                            <Images size={14} aria-hidden="true" />
-                          </div>
-                        )}
-                      </div>
-
-                      <div className="min-w-0">
-                        <div className="text-ink font-medium truncate">
-                          {album.title}
-                        </div>
-                        <div className="text-ink-subtle text-sm truncate">
-                          {album.category || 'Uncategorised'} · /work/
-                          {album.slug}
-                        </div>
-                        <div className="text-ink-subtle text-xs">
-                          {neverSynced
-                            ? 'Never synced'
-                            : `${album.photoCount} photos, ${album.videoCount} videos · synced ${new Date(
-                                album.lastSyncedAt
-                              ).toLocaleDateString()}`}
-                        </div>
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-2 flex-shrink-0">
-                      <Link
-                        href={`/work/${album.slug}`}
-                        className="px-3 py-1 rounded border border-line-strong bg-surface text-sm text-ink-muted transition-colors duration-200 hover:border-brand-500 hover:text-brand-700"
-                      >
-                        View
-                      </Link>
-
-                      <button
-                        type="button"
-                        onClick={() =>
-                          setEditingId((current) => (current === album.id ? '' : album.id))
-                        }
-                        aria-expanded={editingId === album.id}
-                        className={`px-3 py-1 rounded border text-sm transition-colors duration-200 ${
-                          editingId === album.id
-                            ? 'border-brand-500 bg-brand-500 text-white'
-                            : 'border-line-strong bg-surface text-ink-muted hover:border-brand-500 hover:text-brand-700'
-                        }`}
-                      >
-                        {editingId === album.id ? 'Close' : 'Edit'}
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleSync(album)}
-                        disabled={Boolean(syncingId)}
-                        className="px-3 py-1 rounded border border-line-strong bg-surface text-sm text-ink-muted transition-colors duration-200 hover:border-brand-500 hover:text-brand-700 disabled:opacity-50"
-                      >
-                        {busy ? 'Syncing...' : neverSynced ? 'Sync' : 'Re-sync'}
-                      </button>
-
-                      <button
-                        type="button"
-                        onClick={() => handleDelete(album)}
-                        disabled={Boolean(syncingId)}
-                        className="px-3 py-1 rounded border border-line-strong bg-surface text-sm text-ink-muted transition-colors duration-200 hover:border-brand-500 hover:text-brand-700 disabled:opacity-50"
-                      >
-                        Delete
-                      </button>
-                    </div>
-                  </div>
-
-                  {results[album.id] ? (
-                    <p className="mt-2 text-sm text-brand-700">{results[album.id]}</p>
-                  ) : null}
-
-                  {errors[album.id] ? (
-                    <p className="mt-2 text-sm text-brand-700">{errors[album.id]}</p>
-                  ) : null}
-
-                  {editingId === album.id ? (
-                    <div className="mt-4 border-t border-line pt-4">
-                      <AlbumEditor
-                        album={album}
-                        onClose={() => setEditingId('')}
-                        onSaved={(updated) =>
-                          setAlbums((current) =>
-                            current.map((item) => (item.id === updated.id ? updated : item))
-                          )
-                        }
-                      />
-                    </div>
-                  ) : null}
-                </div>
-              );
-            })}
+    <div className="grid gap-8 lg:grid-cols-[22rem_minmax(0,1fr)] xl:gap-12">
+      <FormCard
+        title="New album"
+        lede={
+          <>
+            Set the Drive folder to &ldquo;Anyone with the link&rdquo; as Viewer,
+            paste its link and press Sync. Photos are served straight from
+            Google; nothing is copied except videos.
+          </>
+        }
+      >
+        <form onSubmit={handleAdd} className="space-y-5">
+          <div>
+            <FieldLabel htmlFor="album-title">Title</FieldLabel>
+            <input
+              id="album-title"
+              type="text"
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
+              placeholder="e.g. Studio Shoot"
+              className={inputClass}
+            />
           </div>
-        )}
-      </div>
+          <div>
+            <FieldLabel htmlFor="album-category">Category</FieldLabel>
+            <input
+              id="album-category"
+              type="text"
+              value={category}
+              onChange={(e) => setCategory(e.target.value)}
+              placeholder="Photography, Events…"
+              className={inputClass}
+            />
+          </div>
+          <div>
+            <FieldLabel htmlFor="album-description">Description</FieldLabel>
+            <textarea
+              id="album-description"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              rows={3}
+              placeholder="One or two sentences about the project"
+              className={`${inputClass} min-h-24 resize-y py-3`}
+            />
+          </div>
+          <div>
+            <FieldLabel htmlFor="album-folder">Google Drive folder link</FieldLabel>
+            <input
+              id="album-folder"
+              type="url"
+              value={folderUrl}
+              onChange={(e) => setFolderUrl(e.target.value)}
+              placeholder="https://drive.google.com/drive/folders/…"
+              className={inputClass}
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={saving}
+            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-brand-500 text-sm font-semibold text-navy-700 transition-colors duration-200 hover:bg-brand-600 hover:text-white disabled:opacity-50"
+          >
+            <Plus className="size-4" aria-hidden="true" />
+            {saving ? 'Adding…' : 'Add album'}
+          </button>
+        </form>
+      </FormCard>
+
+      <ListPanel
+        title="Albums"
+        count={albums.length}
+        loading={loading}
+        emptyTitle="No albums yet"
+        emptyHint="Paste a Google Drive folder link to create the first one, then press Sync to pull its photos in."
+      >
+        {albums.map((album) => {
+          const busy = syncingId === album.id;
+          const neverSynced = !album.lastSyncedAt;
+          const editing = editingId === album.id;
+
+          return (
+            <article key={album.id} className="rounded-card border border-line bg-surface transition-colors duration-200 hover:border-line-strong">
+              <div className="flex flex-col gap-4 p-4 sm:flex-row sm:items-center">
+                <div className="relative size-16 shrink-0 overflow-hidden rounded-card bg-cream">
+                  {album.coverUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img
+                      src={album.coverUrl}
+                      alt=""
+                      className="size-full object-cover"
+                    />
+                  ) : (
+                    <div className="flex size-full items-center justify-center text-ink-subtle">
+                      <Images className="size-5" aria-hidden="true" />
+                    </div>
+                  )}
+                </div>
+
+                <div className="min-w-0 flex-1">
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="truncate font-semibold text-ink">{album.title}</p>
+                    {album.category ? (
+                      <span className="inline-flex shrink-0 items-center rounded-full bg-brand-100 px-2.5 py-0.5 text-xs font-semibold text-brand-800">
+                        {album.category}
+                      </span>
+                    ) : null}
+                    {neverSynced ? (
+                      <span className="inline-flex shrink-0 items-center rounded-full bg-amber-100 px-2.5 py-0.5 text-xs font-semibold text-amber-800">
+                        Not synced
+                      </span>
+                    ) : null}
+                  </div>
+                  <p className="mt-0.5 truncate font-mono text-xs text-ink-subtle">
+                    /work/{album.slug}
+                  </p>
+                  <p className="mt-1 text-sm text-ink-muted">
+                    {neverSynced
+                      ? 'No photos pulled in yet'
+                      : `${album.photoCount} photo${album.photoCount === 1 ? '' : 's'}${album.videoCount > 0 ? ` · ${album.videoCount} video${album.videoCount === 1 ? '' : 's'}` : ''} · synced ${new Date(album.lastSyncedAt).toLocaleDateString()}`}
+                  </p>
+                </div>
+
+                <div className="flex shrink-0 flex-wrap items-center gap-1.5 sm:justify-end">
+                  <Link
+                    href={`/work/${album.slug}`}
+                    className="inline-flex h-9 items-center gap-1.5 rounded-full border border-line-strong px-3.5 text-sm font-medium text-ink-muted transition-colors duration-200 hover:border-brand-500 hover:text-brand-700"
+                  >
+                    <ExternalLink className="size-3.5" aria-hidden="true" />
+                    View
+                  </Link>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setEditingId((current) => (current === album.id ? '' : album.id))
+                    }
+                    aria-expanded={editing}
+                    className={`inline-flex h-9 items-center gap-1.5 rounded-full border px-3.5 text-sm font-medium transition-colors duration-200 ${
+                      editing
+                        ? 'border-brand-500 bg-brand-500 text-white'
+                        : 'border-line-strong text-ink-muted hover:border-brand-500 hover:text-brand-700'
+                    }`}
+                  >
+                    <Pencil className="size-3.5" aria-hidden="true" />
+                    {editing ? 'Close' : 'Edit'}
+                  </button>
+
+                  <button
+                    type="button"
+                    onClick={() => handleSync(album)}
+                    disabled={Boolean(syncingId)}
+                    className="inline-flex h-9 items-center gap-1.5 rounded-full border border-line-strong px-3.5 text-sm font-medium text-ink-muted transition-colors duration-200 hover:border-brand-500 hover:text-brand-700 disabled:opacity-50"
+                  >
+                    <RefreshCw className={`size-3.5 ${busy ? 'animate-spin' : ''}`} aria-hidden="true" />
+                    {busy ? 'Syncing' : neverSynced ? 'Sync' : 'Re-sync'}
+                  </button>
+
+                  <DeleteButton
+                    onClick={() => handleDelete(album)}
+                    label={`Delete ${album.title}`}
+                  />
+                </div>
+              </div>
+
+              {results[album.id] ? (
+                <p className="mx-4 mb-4 rounded-card border border-brand-500/30 bg-brand-50 px-4 py-2.5 text-sm text-brand-800">
+                  {results[album.id]}
+                </p>
+              ) : null}
+
+              {errors[album.id] ? (
+                <p className="mx-4 mb-4 rounded-card border border-red-500/40 bg-red-50 px-4 py-2.5 text-sm text-red-700">
+                  {errors[album.id]}
+                </p>
+              ) : null}
+
+              {editing ? (
+                <div className="border-t border-line p-4 sm:p-6">
+                  <AlbumEditor
+                    album={album}
+                    onClose={() => setEditingId('')}
+                    onSaved={(updated) =>
+                      setAlbums((current) =>
+                        current.map((item) => (item.id === updated.id ? updated : item))
+                      )
+                    }
+                  />
+                </div>
+              ) : null}
+            </article>
+          );
+        })}
+      </ListPanel>
     </div>
   );
 }
 
-function TeamManager() {
-  const [members, setMembers] = useState<TeamMember[]>([]);
-  const [name, setName] = useState('');
-  const [role, setRole] = useState('');
-  const [bio, setBio] = useState('');
-  const [image, setImage] = useState('');
-  const [saving, setSaving] = useState(false);
-  const [loading, setLoading] = useState(true);
+/* ==========================================================================
+   Reviews
+   ========================================================================== */
 
-  useEffect(() => { fetchMembers(); }, []);
-
-  const fetchMembers = async () => {
-    try {
-      const response = await fetch('/api/team');
-      const data = await response.json();
-      setMembers(Array.isArray(data) ? data : []);
-    } catch {}
-    finally { setLoading(false); }
-  };
-
-  const handleAdd = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!name || !role || !bio) { notify('Fill all fields'); return; }
-    setSaving(true);
-    try {
-      const res = await fetch('/api/team', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ name, role, bio, image }) });
-      const data = await res.json();
-      if (data.error) { notify(data.error); return; }
-      setMembers([data, ...members]);
-      setName(''); setRole(''); setBio(''); setImage('');
-    } catch { notify('Something went wrong. Please try again.'); }
-    finally { setSaving(false); }
-  };
-
-  const handleDelete = async (id: string) => {
-    if (!confirm('Delete?')) return;
-    try {
-      await fetch(`/api/team?id=${id}`, { method: 'DELETE' });
-      setMembers(members.filter(m => m.id !== id));
-    } catch {}
-  };
-
-  const roles = ['CEO & Founder', 'Head of Technology', 'Creative Director', 'Head of Operations', 'Strategy Lead', 'Head of Media'];
-
+function StarRating({ value, onChange }: { value: number; onChange?: (n: number) => void }) {
   return (
-    <div className="bg-surface rounded-card border border-line p-6">
-      <h2 className="text-xl font-bold text-ink mb-6">Add Team Member</h2>
-      <form onSubmit={handleAdd} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Name" className="px-4 py-3 bg-cream border border-line rounded-card text-ink placeholder:text-ink-subtle" />
-          <select value={role} onChange={e => setRole(e.target.value)} className="px-4 py-3 bg-cream border border-line rounded-card text-ink">
-            <option value="" className="bg-surface">Select role</option>
-            {roles.map(r => <option key={r} value={r} className="bg-surface">{r}</option>)}
-          </select>
-        </div>
-        <textarea value={bio} onChange={e => setBio(e.target.value)} rows={3} placeholder="Bio" className="w-full px-4 py-3 bg-cream border border-line rounded-card text-ink placeholder:text-ink-subtle" />
-        <UploadField type="work" label="Choose image" round value={image} onChange={setImage} />
-        <button type="submit" disabled={saving} className="px-6 py-3 bg-brand-500 text-white rounded-card font-medium hover:bg-brand-600 disabled:opacity-50">{saving ? 'Saving...' : 'Add Member'}</button>
-      </form>
-
-      <div className="border-t border-line mt-8 pt-8">
-        <h3 className="text-lg font-bold text-ink mb-4">Members ({members.length})</h3>
-        {loading ? <p className="text-ink-subtle">Loading...</p> : members.length === 0 ? <p className="text-ink-subtle">No members</p> : (
-          <div className="space-y-3">
-            {members.map(member => (
-              <div key={member.id} className="flex items-center justify-between p-3 bg-cream rounded-card">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="relative w-10 h-10 rounded-full bg-cream flex-shrink-0 overflow-hidden">
-                    {member.image ? <Image src={member.image} alt="" fill sizes="3rem" className="object-cover" /> : <div className="w-full h-full flex items-center justify-center text-ink font-bold">{member.name[0]}</div>}
-                  </div>
-                  <div className="min-w-0">
-                    <div className="text-ink font-medium">{member.name}</div>
-                    <div className="text-ink-subtle text-sm">{member.role}</div>
-                    {member.bio && <div className="text-ink-subtle text-xs truncate max-w-md">{member.bio}</div>}
-                  </div>
-                </div>
-                <button onClick={() => handleDelete(member.id)} className="px-3 py-1 ml-3 flex-shrink-0 rounded border border-line-strong bg-surface text-sm text-ink-muted transition-colors duration-200 hover:border-brand-500 hover:text-brand-700">Delete</button>
-              </div>
-            ))}
-          </div>
-        )}
-      </div>
+    <div className="flex items-center gap-0.5">
+      {[1, 2, 3, 4, 5].map((n) => {
+        const filled = n <= value;
+        if (!onChange) {
+          return (
+            <Star
+              key={n}
+              className={`size-4 ${filled ? 'fill-brand-500 text-brand-500' : 'text-line-strong'}`}
+              aria-hidden="true"
+            />
+          );
+        }
+        return (
+          <button
+            key={n}
+            type="button"
+            onClick={() => onChange(n)}
+            aria-label={`${n} star${n > 1 ? 's' : ''}`}
+            className="rounded p-0.5 transition-transform duration-150 hover:scale-110"
+          >
+            <Star
+              className={`size-5 ${filled ? 'fill-brand-500 text-brand-500' : 'text-line-strong hover:text-brand-300'}`}
+              aria-hidden="true"
+            />
+          </button>
+        );
+      })}
     </div>
   );
 }
@@ -807,260 +903,101 @@ function ReviewsManager() {
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm('Delete?')) return;
+    if (!confirm('Delete this review?')) return;
     try {
-      await fetch(`/api/reviews?id=${id}`, { method: 'DELETE' });
+      const res = await fetch(`/api/reviews?id=${id}`, { method: 'DELETE' });
+      if (!res.ok) throw new Error();
       setReviews(reviews.filter(r => r.id !== id));
-    } catch {}
+      notify('Review deleted.', 'success');
+    } catch { notify('Could not delete that review.'); }
   };
 
   return (
-    <div className="bg-surface rounded-card border border-line p-6">
-      <h2 className="text-xl font-bold text-ink mb-6">Add Review</h2>
-      <form onSubmit={handleAdd} className="space-y-4">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-          <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="Name" className="px-4 py-3 bg-cream border border-line rounded-card text-ink placeholder:text-ink-subtle" />
-          <input type="text" value={role} onChange={e => setRole(e.target.value)} placeholder="Role (e.g. CEO, Company)" className="px-4 py-3 bg-cream border border-line rounded-card text-ink placeholder:text-ink-subtle" />
-        </div>
-        <div>
-          <label className="block text-ink-muted text-sm mb-2">Rating</label>
-          <select value={rating} onChange={e => setRating(parseInt(e.target.value))} className="px-4 py-3 bg-cream border border-line rounded-card text-ink">
-            {[1,2,3,4,5].map(r => <option key={r} value={r} className="bg-surface">{r} Star{r > 1 ? 's' : ''}</option>)}
-          </select>
-        </div>
-        <textarea value={content} onChange={e => setContent(e.target.value)} rows={4} placeholder="Review content" className="w-full px-4 py-3 bg-cream border border-line rounded-card text-ink placeholder:text-ink-subtle" />
-        <button type="submit" disabled={saving} className="px-6 py-3 bg-brand-500 text-white rounded-card font-medium hover:bg-brand-600 disabled:opacity-50">{saving ? 'Saving...' : 'Add Review'}</button>
-      </form>
+    <div className="grid gap-8 lg:grid-cols-[22rem_minmax(0,1fr)] xl:gap-12">
+      <FormCard
+        title="New review"
+        lede="Reviews appear in the trust section across the site. Pick a star rating and paste the client's own words."
+      >
+        <form onSubmit={handleAdd} className="space-y-5">
+          <div>
+            <FieldLabel htmlFor="review-name">Name</FieldLabel>
+            <input
+              id="review-name"
+              type="text"
+              value={name}
+              onChange={e => setName(e.target.value)}
+              placeholder="Client name"
+              className={inputClass}
+            />
+          </div>
+          <div>
+            <FieldLabel htmlFor="review-role">Role</FieldLabel>
+            <input
+              id="review-role"
+              type="text"
+              value={role}
+              onChange={e => setRole(e.target.value)}
+              placeholder="CEO, Company…"
+              className={inputClass}
+            />
+          </div>
+          <div>
+            <span className="mb-2 block text-sm font-medium text-ink">Rating</span>
+            <StarRating value={rating} onChange={setRating} />
+          </div>
+          <div>
+            <FieldLabel htmlFor="review-content">Review</FieldLabel>
+            <textarea
+              id="review-content"
+              value={content}
+              onChange={e => setContent(e.target.value)}
+              rows={4}
+              placeholder="What the client said"
+              className={`${inputClass} min-h-32 resize-y py-3`}
+            />
+          </div>
+          <button
+            type="submit"
+            disabled={saving}
+            className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-full bg-brand-500 text-sm font-semibold text-navy-700 transition-colors duration-200 hover:bg-brand-600 hover:text-white disabled:opacity-50"
+          >
+            <Plus className="size-4" aria-hidden="true" />
+            {saving ? 'Adding…' : 'Add review'}
+          </button>
+        </form>
+      </FormCard>
 
-      <div className="border-t border-line mt-8 pt-8">
-        <h3 className="text-lg font-bold text-ink mb-4">Reviews ({reviews.length})</h3>
-        {loading ? <p className="text-ink-subtle">Loading...</p> : reviews.length === 0 ? <p className="text-ink-subtle">No reviews</p> : (
-          <div className="space-y-3">
-            {reviews.map(review => (
-              <div key={review.id} className="p-4 bg-cream rounded-card">
-                <div className="flex items-center justify-between mb-2">
-                  <div className="min-w-0">
-                    <div className="text-ink font-medium">{review.name}</div>
-                    <div className="text-ink-subtle text-sm">{review.role}</div>
-                  </div>
-                  <div className="flex items-center gap-3 flex-shrink-0">
-                    <div className="flex">{[...Array(review.rating)].map((_,i) => <span key={i} className="text-brand-400">★</span>)}</div>
-                    <button onClick={() => handleDelete(review.id)} className="px-3 py-1 rounded border border-line-strong bg-surface text-sm text-ink-muted transition-colors duration-200 hover:border-brand-500 hover:text-brand-700">Delete</button>
-                  </div>
+      <ListPanel
+        title="Reviews"
+        count={reviews.length}
+        loading={loading}
+        emptyTitle="No reviews yet"
+        emptyHint="Add what clients have said about working with you. They show up in the trust sections across the site."
+      >
+        {reviews.map(review => (
+          <article key={review.id} className="rounded-card border border-line bg-surface p-5 transition-colors duration-200 hover:border-line-strong">
+            <div className="flex flex-wrap items-start justify-between gap-3">
+              <div className="flex items-center gap-3">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-full bg-brand-100 font-semibold text-brand-800">
+                  {review.name.charAt(0).toUpperCase()}
                 </div>
-                <p className="text-ink-muted text-sm">&ldquo;{review.content}&rdquo;</p>
+                <div className="min-w-0">
+                  <p className="truncate font-semibold text-ink">{review.name}</p>
+                  <p className="truncate text-sm text-ink-subtle">{review.role}</p>
+                </div>
               </div>
-            ))}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-interface HomepageImage {
-  id: string;
-  section: string;
-  imageUrl: string;
-}
-
-const HOMEPAGE_SECTION_GROUPS = [
-  {
-    title: 'Hero Section (Right Side Cards)',
-    sections: [
-      { key: 'hero-visual-1', label: 'Card 1: Media' },
-      { key: 'hero-visual-2', label: 'Card 2: IT Solutions' },
-      { key: 'hero-visual-3', label: 'Card 3: Projects' },
-      { key: 'hero-visual-4', label: 'Card 4: Creative' },
-    ]
-  },
-  {
-    title: 'Our Expert Services (Homepage)',
-    sections: [
-      { key: 'service-it', label: 'IT Consultancy' },
-      { key: 'service-media', label: 'Media' },
-      { key: 'service-project', label: 'Project Management' },
-    ]
-  },
-  {
-    title: 'Creative Edge (Blog Posts)',
-    sections: [
-      { key: 'blog-1', label: 'Blog Post 1' },
-      { key: 'blog-2', label: 'Blog Post 2' },
-      { key: 'blog-3', label: 'Blog Post 3' },
-    ]
-  },
-  {
-    title: 'Events — Slideshow Images',
-    sections: [
-      { key: 'events-slideshow', label: 'All Events Images (for slideshow)' },
-    ]
-  },
-  {
-    title: 'Photography — Slideshow Images',
-    sections: [
-      { key: 'photography_slideshow', label: 'All Photography Images (for slideshow)' },
-    ]
-  },
-  {
-    title: 'Portraits — Slideshow Images',
-    sections: [
-      { key: 'portraits_slideshow', label: 'All Portraits Images (for slideshow)' },
-    ]
-  },
-  {
-    title: 'Photo Tourism — Slideshow Images',
-    sections: [
-      { key: 'photo-tourism_slideshow', label: 'All Photo Tourism Images (for slideshow)' },
-    ]
-  },
-  {
-    title: 'Visuals — Slideshow Images',
-    sections: [
-      { key: 'visuals_slideshow', label: 'All Visuals Images (for slideshow)' },
-    ]
-  },
-  {
-    title: 'Newsletter Section',
-    sections: [
-      { key: 'newsletter-bg', label: 'Newsletter Background' },
-    ]
-  },
-  {
-    title: 'About Us Page',
-    sections: [
-      { key: 'about-ceo', label: 'CEO Photo' },
-    ]
-  },
-];
-
-const allSections = HOMEPAGE_SECTION_GROUPS.flatMap(g => g.sections);
-
-function HomepageManager() {
-  const [images, setImages] = useState<HomepageImage[]>([]);
-  const [selectedSection, setSelectedSection] = useState(allSections[0].key);
-  const [notice, setNotice] = useState<{ tone: 'ok' | 'bad'; text: string } | null>(null);
-
-  const loadImages = async () => {
-    try {
-      const res = await fetch('/api/homepage-images');
-      if (res.ok) { const data = await res.json(); setImages(Array.isArray(data) ? data : []); }
-      else { setImages([]); }
-    } catch (e) { console.error('Failed to load images:', e); setImages([]); }
-  };
-
-  // Fetching on mount: the state update lands in the promise continuation, not
-  // synchronously in the effect body.
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { loadImages(); }, []);
-
-  const handleDelete = async (id: string) => {
-    const res = await fetch(`/api/homepage-images?id=${id}`, { method: 'DELETE' });
-    if (res.ok) {
-      await loadImages();
-      setNotice({ tone: 'ok', text: 'Image removed.' });
-    } else {
-      setNotice({ tone: 'bad', text: 'Could not delete that image.' });
-    }
-  };
-
-  const getImagesForSection = (section: string) => images.filter(img => img.section === section);
-  const isSlideshowSection = (key: string) => key.includes('_slideshow');
-  const selected = allSections.find(s => s.key === selectedSection);
-  const selectedIsSlideshow = isSlideshowSection(selectedSection);
-
-  return (
-    <div className="space-y-8">
-      {HOMEPAGE_SECTION_GROUPS.map((group) => (
-        <div key={group.title} className="bg-surface rounded-card p-6 border border-line">
-          <h2 className="text-xl font-bold text-ink mb-2">{group.title}</h2>
-          <p className="text-ink-muted text-sm mb-6">{isSlideshowSection(group.sections[0]?.key || '') ? 'Upload multiple images for the slideshow' : 'Select a slot below to upload an image'}</p>
-          
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-            {group.sections.map((section) => {
-              const sectionImages = getImagesForSection(section.key);
-              const isSelected = selectedSection === section.key;
-              
-              return (
-                <div
-                  key={section.key}
-                  className={`bg-surface rounded-card p-4 border transition-colors duration-200 ${
-                    isSelected ? 'border-brand-500 ring-2 ring-brand-500/20' : 'border-line'
-                  }`}
-                >
-                  <h3 className="text-sm font-medium text-ink mb-3">{section.label}</h3>
-                  
-                  {sectionImages.length > 0 ? (
-                    <div className="space-y-2 mb-3">
-                      {sectionImages.map((img, idx) => (
-                        <div key={img.id} className="relative">
-                          <Image src={img.imageUrl} alt={`${section.label} ${idx + 1}`} fill sizes="(min-width: 1024px) 20vw, 50vw" className="h-24 object-cover rounded-card" />
-                          <button
-                            onClick={() => handleDelete(img.id)}
-                            aria-label={`Delete ${section.label} ${idx + 1}`}
-                            className="absolute top-1 right-1 inline-flex items-center gap-1 bg-ink/80 px-2 py-1 text-xs text-ink-inverse rounded hover:bg-ink"
-                          >Delete</button>
-                        </div>
-                      ))}
-                    </div>
-                  ) : ( <div className="w-full h-24 bg-cream rounded-card mb-3 flex items-center justify-center text-ink-subtle text-sm">No image</div> )}
-
-                  <button
-                    onClick={() => { setSelectedSection(section.key); setNotice(null); }}
-                    aria-pressed={isSelected}
-                    className={`text-xs font-medium transition-colors duration-200 hover:text-brand-700 ${
-                      isSelected ? 'text-brand-600' : 'text-brand-500 hover:underline'
-                    }`}
-                  >
-                    {isSelected ? 'Selected — uploading here' : 'Select to upload'}
-                  </button>
-                  {isSlideshowSection(section.key) && sectionImages.length > 0 && (
-                    <span className="text-xs text-ink-subtle ml-2">({sectionImages.length} images)</span>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </div>
-      ))}
-
-      <div className="bg-surface rounded-card p-6 border border-line">
-        <h2 className="text-lg font-bold text-ink">
-          Upload to &ldquo;{selected?.label ?? selectedSection}&rdquo;
-        </h2>
-        <p className="mt-1 text-sm text-ink-subtle">
-          {selectedIsSlideshow
-            ? 'Each upload is added to this slideshow. Repeat as many times as you need.'
-            : 'This slot holds one image. Uploading again replaces it.'}
-        </p>
-
-        <UploadField
-          key={selectedSection}
-          type="homepage"
-          section={selectedSection}
-          multi={selectedIsSlideshow}
-          label="Choose image"
-          value=""
-          onChange={async () => {
-            await loadImages();
-            setNotice({ tone: 'ok', text: 'Image uploaded.' });
-          }}
-          className="mt-5"
-        />
-      </div>
-
-      {notice ? (
-        <p
-          role="status"
-          className={`rounded-card border p-3 text-sm ${
-            notice.tone === 'ok'
-              ? 'border-brand-200 bg-brand-50 text-brand-700'
-              : 'border-brand-300 bg-brand-50 text-brand-700'
-          }`}
-        >
-          {notice.text}
-        </p>
-      ) : null}
+              <div className="flex shrink-0 items-center gap-3">
+                <StarRating value={review.rating} />
+                <DeleteButton onClick={() => handleDelete(review.id)} label={`Delete review by ${review.name}`} />
+              </div>
+            </div>
+            <blockquote className="mt-4 flex gap-3 text-sm leading-relaxed text-ink-muted">
+              <Quote className="mt-0.5 size-4 shrink-0 text-brand-300" aria-hidden="true" />
+              <p>{review.content}</p>
+            </blockquote>
+          </article>
+        ))}
+      </ListPanel>
     </div>
   );
 }

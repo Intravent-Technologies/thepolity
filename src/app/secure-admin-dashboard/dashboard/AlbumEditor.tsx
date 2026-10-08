@@ -12,6 +12,7 @@ import {
   X,
 } from 'lucide-react';
 import { notify } from '@/components/admin/Toast';
+import { Eyebrow } from '@/components/ui';
 import { albumMediaImageSrc, type WorkAlbum, type WorkAlbumMedia } from '@/lib/work-types';
 import {
   ALL_ACCEPT_ATTRIBUTE,
@@ -200,7 +201,7 @@ export default function AlbumEditor({ album, onClose, onSaved }: AlbumEditorProp
   const fileInput = useRef<HTMLInputElement>(null);
 
   const inputClass =
-    'px-4 py-3 bg-cream border border-line rounded-card text-ink placeholder:text-ink-subtle';
+    'w-full rounded-card border border-line-strong bg-surface px-4 py-3 text-[0.95rem] text-ink placeholder:text-ink-subtle transition-[border-color,box-shadow] duration-200 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/25';
 
   const loadMedia = useCallback(async () => {
     setLoadingMedia(true);
@@ -443,16 +444,17 @@ export default function AlbumEditor({ album, onClose, onSaved }: AlbumEditorProp
   };
 
   return (
-    <div className="rounded-card border border-line-strong bg-cream p-5">
+    <div className="rounded-card border border-line bg-surface-sunken p-5 sm:p-6">
       <div className="mb-5 flex items-start justify-between gap-4">
         <div className="min-w-0">
-          <h3 className="truncate text-lg font-bold text-ink">{album.title}</h3>
-          <p className="truncate text-sm text-ink-subtle">/work/{album.slug}</p>
+          <Eyebrow>Editing</Eyebrow>
+          <h3 className="mt-1.5 truncate text-title text-ink">{album.title}</h3>
+          <p className="mt-0.5 truncate font-mono text-xs text-ink-subtle">/work/{album.slug}</p>
         </div>
         <button
           type="button"
           onClick={onClose}
-          className="rounded-full border border-line-strong bg-surface p-2 text-ink-muted transition-colors duration-200 hover:border-brand-500 hover:text-ink"
+          className="rounded-full border border-line-strong bg-surface p-2 text-ink-muted transition-colors duration-200 hover:border-brand-500 hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40"
           aria-label="Close editor"
         >
           <X className="size-4" aria-hidden="true" />
@@ -511,7 +513,7 @@ export default function AlbumEditor({ album, onClose, onSaved }: AlbumEditorProp
           <button
             type="submit"
             disabled={savingDetails}
-            className="rounded-card bg-brand-500 px-6 py-3 font-medium text-white transition-colors duration-200 hover:bg-brand-600 disabled:opacity-50"
+            className="inline-flex h-11 items-center rounded-full bg-brand-500 px-6 text-sm font-semibold text-navy-700 transition-colors duration-200 hover:bg-brand-600 hover:text-white disabled:opacity-50"
           >
             {savingDetails ? 'Saving…' : 'Save details'}
           </button>
@@ -523,8 +525,8 @@ export default function AlbumEditor({ album, onClose, onSaved }: AlbumEditorProp
       </form>
 
       <div className="mt-8 border-t border-line pt-6">
-        <h4 className="mb-1 font-bold text-ink">Add photos and videos</h4>
-        <p className="mb-4 text-sm text-ink-muted">
+        <h4 className="text-title text-ink">Add photos and videos</h4>
+        <p className="mt-1 mb-4 text-sm leading-relaxed text-ink-muted">
           Files you add here are copied into our own storage and stay put, even if
           you later re-sync the Drive folder. Images up to 10&nbsp;MB, videos up to
           100&nbsp;MB.
@@ -546,7 +548,7 @@ export default function AlbumEditor({ album, onClose, onSaved }: AlbumEditorProp
             type="button"
             onClick={() => fileInput.current?.click()}
             disabled={uploading}
-            className="mt-3 rounded-full border border-line-strong bg-surface px-4 py-2 text-sm font-medium text-ink transition-colors duration-200 hover:border-brand-500 hover:text-brand-600 disabled:opacity-50"
+            className="mt-3 inline-flex h-10 items-center rounded-full border border-line-strong bg-surface px-5 text-sm font-semibold text-ink transition-colors duration-200 hover:border-brand-500 hover:text-brand-700 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-500/40 disabled:opacity-50"
           >
             {uploading ? 'Uploading…' : 'Choose files'}
           </button>
@@ -591,7 +593,7 @@ export default function AlbumEditor({ album, onClose, onSaved }: AlbumEditorProp
         {rejected.length > 0 ? (
           <ul className="mt-3 space-y-1">
             {rejected.map((line) => (
-              <li key={line} className="flex items-start gap-2 text-sm text-brand-700">
+              <li key={line} className="flex items-start gap-2 text-sm text-red-700">
                 <AlertCircle className="mt-0.5 size-4 shrink-0" aria-hidden="true" />
                 {line}
               </li>
@@ -602,7 +604,7 @@ export default function AlbumEditor({ album, onClose, onSaved }: AlbumEditorProp
 
       <div className="mt-8 border-t border-line pt-6">
         <div className="mb-1 flex items-center justify-between gap-4">
-          <h4 className="font-bold text-ink">
+          <h4 className="text-title text-ink">
             {loadingMedia ? 'Loading…' : `${ordered.length} item${ordered.length === 1 ? '' : 's'}`}
           </h4>
           {coverMediaId ? (
